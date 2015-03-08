@@ -25,9 +25,10 @@ void CTradeUpdateDB::DoTradeUpdateFrame1(const TTradeUpdateFrame1Input *pIn,
 		cout << pid << " -- trade_id[" << i << "]: " << pIn->trade_id[i] <<
 				endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	setRepeatableRead();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 
@@ -62,7 +63,7 @@ void CTradeUpdateDB::DoTradeUpdateFrame1(const TTradeUpdateFrame1Input *pIn,
 						pOut->trade_info[i].settlement_cash_due_date.second <<
 						endl <<
 				pid << " -- settlement_cash_type[" << i << "]: " <<
-						pOut->trade_info[i].settlement_cash_type << endl <<	
+						pOut->trade_info[i].settlement_cash_type << endl <<
 				pid << " -- cash_transaction_amount[" << i << "]: " <<
 						pOut->trade_info[i].cash_transaction_amount << endl <<
 				pid << " -- cash_transaction_dts[" << i << "]: " <<
@@ -134,9 +135,10 @@ void CTradeUpdateDB::DoTradeUpdateFrame2(const TTradeUpdateFrame2Input *pIn,
 					pIn->end_trade_dts.minute << ":" <<
 					pIn->end_trade_dts.second << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	setRepeatableRead();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 
@@ -243,9 +245,10 @@ void CTradeUpdateDB::DoTradeUpdateFrame3(const TTradeUpdateFrame3Input *pIn,
 					pIn->start_trade_dts.second << endl <<
 			pid << " -- symbol: " << pIn->symbol << endl;
 #endif //DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	setRepeatableRead();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 

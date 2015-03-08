@@ -112,7 +112,7 @@
 #include "CESUTInterface.h"
 #include "BaseLogger.h"
 #include "DriverParamSettings.h"
-
+#include <stdint.h>
 namespace TPCE
 {
 

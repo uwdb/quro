@@ -26,10 +26,11 @@ void CMarketWatchDB::DoMarketWatchFrame1(const TMarketWatchFrame1Input *pIn,
 			pid << " -- starting_co_id: " << pIn->starting_co_id <<
 					" (used only when industry_name is used)" << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 
 	commitTransaction();

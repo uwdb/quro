@@ -25,9 +25,11 @@ void CBrokerVolumeDB::DoBrokerVolumeFrame1(const TBrokerVolumeFrame1Input *pIn,
 	cout << pid << " -- sector name: " << pIn->sector_name << endl;
 #endif // DEBUG
 
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 

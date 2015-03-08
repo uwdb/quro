@@ -18,6 +18,9 @@ int iListenPort = iBrokerageHousePort;
 char szHost[iMaxHostname + 1] = "";
 char szDBName[iMaxDBName + 1] = "";
 char szDBPort[iMaxPort + 1] = "";
+char szUser[25] = "root";
+char szSocket[256] = "/usr/local/var/mysqld/mysqld.sock";
+char szPass[25] = "";
 char outputDirectory[iMaxPath + 1] = ".";
 
 // shows program usage
@@ -44,13 +47,13 @@ void parse_command_line(int argc, char *argv[])
 	// Scan the command line arguments
 	for (arg = 1; arg < argc; ++arg) {
 
-		// Look for a switch 
+		// Look for a switch
 		sp = argv[arg];
 		if (*sp == '-') {
 			++sp;
 		}
 		*sp = (char) tolower(*sp);
-		
+
 		/*
 		 *  Find the switch's argument.  It is either immediately after the
 		 *  switch or in the next argv
@@ -63,7 +66,7 @@ void parse_command_line(int argc, char *argv[])
 		if ((*vp == 0) && ((arg + 1) < argc) && (argv[arg + 1][0] != '-')) {
 			vp = argv[++arg];
 		}
-		
+
 		// Parse the switch
 		switch (*sp) {
 		case 'd': // Database name.
@@ -84,6 +87,15 @@ void parse_command_line(int argc, char *argv[])
 			break;
 		case 'l':
 			iListenPort = atoi(vp);
+			break;
+		case 'u':
+			strcpy(szUser, vp);
+			break;
+		case 's':
+			strcpy(szSocket, vp);
+			break;
+		case 'a':
+			strcpy(szPass, vp);
 			break;
 		default:
 			usage();
@@ -107,8 +119,13 @@ int main(int argc, char *argv[])
 	cout << "Database port: " << szDBPort << endl;
 	cout << "Database name: " << szDBName << endl;
 
+#ifdef DB_PGSQL
 	CBrokerageHouse	BrokerageHouse(szHost, szDBName, szDBPort, iListenPort,
 			outputDirectory);
+#else
+	CBrokerageHouse	BrokerageHouse(szDBName, szHost, szUser, szPass, szDBPort, szSocket,
+									iListenPort, outputDirectory);
+#endif
 	cout << "Brokerage House opened for business, waiting traders..." << endl;
 	try {
 		BrokerageHouse.startListener();

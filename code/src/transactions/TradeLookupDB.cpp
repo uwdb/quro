@@ -24,9 +24,11 @@ void CTradeLookupDB::DoTradeLookupFrame1(const TTradeLookupFrame1Input *pIn,
 		cout << pid << " -- trade_id[" << i << "]: " << pIn->trade_id[i] << endl;
 #endif // DEBUG
 
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 
@@ -131,10 +133,11 @@ void CTradeLookupDB::DoTradeLookupFrame2(const TTradeLookupFrame2Input *pIn,
 					pIn->end_trade_dts.minute << ":" <<
 					pIn->end_trade_dts.second << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 
@@ -240,10 +243,11 @@ void CTradeLookupDB::DoTradeLookupFrame3(const TTradeLookupFrame3Input *pIn,
 					pIn->end_trade_dts.second << endl <<
 			pid << " -- symbol: " << pIn->symbol << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 
@@ -360,10 +364,11 @@ void CTradeLookupDB::DoTradeLookupFrame4(const TTradeLookupFrame4Input *pIn,
 					pIn->trade_dts.minute << ":" <<
 					pIn->trade_dts.second << endl;
 #endif //DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 

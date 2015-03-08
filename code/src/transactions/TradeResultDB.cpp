@@ -21,11 +21,12 @@ void CTradeResultDB::DoTradeResultFrame1(
 	cout << pid << " - Trade Result Frame 1 (input)" << endl <<
 			pid << " -- trade_id: " << pIn->trade_id << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	// start transaction but not commit in this frame
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setSerializable();
+#endif
 	execute(pIn, pOut);
 
 #ifdef DEBUG

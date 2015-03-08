@@ -87,7 +87,7 @@ void inline TokenizeSmart(const string& str, vector<string>& tokens)
 		}
 	}
 }
-
+#ifdef DB_PGSQL
 // Constructor: Creates PgSQL connection
 CDBConnection::CDBConnection(const char *szHost, const char *szDBName,
 		const char *szDBPort)
@@ -112,45 +112,127 @@ CDBConnection::CDBConnection(const char *szHost, const char *szDBName,
 	sprintf(name, "%d", (int) pthread_self());
 	m_Conn = PQconnectdb(szConnectStr);
 }
+#else
+CDBConnection::CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
+	/* Copy values only if it's not NULL. */
+	setBrokerageHouse(bh);
+	if (_mysql_dbname != NULL) {
+		strcpy(mysql_dbname, _mysql_dbname);
+	}
+	if (_mysql_host != NULL) {
+		strcpy(mysql_host, _mysql_host);
+        }
+	if (_mysql_user != NULL) {
+		strcpy(mysql_user, _mysql_user);
+        }
+	if (_mysql_pass != NULL) {
+		strcpy(mysql_pass, _mysql_pass);
+	}
+	if (_mysql_port != NULL) {
+		strcpy(mysql_port_t, _mysql_port);
+	}
+	if (_mysql_socket != NULL) {
+		strcpy(mysql_socket_t, _mysql_socket);
+	}
+  connect();
+}
+#endif
 
 // Destructor: Disconnect from server
 CDBConnection::~CDBConnection()
 {
+#ifdef DB_PGSQL
 	PQfinish(m_Conn);
+#else
+#endif
 }
 
 void CDBConnection::begin()
 {
+#ifdef DB_PGSQL
 	PGresult *res = PQexec(m_Conn, "BEGIN;");
 	PQclear(res);
+#endif
 }
 
 void CDBConnection::connect()
 {
+#ifdef DB_PGSQL
 	m_Conn = PQconnectdb(szConnectStr);
+#else
+		LOG_ERROR_MESSAGE("in connect, start init");
+		dbc=mysql_init(NULL);
+
+		LOG_ERROR_MESSAGE("in connect, finish init");
+    //FIXME: change atoi() to strtol() and check for errors
+    if (!mysql_real_connect(dbc, mysql_host, mysql_user, mysql_pass, mysql_dbname, atoi(mysql_port_t), mysql_socket_t, 0))
+    {
+
+			LOG_ERROR_MESSAGE("FAILED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
+      if (mysql_errno(dbc))
+      {
+        LOG_ERROR_MESSAGE("Connection to database '%s' failed.", mysql_dbname);
+	LOG_ERROR_MESSAGE("mysql reports: %d %s",
+                           mysql_errno(dbc), mysql_error(dbc));
+				assert(false);
+      }
+    }
+		LOG_ERROR_MESSAGE("SUCCEDED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
+
+    /* Disable AUTOCOMMIT mode for connection */
+    if (mysql_real_query(dbc, "SET AUTOCOMMIT=0", 16))
+    {
+      LOG_ERROR_MESSAGE("mysql reports: %d %s", mysql_errno(dbc) ,
+                         mysql_error(dbc));
+			assert(false);
+    }
+#endif
+
 }
 
 void CDBConnection::commit()
 {
+#ifdef DB_PGSQL
 	PGresult *res = PQexec(m_Conn, "COMMIT;");
 	PQclear(res);
+#else
+      if (mysql_real_query(dbc, "COMMIT", 6))
+      {
+        LOG_ERROR_MESSAGE("COMMIT failed. mysql reports: %d %s",
+                           mysql_errno(dbc), mysql_error(dbc));
+				assert(false);
+      }
+#endif
+
 }
 
 char *CDBConnection::escape(string s)
 {
+#ifdef DB_PGSQL
 	char *esc = PQescapeLiteral(m_Conn, s.c_str(), s.length());
 	if (esc == NULL)
 		cerr << "ERROR: could not escape '" << s << "'" << endl;
 	return esc;
+#else
+	return NULL;
+#endif
 }
 
 void CDBConnection::disconnect()
 {
+#ifdef DB_PGSQL
 	PQfinish(m_Conn);
+#else
+	mysql_close(dbc);
+#endif
 }
-
+#ifdef DB_PGSQL
 PGresult *CDBConnection::exec(const char *sql)
+#else
+void CDBConnection::exec(const char *sql)
+#endif
 {
+#ifdef DB_PGSQL
 	// FIXME: Handle serialization errors.
 	// For PostgreSQL, see comment in the Concurrency Control chapter, under
 	// the Transaction Isolation section for dealing with serialization
@@ -190,11 +272,14 @@ PGresult *CDBConnection::exec(const char *sql)
 	}
 
 	return res;
+#else
+#endif
 }
 
 void CDBConnection::execute(const TBrokerVolumeFrame1Input *pIn,
 		TBrokerVolumeFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	int i_broker_name;
 	int i_list_len;
 	int i_volume;
@@ -241,11 +326,14 @@ void CDBConnection::execute(const TBrokerVolumeFrame1Input *pIn,
 	check_count(pOut->list_len, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TCustomerPositionFrame1Input *pIn,
 		TCustomerPositionFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	int i_cust_id;
 	int i_acct_id;
 	int i_acct_len;
@@ -393,11 +481,14 @@ void CDBConnection::execute(const TCustomerPositionFrame1Input *pIn,
 	check_count(pOut->acct_len, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TCustomerPositionFrame2Input *pIn,
 		TCustomerPositionFrame2Output *pOut)
 {
+#ifdef DB_PGSQL
 	int i_hist_dts;
 	int i_hist_len;
 	int i_qty;
@@ -475,10 +566,13 @@ void CDBConnection::execute(const TCustomerPositionFrame2Input *pIn,
 	check_count(pOut->hist_len, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TDataMaintenanceFrame1Input *pIn)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM DataMaintenanceFrame1(" <<
 			pIn->acct_id << ", " <<
@@ -492,11 +586,14 @@ void CDBConnection::execute(const TDataMaintenanceFrame1Input *pIn)
 
 	PGresult *res = exec(osSQL.str().c_str());
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TMarketFeedFrame1Input *pIn,
 		TMarketFeedFrame1Output *pOut, CSendToMarketInterface *pMarketExchange)
 {
+#ifdef DB_PGSQL
 	int i_num_updated;
 	int i_send_len;
 	int i_symbol;
@@ -585,11 +682,14 @@ void CDBConnection::execute(const TMarketFeedFrame1Input *pIn,
 	}
 	check_count(pOut->send_len, i, __FILE__, __LINE__);
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TMarketWatchFrame1Input *pIn,
 		TMarketWatchFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM MarketWatchFrame1(" <<
 			pIn->acct_id << "," <<
@@ -605,11 +705,14 @@ void CDBConnection::execute(const TMarketWatchFrame1Input *pIn,
 
 	pOut->pct_change = atof(PQgetvalue(res, 0, 0));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TSecurityDetailFrame1Input *pIn,
 		TSecurityDetailFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	int i_s52_wk_high;
 	int i_s52_wk_high_date;
 	int i_s52_wk_low;
@@ -910,10 +1013,13 @@ void CDBConnection::execute(const TSecurityDetailFrame1Input *pIn,
 			&pOut->start_date.day);
 	pOut->yield = atof(PQgetvalue(res, 0, i_yield));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeCleanupFrame1Input *pIn)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeCleanupFrame1('" <<
 			pIn->st_canceled_id << "','" <<
@@ -923,6 +1029,8 @@ void CDBConnection::execute(const TTradeCleanupFrame1Input *pIn)
 
 	PGresult *res = exec(osSQL.str().c_str());
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeLookupFrame1Input *pIn,
@@ -942,7 +1050,7 @@ void CDBConnection::execute(const TTradeLookupFrame1Input *pIn,
 	int i_trade_history_dts;
 	int i_trade_history_status_id;
 	int i_trade_price;
-
+#ifdef DB_PGSQL
 	ostringstream osTrades;
 	int i = 0;
 	osTrades << pIn->trade_id[i];
@@ -1130,6 +1238,8 @@ void CDBConnection::execute(const TTradeLookupFrame1Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
@@ -1149,7 +1259,7 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 	int i_trade_history_status_id;
 	int i_trade_list;
 	int i_trade_price;
-
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeLookupFrame2(" <<
 			pIn->acct_id << ",'" <<
@@ -1217,7 +1327,13 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 				&pOut->trade_info[i].cash_transaction_dts.hour,
 				&pOut->trade_info[i].cash_transaction_dts.minute,
 				&pOut->trade_info[i].cash_transaction_dts.second);
-		++i;
+		++i;      if (mysql_real_query(dbc, "COMMIT", 6))
+      {
+        LOG_ERROR_MESSAGE("COMMIT failed. mysql reports: %d %s",
+                           mysql_errno(dbc), mysql_error(dbc));
+				assert(false);
+      }
+
 	}
 	// FIXME: According to spec, this may not match the returned number found?
    vAux.clear();
@@ -1344,6 +1460,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
@@ -1366,7 +1484,7 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	int i_trade_history_status_id;
 	int i_trade_list;
 	int i_trade_type;
-
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeLookupFrame3('" <<
 			pIn->end_trade_dts.year << "-" <<
@@ -1599,6 +1717,8 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
@@ -1611,7 +1731,7 @@ void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
 	int i_quantity_after;
 	int i_quantity_before;
 	int i_trade_id;
-
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeLookupFrame4(" <<
 			pIn->acct_id << ",'" <<
@@ -1675,11 +1795,14 @@ void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
 
 	pOut->trade_id = atol(PQgetvalue(res, 0, i_trade_id));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 		TTradeOrderFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeOrderFrame1(" << pIn->acct_id << ")";
 
@@ -1701,11 +1824,14 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 	pOut->tax_id[cTAX_ID_len] = '\0';
 	pOut->tax_status = atoi(PQgetvalue(res, 0, 9));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 		TTradeOrderFrame2Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame2(" <<
@@ -1728,11 +1854,14 @@ void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 		pOut->ap_acl[0] = '\0';
 	}
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 		TTradeOrderFrame3Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame3(" <<
@@ -1774,11 +1903,14 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 	pOut->type_is_market = (PQgetvalue(res, 0, 12)[0] == 't' ? 1 : 0);
 	pOut->type_is_sell = (PQgetvalue(res, 0, 13)[0] == 't' ? 1 : 0);
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 		TTradeOrderFrame4Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame4(" <<
@@ -1803,11 +1935,14 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 
 	pOut->trade_id = atol(PQgetvalue(res, 0, 0));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 		TTradeResultFrame1Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame1(" << pIn->trade_id << ")";
 
@@ -1829,11 +1964,14 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 	strncpy(pOut->type_name, PQgetvalue(res, 0, 11), cTT_NAME_len);
 	pOut->type_name[cTT_NAME_len] = '\0';
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 		TTradeResultFrame2Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame2(" <<
 			pIn->acct_id << "," <<
@@ -1860,11 +1998,14 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 			&pOut->trade_dts.minute,
 			&pOut->trade_dts.second);
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 		TTradeResultFrame3Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame3(" <<
 			pIn->buy_value << "," <<
@@ -1876,11 +2017,14 @@ void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 
 	pOut->tax_amount = atof(PQgetvalue(res, 0, 0));
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 		TTradeResultFrame4Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame4(" <<
 			pIn->cust_id << ",'" <<
@@ -1894,10 +2038,13 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 	strncpy(pOut->s_name, PQgetvalue(res, 0, 1), cS_NAME_len);
 	pOut->s_name[cS_NAME_len] = '\0';
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame5(" <<
 			pIn->broker_id << "," <<
@@ -1918,11 +2065,14 @@ void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 	// or SERIALIZABLE.
 	PGresult *res = exec(osSQL.str().c_str());
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 		TTradeResultFrame6Output *pOut)
 {
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeResultFrame6(" <<
@@ -1953,8 +2103,11 @@ void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 
 	pOut->acct_bal = atof(PQgetvalue(res, 0, 0));
 	PQclear(res);
+#else
+#endif
 }
 
+#ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 		TTradeStatusFrame1Output *pOut)
 {
@@ -1972,7 +2125,6 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 	int i_trade_id;
 	int i_trade_qty;
 	int i_type_name;
-
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeStatusFrame1(" << pIn->acct_id << ")";
 
@@ -2108,6 +2260,7 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 	vAux.clear();
 	PQclear(res);
 }
+#endif
 
 void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		TTradeUpdateFrame1Output *pOut)
@@ -2127,7 +2280,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int i_trade_history_dts;
 	int i_trade_history_status_id;
 	int i_trade_price;
-
+#ifdef DB_PGSQL
 	ostringstream osTrades;
 	int i = 0;
 	osTrades << pIn->trade_id[i];
@@ -2334,11 +2487,14 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 		TTradeUpdateFrame2Output *pOut)
 {
+#ifdef DB_PGSQL
 	int i_bid_price;
 	int i_cash_transaction_amount;
 	int i_cash_transaction_dts;
@@ -2568,6 +2724,8 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
@@ -2593,7 +2751,7 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	int i_trade_list;
 	int i_type_name;
 	int i_trade_type;
-
+#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeUpdateFrame3('" <<
 			pIn->end_trade_dts.year << "-" <<
@@ -2849,6 +3007,8 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
+#else
+#endif
 }
 
 void CDBConnection::reconnect()
@@ -2859,15 +3019,28 @@ void CDBConnection::reconnect()
 
 void CDBConnection::rollback()
 {
+#ifdef DB_PGSQL
 	PGresult *res = PQexec(m_Conn, "ROLLBACK;");
 	PQclear(res);
+#else
+	 LOG_ERROR_MESSAGE("ROLLBACK INITIATED\n");
+
+      if (mysql_real_query(dbc, "ROLLBACK", 8))
+      {
+        LOG_ERROR_MESSAGE("ROLLBACK failed. mysql reports: %d %s",
+                           mysql_errno(dbc), mysql_error(dbc));
+				assert(false);
+      }
+
+#endif
+
 }
 
 void CDBConnection::setBrokerageHouse(CBrokerageHouse *bh)
 {
 	this->bh = bh;
 }
-
+#ifdef DB_PGSQL
 void CDBConnection::setReadCommitted()
 {
 	PGresult *res = PQexec(m_Conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED;");
@@ -2890,4 +3063,138 @@ void CDBConnection::setSerializable()
 {
 	PGresult *res = PQexec(m_Conn, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	PQclear(res);
+}
+
+#else
+char * CDBConnection::dbt5_sql_getvalue(sql_result_t *sql_result, int field, int& length)
+{
+	if (sql_result->current_row && field < sql_result->num_fields)
+  {
+    if (sql_result->current_row[field])
+    {
+				length = sql_result->lengths[field];
+        return (char*)((sql_result->current_row)[field]);
+		}
+		else
+		{
+				return NULL;
+		}
+	}
+	else
+	{
+				return NULL;
+	}
+}
+char * CDBConnection::dbt5_sql_getvalue(sql_result_t * sql_result, int field)
+{
+  char * tmp;
+
+  tmp= NULL;
+
+  if (sql_result->current_row && field < sql_result->num_fields)
+  {
+    if (sql_result->current_row[field])
+    {
+      if ((tmp = (char*)calloc(sizeof(char), sql_result->lengths[field]+1)))
+      {
+        memcpy(tmp, (sql_result->current_row)[field], sql_result->lengths[field]);
+      }
+      else
+      {
+#ifdef DEBUG_QUERY
+        LOG_ERROR_MESSAGE("dbt2_sql_getvalue: CALLOC FAILED for value from field=%d\n", field);
+#endif
+      }
+    }
+    else
+    {
+#ifdef DEBUG_QUERY
+      LOG_ERROR_MESSAGE("dbt2_sql_getvalue: var[%d]=NULL\n", field);
+#endif
+    }
+  }
+	else
+  {
+#ifdef DEBUG_QUERY
+    LOG_ERROR_MESSAGE("dbt2_sql_getvalue: POSSIBLE NULL VALUE or ERROR\n\Query: %s\nField: %d from %d",
+                       sql_result->query, field, sql_result->num_fields);
+#endif
+  }
+  return tmp;
+}
+
+int CDBConnection::dbt5_sql_execute(char * query, sql_result_t * sql_result,
+                       char * query_name)
+{
+
+  sql_result->result_set= NULL;
+  sql_result->num_fields= 0;
+  sql_result->num_rows= 0;
+  sql_result->query=query;
+
+  if (mysql_query(dbc, query))
+  {
+    LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
+                            mysql_errno(dbc), mysql_error(dbc));
+    return 0;
+  }
+  else
+  {
+    sql_result->result_set = mysql_store_result(dbc);
+
+    if (sql_result->result_set)
+    {
+      sql_result->num_fields= mysql_num_fields(sql_result->result_set);
+      sql_result->num_rows= mysql_num_rows(sql_result->result_set);
+    }
+    else
+    {
+      if (mysql_field_count(dbc) == 0)
+      {
+        sql_result->num_rows = mysql_affected_rows(dbc);
+      }
+      else
+      {
+         LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
+                            mysql_errno(dbc), mysql_error(dbc));
+         return 0;
+      }
+    }
+  }
+
+  return 1;
+}
+int CDBConnection::dbt5_sql_fetchrow(sql_result_t * sql_result)
+{
+  sql_result->current_row = mysql_fetch_row(sql_result->result_set);
+  if (sql_result->current_row)
+  {
+    sql_result->lengths= mysql_fetch_lengths(sql_result->result_set);
+    return 1;
+  }
+  return 0;
+}
+
+int CDBConnection::dbt5_sql_close_cursor(sql_result_t * sql_result)
+{
+
+  if (sql_result->result_set)
+  {
+    mysql_free_result(sql_result->result_set);
+  }
+
+  return 1;
+}
+
+#endif
+
+void CDBConnection::logErrorMessage(const char *c, ...){
+			char msg[1000];
+			va_list fcargs;
+			va_start(fcargs, c);
+			vsprintf(msg, c, fcargs);
+			va_end(fcargs);
+			string s(c);
+			s.append("\n");
+			bh->logErrorMessage(s, false);
 }

@@ -32,7 +32,11 @@ void *workerThread(void *data)
 
 		CSocket sockDrv;
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
-
+#ifndef NO_DEBUG_INFO
+		ostringstream msg;
+		msg<<"workerThread, start"<<endl;
+		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
+#endif
 		PMsgDriverBrokerage pMessage = new TMsgDriverBrokerage;
 		memset(pMessage, 0, sizeof(TMsgDriverBrokerage)); // zero the structure
 
@@ -40,11 +44,28 @@ void *workerThread(void *data)
 		INT32 iRet = 0; // transaction return code
 		CDBConnection *pDBConnection = NULL;
 
+#ifdef DB_PGSQL
 		// new database connection
 		pDBConnection = new CDBConnection(
 				pThrParam->pBrokerageHouse->m_szHost,
 				pThrParam->pBrokerageHouse->m_szDBName,
 				pThrParam->pBrokerageHouse->m_szDBPort);
+#else
+	pDBConnection = new CDBConnection(
+			pThrParam->pBrokerageHouse,
+			pThrParam->pBrokerageHouse->mysql_dbname,
+			pThrParam->pBrokerageHouse->mysql_host,
+			pThrParam->pBrokerageHouse->mysql_user,
+			pThrParam->pBrokerageHouse->mysql_pass,
+			pThrParam->pBrokerageHouse->mysql_port_t,
+			pThrParam->pBrokerageHouse->mysql_socket_t);
+#endif
+
+#ifndef NO_DEBUG_INFO
+		msg<<"connection establised"<<endl;
+		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
+#endif
+
 		pDBConnection->setBrokerageHouse(pThrParam->pBrokerageHouse);
 		CSendToMarket sendToMarket = CSendToMarket(
 				&(pThrParam->pBrokerageHouse->m_fLog));
@@ -91,10 +112,10 @@ void *workerThread(void *data)
 				// The socket has been closed, break and let this thread die.
 				break;
 			}
-
 			try {
 				//  Parse Txn type
-				switch (pMessage->TxnType) {
+				/*switch (pMessage->TxnType) {
+
 				case BROKER_VOLUME:
 					iRet = pThrParam->pBrokerageHouse->RunBrokerVolume(
 							&(pMessage->TxnInput.BrokerVolumeTxnInput),
@@ -130,11 +151,11 @@ void *workerThread(void *data)
 					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
 							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
-				case TRADE_STATUS:
+				case TRADE_STATUS:*/
 					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
 							&(pMessage->TxnInput.TradeStatusTxnInput),
 							tradeStatus);
-					break;
+				/*	break;
 				case TRADE_UPDATE:
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
@@ -152,7 +173,7 @@ void *workerThread(void *data)
 				default:
 					cout << "wrong txn type" << endl;
 					iRet = ERR_TYPE_WRONGTXN;
-				}
+				}*/
 			} catch (const char *str) {
 				ostringstream msg;
 				msg << time(NULL) << " " << (long long) pthread_self() << " " <<
@@ -197,6 +218,11 @@ void entryWorkerThread(void *data)
 	pthread_attr_t threadAttribute; // thread attribute
 
 	try {
+#ifndef NO_DEBUG_INFO
+		ostringstream msg;
+		msg<<"entryWorkerThread, start initiate worker thread"<<endl;
+		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
+#endif
 		// initialize the attribute object
 		int status = pthread_attr_init(&threadAttribute);
 		if (status != 0) {
@@ -232,6 +258,7 @@ void entryWorkerThread(void *data)
 }
 
 // Constructor
+#ifdef DB_PGSQL
 CBrokerageHouse::CBrokerageHouse(const char *szHost, const char *szDBName,
 		const char *szDBPort, const int iListenPort, char *outputDirectory)
 : m_iListenPort(iListenPort)
@@ -242,11 +269,38 @@ CBrokerageHouse::CBrokerageHouse(const char *szHost, const char *szDBName,
 	m_szDBName[iMaxDBName] = '\0';
 	strncpy(m_szDBPort, szDBPort, iMaxPort);
 	m_szDBPort[iMaxPort] = '\0';
+#else
+CBrokerageHouse::CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
+: m_iListenPort(iListenPort)
+{
+	if (_mysql_dbname != NULL) {
+		strcpy(mysql_dbname, _mysql_dbname);
+	}
+	if (_mysql_host != NULL) {
+		strcpy(mysql_host, _mysql_host);
+        }
+	if (_mysql_user != NULL) {
+		strcpy(mysql_user, _mysql_user);
+        }
+	if (_mysql_pass != NULL) {
+		strcpy(mysql_pass, _mysql_pass);
+	}
+	if (_mysql_port != NULL) {
+		strcpy(mysql_port_t, _mysql_port);
+	}
+	if (_mysql_socket != NULL) {
+		strcpy(mysql_socket_t, _mysql_socket);
+	}
+
+#endif
 
 	char filename[iMaxPath + 1];
 	snprintf(filename, iMaxPath, "%s/BrokerageHouse_Error.log",
 			outputDirectory);
+	char s[1000];
 	m_fLog.open(filename, ios::out);
+	sprintf(s, "mysql_host = %s, mysql_user = %s, mysql_pass = %s, mysql_port = %s, mysql_socket = %s", _mysql_host, _mysql_user, _mysql_pass, _mysql_port, _mysql_socket);
+	logErrorMessage(s, false);
 }
 
 // Destructor
@@ -670,7 +724,7 @@ INT32 CBrokerageHouse::RunTradeOrder(PTradeOrderTxnInput pTxnInput,
 		toOutput.status = CBaseTxnErr::EXPECTED_ROLLBACK;
 	}
 
-	if (toOutput.status != CBaseTxnErr::SUCCESS && 
+	if (toOutput.status != CBaseTxnErr::SUCCESS &&
 	    !(toOutput.status == CBaseTxnErr::EXPECTED_ROLLBACK && pTxnInput->roll_it_back)) {
 		ostringstream msg;
 		msg << __FILE__ << " " << __LINE__ << " " << toOutput.status << endl;
@@ -757,6 +811,11 @@ void CBrokerageHouse::startListener(void)
 
 	m_Socket.dbt5Listen(m_iListenPort);
 
+#ifndef NO_DEBUG_INFO
+	ostringstream msg;
+	msg<<"startListener!"<<endl;
+	logErrorMessage(msg.str(), false);
+#endif
 	while (true) {
 		acc_socket = 0;
 		try {

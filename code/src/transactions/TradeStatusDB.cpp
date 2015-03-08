@@ -20,10 +20,11 @@ void CTradeStatusDB::DoTradeStatusFrame1(const TTradeStatusFrame1Input *pIn,
 	cout << pid << " - Trade Status Frame 1 (input)" << endl <<
 			pid << " -- acct_id: " << pIn->acct_id << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
 	commitTransaction();
 

@@ -21,11 +21,16 @@ void *MarketWorkerThread(void* data)
 	PTradeRequest pMessage = new TTradeRequest;
 	memset(pMessage, 0, sizeof(TTradeRequest)); // zero the structure
 
+#ifndef NO_DEBUG_INFO
+	ostringstream msg;
+	msg<<"MarketWorkerThread start"<<std::endl;
+	pThrParam->pMarketExchange->logErrorMessage(msg.str());
+#endif
 	do {
 		try {
 			sockDrv.dbt5Receive(reinterpret_cast<void*>(pMessage),
 					sizeof(TTradeRequest));
-	
+
 			// submit trade request
 			pThrParam->pMarketExchange->m_pCMEE->SubmitTradeRequest(pMessage);
 		} catch(CSocketErr *pErr) {
@@ -62,18 +67,22 @@ void EntryMarketWorkerThread(void *data)
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_INIT);
 		}
-	
+
 		// set the detachstate attribute to detached
 		status = pthread_attr_setdetachstate(&threadAttribute,
 				PTHREAD_CREATE_DETACHED);
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_DETACH);
 		}
-	
+#ifndef NO_DEBUG_INFO
+		ostringstream msg;
+		msg<<"MarketWatcher, creating thread"<<endl;
+		pThrParam->pMarketExchange->logErrorMessage(msg.str());
+#endif
 		// create the thread in the detached state
 		status = pthread_create(&threadID, &threadAttribute,
 				&MarketWorkerThread, data);
-	
+
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_CREATE);
 		}
@@ -106,10 +115,19 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	m_fLog.open(filename, ios::out);
 	snprintf(filename, iMaxPath, "%s/%s", outputDirectory, MEE_MIX_LOG_NAME);
 	m_fMix.open(filename, ios::out);
-
+#ifndef NO_DEBUG_INFO
+	ostringstream msg;
+	msg<<"starting: szBHaddr = "<<szBHaddr<<", iBHlistenPort = "<<iBHlistenPort<<endl;
+	logErrorMessage(msg.str());
+#endif
 	// Initialize MEESUT
 	m_pCMEESUT = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
 			&m_LogLock, &m_MixLock);
+#ifndef NO_DEBUG_INFO
+	msg<<"finish CMEESUT"<<endl;
+	msg<<"inputFiles initialize: "<<iConfiguredCustomerCount<<", "<<iActiveCustomerCount<<", "<<szFileLoc<<endl;
+	logErrorMessage(msg.str());
+#endif
 
 	// Initialize MEE
 	CInputFiles inputFiles;
@@ -137,7 +155,11 @@ void CMarketExchange::startListener(void)
 	PMarketThreadParam pThrParam;
 
 	m_Socket.dbt5Listen(m_iListenPort);
-
+#ifndef NO_DEBUG_INFO
+	ostringstream msg;
+	msg<<"start listener"<<endl;
+	logErrorMessage(msg.str());
+#endif
 	while (true) {
 		acc_socket = 0;
 		try {

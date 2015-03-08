@@ -26,10 +26,11 @@ void CDataMaintenanceDB::DoDataMaintenanceFrame1(
 			pid << " -- tx_id name: " << pIn->tx_id << endl <<
 			pid << " -- vol_incr: " << pIn->vol_incr << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn);
 	commitTransaction();
 

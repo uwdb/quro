@@ -41,10 +41,19 @@ private:
 	CSocket m_Socket;
 	CMutex m_LogLock;
 	ofstream m_fLog;
-
+#ifdef DB_PGSQL
 	char m_szHost[iMaxHostname + 1]; // host name
 	char m_szDBName[iMaxDBName + 1]; // database name
 	char m_szDBPort[iMaxPort + 1]; // PostgreSQL postmaster port
+#else
+	char mysql_dbname[32];
+	char mysql_host[32];
+	char mysql_user[32];
+	char mysql_pass[32];
+	char mysql_port_t[32];
+	char mysql_socket_t[256];
+
+#endif
 
 	friend void entryWorkerThread(void *); // entry point for worker thread
 
@@ -89,8 +98,13 @@ private:
 	friend void *workerThread(void *);
 
 public:
+#ifdef DB_PGSQL
 	CBrokerageHouse(const char *, const char *, const char *, const int,
 				char *);
+#else
+	CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory);
+#endif
+
 	~CBrokerageHouse();
 
 	void logErrorMessage(const string sErr, bool bScreen = true);

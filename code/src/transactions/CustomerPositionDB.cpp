@@ -22,11 +22,15 @@ void CCustomerPositionDB::DoCustomerPositionFrame1(
 			pid << " -- cust_id: " << pIn->cust_id << endl <<
 			pid << " -- tax_id: " << pIn->tax_id << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setReadCommitted();
+#endif
 	execute(pIn, pOut);
+#ifndef DB_PGSQL
+	commitTransaction();
+#endif
 
 #ifdef DEBUG
 	cout << pid << " - Customer Position Frame 1 (output)" << endl <<

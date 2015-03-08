@@ -240,10 +240,10 @@ PACING_DELAY=0
 
 while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
 	case $opt in
-	a)
-		DBMS=${OPTARG}
-		export DATABASE=${DBMS}
-		;;
+#	a)
+#		DBMS=${OPTARG}
+#		export DATABASE=${DBMS}
+#		;;
 	b)
 		DB_PARAMS=$OPTARG
 		;;
@@ -333,10 +333,10 @@ if [ "x${EGENDIR}}" = "x" ]; then
 	exit 1
 fi
 
-if [ "x${DBMS}" = "x" ]; then
-	usage "specify which dbms system to test using -a <pgsql>"
-	exit 1
-fi
+#if [ "x${DBMS}" = "x" ]; then
+#	usage "specify which dbms system to test using -a <pgsql>"
+#	exit 1
+#fi
 
 if [ "x${DB_NAME}" = "x" ]; then
 	usage "specify the database name to test using -n <dbt5>"
@@ -374,9 +374,10 @@ if [ "x${OUTPUT_DIR}" = "x" ]; then
 fi
 
 if [ -d "${OUTPUT_DIR}" ]; then
-	echo "directory '${OUTPUT_DIR}' exists, stopping to prevent possible"
-	echo "clobbering of data, please specify another -o location"
-	exit 1
+	echo "directory '${OUTPUT_DIR}' exists, removing output dir"
+#	echo "clobbering of data, please specify another -o location"
+#	exit 1
+	rm -rf ${OUTPUT_DIR}
 fi
 
 if [ ! "x${DB_HOSTNAME}" = "x" ]; then
@@ -428,12 +429,12 @@ else
 fi
 
 # Restart database.
-${DB_COMMAND} dbt5-${DBMS}-stop-db
-if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
-	${DB_COMMAND} "dbt5-${DBMS}-start-db -p \"${DB_PARAMS}\" -o ${DB_OUTPUT_DIR}" || exit 1
-else
-	dbt5-${DBMS}-start-db -p "${DB_PARAMS}" -o ${DB_OUTPUT_DIR} || exit 1
-fi
+#${DB_COMMAND} dbt5-${DBMS}-stop-db
+#if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+#	${DB_COMMAND} "dbt5-${DBMS}-start-db -p \"${DB_PARAMS}\" -o ${DB_OUTPUT_DIR}" || exit 1
+#else
+#	dbt5-${DBMS}-start-db -p "${DB_PARAMS}" -o ${DB_OUTPUT_DIR} || exit 1
+#fi
 
 echo ""
 echo "************************************************************************"
@@ -491,11 +492,11 @@ else
 			--sample ${SAMPLE_LENGTH} \
 			--outdir ${DB_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/stats.out 2>&1 &
 fi
-${DB_COMMAND} dbt5-${DBMS}-db-stat \
-		-o ${DB_OUTPUT_DIR} \
-		-i ${ITERATIONS} \
-		${DB_PORT_ARG} \
-		-s ${SAMPLE_LENGTH} > ${DB_OUTPUT_DIR}/dbstats.out 2>&1 &
+#${DB_COMMAND} dbt5-${DBMS}-db-stat \
+#		-o ${DB_OUTPUT_DIR} \
+#		-i ${ITERATIONS} \
+#		${DB_PORT_ARG} \
+#		-s ${SAMPLE_LENGTH} > ${DB_OUTPUT_DIR}/dbstats.out 2>&1 &
 
 # Initialize oprofile before we start the driver.
 if [ ${USE_OPROFILE} -eq 1 ]; then
@@ -617,7 +618,7 @@ dbt5-post-process ${MIXFILE} > ${RESULTSFILE}
 echo "Killing Servers..."
 killall BrokerageHouseMain MarketExchangeMain DriverMain 2> /dev/null
 
-${DB_COMMAND} dbt5-${DBMS}-stop-db
+#${DB_COMMAND} dbt5-${DBMS}-stop-db
 
 if [ ${USE_OPROFILE} -eq 1 ]; then
 	oprofile_annotate ${DRIVER_OUTPUT_DIR} &

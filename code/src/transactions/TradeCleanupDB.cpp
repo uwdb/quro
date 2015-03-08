@@ -21,8 +21,9 @@ void CTradeCleanupDB::DoTradeCleanupFrame1(const TTradeCleanupFrame1Input *pIn)
 			pid << " -- st_submitted_id: " << pIn->st_submitted_id << endl <<
 			pid << " -- trade_id: " << pIn->start_trade_id << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
+#endif
 	execute(pIn);
 	commitTransaction();
 

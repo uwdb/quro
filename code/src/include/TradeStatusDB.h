@@ -14,6 +14,28 @@
 
 #include "TxnBaseDB.h"
 #include "DBConnection.h"
+
+#define TRADE_STATUS_1 \
+		"SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, \n" \
+		"       t_exec_name, t_chrg, s_name, ex_name\n" \
+		"FROM trade, status_type, trade_type, security, exchange\n" \
+		"WHERE t_ca_id = %ld\n" \
+		"  AND st_id = t_st_id\n" \
+		"  AND tt_id = t_tt_id\n" \
+		"  AND s_symb = t_s_symb\n" \
+		"  AND ex_id = s_ex_id\n" \
+		"ORDER BY t_dts DESC\n" \
+		"LIMIT 50"
+
+#define TRADE_STATUS_2 \
+		"SELECT c_l_name, c_f_name, b_name\n" \
+		"FROM customer_account, customer, broker\n" \
+		"WHERE ca_id = %ld\n" \
+		"  AND c_id = ca_c_id\n" \
+		"  AND b_id = ca_b_id"
+
+
+
 using namespace TPCE;
 
 class CTradeStatusDB : public CTxnBaseDB, public CTradeStatusDBInterface

@@ -20,10 +20,11 @@ void CTradeOrderDB::DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn,
 	cout << pid << " - Trade Order Frame 1 (input)" << endl <<
 			pid << " -- acct_id: " << pIn->acct_id << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setRepeatableRead();
+#endif
 	execute(pIn, pOut);
 
 #ifdef DEBUG

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo ~/mysql-bin/support-files/mysql.server start

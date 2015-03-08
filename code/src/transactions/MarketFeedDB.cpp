@@ -30,13 +30,14 @@ void CMarketFeedDB::DoMarketFeedFrame1(
 			pid << " -- type_stop_loss: " <<
 					pIn->StatusAndTradeType.type_stop_loss << endl;
 #endif // DEBUG
-
+#ifdef DB_PGSQL
 	startTransaction();
 	// Isolation level required by Clause 7.4.1.3
 	setRepeatableRead();
+#endif
 	execute(pIn, pOut, pMarketExchange);
 	commitTransaction();
-	
+
 #ifdef DEBUG
 	cout << pid << " - Market Feed Frame 1 (output)" << endl <<
 			pid << " -- send_len: " << pOut->send_len << endl <<

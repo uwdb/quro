@@ -11,9 +11,11 @@
 
 #ifndef DB_CONNECTION_H
 #define DB_CONNECTION_H
-
+#ifdef DB_PGSQL
 #include <libpq-fe.h>
-
+#else
+#include <mysql.h>
+#endif
 #include "TxnHarnessStructs.h"
 #include "TxnHarnessSendToMarket.h"
 
@@ -21,10 +23,35 @@
 #include "DBT5Consts.h"
 using namespace TPCE;
 
+//#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
+#define LOG_ERROR_MESSAGE logErrorMessage
+
+#ifndef DB_PGSQL
+struct sql_result_t
+{
+  MYSQL_RES * result_set;
+  MYSQL_ROW current_row;
+  unsigned int num_fields;
+  unsigned int num_rows;
+  unsigned long * lengths;
+  char * query;
+};
+#endif
+
 class CDBConnection
 {
 private:
+#ifdef DB_PGSQL
 	PGconn *m_Conn;
+#else
+	MYSQL *dbc;  //mysql db
+	char mysql_dbname[32];
+	char mysql_host[32];
+	char mysql_user[32];
+	char mysql_pass[32];
+	char mysql_port_t[32];
+	char mysql_socket_t[256];
+#endif
 
 	char szConnectStr[iMaxConnectString + 1];
 	char name[16];
@@ -33,8 +60,14 @@ private:
 
 	TTradeRequest m_TriggeredLimitOrders;
 
+
 public:
+#ifdef DB_PGSQL
 	CDBConnection(const char *, const char *, const char *);
+#else
+	CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+#endif
+
 	~CDBConnection();
 
 	void begin();
@@ -44,7 +77,8 @@ public:
 	char *escape(string);
 	void disconnect();
 
-	PGresult *exec(const char *);
+	//PGresult *exec(const char *);
+	void exec(const char *);
 
 	void execute(const TBrokerVolumeFrame1Input *,
 			TBrokerVolumeFrame1Output *);
@@ -95,10 +129,22 @@ public:
 
 	void setBrokerageHouse(CBrokerageHouse *);
 
+	void logErrorMessage(const char* c, ...);
+#ifdef DB_PGSQL
 	void setReadCommitted();
 	void setReadUncommitted();
 	void setRepeatableRead();
 	void setSerializable();
+#else
+int dbt5_sql_execute(char * query,
+                     sql_result_t * sql_result, char * query_name);
+int dbt5_sql_close_cursor(sql_result_t * sql_result);
+int dbt5_sql_fetchrow(sql_result_t * sql_result);
+char * dbt5_sql_getvalue(sql_result_t * sql_result,
+                         int field);
+char * dbt5_sql_getvalue(sql_result_t * sql_result, int field, int& length);
+
+#endif
 };
 
 #endif //DB_CONNECTION_H

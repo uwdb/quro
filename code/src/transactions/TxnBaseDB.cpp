@@ -187,7 +187,7 @@ void CTxnBaseDB::rollbackTransaction()
 {
 	pDB->rollback();
 }
-
+#ifdef DB_PGSQL
 void CTxnBaseDB::startTransaction()
 {
 	pDB->begin();
@@ -212,3 +212,4 @@ void CTxnBaseDB::setSerializable()
 {
 	pDB->setSerializable();
 }
+#endif
