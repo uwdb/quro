@@ -47,6 +47,9 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 						val = dbt5_sql_getvalue(&result, 3, length);
 						strncpy(pOut->type_name[i], val, length);
 			}
+	}else{
+				string fail_msg("query1 fails");
+				throw fail_msg.c_str();
 	}
 
 	sprintf(query, TRADE_STATUS_2, pIn->acct_id);
@@ -63,6 +66,9 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 
 			dbt5_sql_close_cursor(&result);
 
+	}else{
+				string fail_msg("query2 fails");
+				throw fail_msg.c_str();
 	}
 }
 #endif

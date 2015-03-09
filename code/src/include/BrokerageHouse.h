@@ -15,6 +15,8 @@
 #include <fstream>
 using namespace std;
 
+#define CAL_RESP_TIME
+
 #include "locking.h"
 #include "TxnHarnessStructs.h"
 #include "TxnHarnessBrokerVolume.h"
@@ -52,6 +54,8 @@ private:
 	char mysql_pass[32];
 	char mysql_port_t[32];
 	char mysql_socket_t[256];
+
+	char outputDir[256];
 
 #endif
 
@@ -117,6 +121,8 @@ typedef struct TThreadParameter
 {
 	CBrokerageHouse* pBrokerageHouse;
 	int iSockfd;
+	int t_id;
+	char outputDir[256];
 } *PThreadParameter;
 
 #endif // BROKERAGE_HOUSE_H

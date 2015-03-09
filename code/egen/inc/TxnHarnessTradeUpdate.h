@@ -78,8 +78,8 @@ public:
             m_db->DoTradeUpdateFrame1( &Frame1Input, &Frame1Output );
 
             // Validate Frame 1 Output
-            if (   Frame1Output.num_found != pTxnInput->max_trades
-                || Frame1Output.num_updated != pTxnInput->max_updates)
+            if (   Frame1Output.num_found >= pTxnInput->max_trades
+                || Frame1Output.num_updated >= pTxnInput->max_updates)
             {
                 TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TUF1_ERROR1);
             }

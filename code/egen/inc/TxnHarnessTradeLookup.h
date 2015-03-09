@@ -73,7 +73,7 @@ public:
             m_db->DoTradeLookupFrame1( &Frame1Input, &Frame1Output );
 
             // Validate Frame 1 Output
-            if (Frame1Output.num_found != pTxnInput->max_trades)
+            if (Frame1Output.num_found >= pTxnInput->max_trades)
             {
                 TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TLF1_ERROR1);
             }

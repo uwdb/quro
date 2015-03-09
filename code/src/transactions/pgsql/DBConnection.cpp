@@ -13,8 +13,12 @@
  */
 
 #include "DBConnection.h"
-
+#include <stdarg.h>
 // These are inlined function that should only be used here.
+
+//global variables
+CDBConnection* pDBClist[1024];
+int connectionCnt;
 
 bool inline check_count(int should, int is, const char *file, int line) {
 	if (should != is) {
@@ -3187,14 +3191,39 @@ int CDBConnection::dbt5_sql_close_cursor(sql_result_t * sql_result)
 }
 
 #endif
-
 void CDBConnection::logErrorMessage(const char *c, ...){
-			char msg[1000];
-			va_list fcargs;
-			va_start(fcargs, c);
-			vsprintf(msg, c, fcargs);
-			va_end(fcargs);
-			string s(c);
+			char msg[1024];
+			va_list argptr;
+			va_start(argptr, c);
+			vsprintf(msg, c, argptr);
+			va_end(argptr);
+			string s(msg);
 			s.append("\n");
 			bh->logErrorMessage(s, false);
 }
+#ifdef CAL_RESP_TIME
+void CDBConnection::init_profile_node(int t_id, char* outputDir){
+			head = new profile_node();
+			cur = head;
+			char filename[256];
+			sprintf(filename, "%s/connection_%d.log", outputDir, t_id);
+			logErrorMessage("tid = %d, filename = %s", t_id, filename);
+			outfile.open(filename, ios::out);
+}
+void CDBConnection::append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit){
+			logErrorMessage("difftime = %f", difftimeval(_end, _start));
+			cur->start = _start;
+			cur->end = _end;
+			cur->type = _type;
+			cur->commit = _commit;
+			cur->next = new profile_node();
+			cur = cur->next;
+}
+#endif
+
+double difftimeval(timeval rt1, timeval rt0)
+{
+	return (rt1.tv_sec - rt0.tv_sec) +
+		(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
+}
+

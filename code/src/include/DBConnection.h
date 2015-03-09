@@ -19,8 +19,13 @@
 #include "TxnHarnessStructs.h"
 #include "TxnHarnessSendToMarket.h"
 
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/time.h>
 #include "BrokerageHouse.h"
 #include "DBT5Consts.h"
+#include "CommonStructs.h"
+
 using namespace TPCE;
 
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
@@ -35,6 +40,22 @@ struct sql_result_t
   unsigned int num_rows;
   unsigned long * lengths;
   char * query;
+};
+#endif
+
+#ifdef CAL_RESP_TIME
+struct profile_node
+{
+	eTxnType type;
+	timeval start;
+	timeval end;
+	bool commit;
+	profile_node* next;
+	profile_node(){
+			type = NULL_TXN;
+			commit = false;
+			next = NULL;
+	}
 };
 #endif
 
@@ -76,6 +97,14 @@ public:
 	void connect();
 	char *escape(string);
 	void disconnect();
+
+	ofstream outfile;
+#ifdef CAL_RESP_TIME
+	profile_node* head;
+	profile_node* cur;
+	void init_profile_node(int t_id, char* outputDir);
+	void append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit);
+#endif
 
 	//PGresult *exec(const char *);
 	void exec(const char *);
@@ -130,6 +159,7 @@ public:
 	void setBrokerageHouse(CBrokerageHouse *);
 
 	void logErrorMessage(const char* c, ...);
+
 #ifdef DB_PGSQL
 	void setReadCommitted();
 	void setReadUncommitted();
@@ -146,5 +176,10 @@ char * dbt5_sql_getvalue(sql_result_t * sql_result, int field, int& length);
 
 #endif
 };
+
+extern CDBConnection* pDBClist[1024];
+extern int connectionCnt;
+
+double difftimeval(timeval rt1, timeval rt0);
 
 #endif //DB_CONNECTION_H

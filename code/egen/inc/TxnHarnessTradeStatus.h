@@ -54,7 +54,7 @@ public:
 
     void DoTxn( PTradeStatusTxnInput pTxnInput, PTradeStatusTxnOutput pTxnOutput)
     {
-        // Initialization 
+        // Initialization
         TTradeStatusFrame1Output    Frame1Output;
         memset(&Frame1Output, 0, sizeof( Frame1Output ));
 
@@ -64,12 +64,12 @@ public:
         m_db->DoTradeStatusFrame1(pTxnInput, &Frame1Output);
 
         // Validate Frame 1 Output
-        if (Frame1Output.num_found != max_trade_status_len)
+        if (Frame1Output.num_found >= max_trade_status_len)
         {
             TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TSF1_ERROR1);
         }
 
-        // Copy Frame 1 Output 
+        // Copy Frame 1 Output
         for (int i=0; i < Frame1Output.num_found && i < max_trade_status_len; i++)
         {
             strncpy( pTxnOutput->status_name[i], Frame1Output.status_name[i], sizeof( pTxnOutput->status_name[i] ));

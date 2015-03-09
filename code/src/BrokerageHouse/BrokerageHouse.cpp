@@ -25,8 +25,37 @@
 #include "TradeStatusDB.h"
 #include "TradeUpdateDB.h"
 
+#include <signal.h>
+#include <sys/time.h>
+
+extern CDBConnection* pDBClist[1024];
+extern int connectionCnt;
+
+#ifdef CAL_RESP_TIME
+void signal_kill_handler(int signum){
+	for(int i=0; i<connectionCnt; i++){
+			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
+			profile_node *cur = ptr->head;
+			double total_exec = 0;
+			while(cur!=NULL){
+					double exec_time = difftimeval(cur->end, cur->start);
+					ptr->outfile<<"start=( "<<cur->start.tv_sec<<" "<<cur->start.tv_usec<<" ), end=( "<<cur->end.tv_sec<<" "<<cur->end.tv_usec<<" ), "<<exec_time<<endl;
+					cur = cur->next;
+					total_exec += exec_time;
+			}
+			ptr->outfile<<endl<<endl;
+			ptr->outfile<<"total exec: "<<total_exec<<endl;
+			ptr->outfile.flush();
+	}
+	exit(signum);
+}
+#endif
+
 void *workerThread(void *data)
 {
+#ifdef CAL_RESP_TIME
+	signal(SIGTERM, signal_kill_handler);
+#endif
 	try {
 		PThreadParameter pThrParam = reinterpret_cast<PThreadParameter>(data);
 
@@ -34,7 +63,7 @@ void *workerThread(void *data)
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
 #ifndef NO_DEBUG_INFO
 		ostringstream msg;
-		msg<<"workerThread, start"<<endl;
+		msg<<"workerThread "<<pThrParam->t_id<<", start"<<endl;
 		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 #endif
 		PMsgDriverBrokerage pMessage = new TMsgDriverBrokerage;
@@ -59,6 +88,10 @@ void *workerThread(void *data)
 			pThrParam->pBrokerageHouse->mysql_pass,
 			pThrParam->pBrokerageHouse->mysql_port_t,
 			pThrParam->pBrokerageHouse->mysql_socket_t);
+#ifdef CAL_RESP_TIME
+			pDBClist[pThrParam->t_id] = pDBConnection;
+			pDBConnection->init_profile_node(pThrParam->t_id, pThrParam->outputDir);
+#endif
 #endif
 
 #ifndef NO_DEBUG_INFO
@@ -96,6 +129,7 @@ void *workerThread(void *data)
 		CTradeResultDB tradeResultDB(pDBConnection);
 		CTradeResult tradeResult = CTradeResult(&tradeResultDB);
 
+		int txn_cnt = 0;
 		do {
 			try {
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
@@ -112,6 +146,10 @@ void *workerThread(void *data)
 				// The socket has been closed, break and let this thread die.
 				break;
 			}
+#ifdef CAL_RESP_TIME
+			timeval t1, t2;
+		 	gettimeofday(&t1, NULL);
+#endif
 			try {
 				//  Parse Txn type
 				/*switch (pMessage->TxnType) {
@@ -174,13 +212,24 @@ void *workerThread(void *data)
 					cout << "wrong txn type" << endl;
 					iRet = ERR_TYPE_WRONGTXN;
 				}*/
+					txn_cnt++;
+					pDBConnection->outfile<<"txn cnt: "<<txn_cnt<<endl;
+					pDBConnection->outfile.flush();
 			} catch (const char *str) {
+#ifdef CAL_RESP_TIME
+			gettimeofday(&t2, NULL);
+			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
+#endif
 				ostringstream msg;
 				msg << time(NULL) << " " << (long long) pthread_self() << " " <<
 						szTransactionName[pMessage->TxnType] << endl;
 				pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 			}
+#ifdef CAL_RESP_TIME
+			gettimeofday(&t2, NULL);
+			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
+#endif
 
 			// send status to driver
 			Reply.iStatus = iRet;
@@ -235,7 +284,6 @@ void entryWorkerThread(void *data)
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_DETACH);
 		}
-
 		// create the thread in the detached state
 		status = pthread_create(&threadID, &threadAttribute, &workerThread,
 				data);
@@ -299,7 +347,7 @@ CBrokerageHouse::CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * 
 			outputDirectory);
 	char s[1000];
 	m_fLog.open(filename, ios::out);
-	sprintf(s, "mysql_host = %s, mysql_user = %s, mysql_pass = %s, mysql_port = %s, mysql_socket = %s", _mysql_host, _mysql_user, _mysql_pass, _mysql_port, _mysql_socket);
+	strcpy(outputDir, outputDirectory);
 	logErrorMessage(s, false);
 }
 
@@ -773,7 +821,7 @@ INT32 CBrokerageHouse::RunTradeStatus(PTradeStatusTxnInput pTxnInput,
 
 	if (tsOutput.status != CBaseTxnErr::SUCCESS) {
 		ostringstream msg;
-		msg << __FILE__ << " " << __LINE__ << " " << tsOutput.status << endl;
+		msg << __FILE__ << " " << __LINE__ << " input: "<<pTxnInput->acct_id << " " << tsOutput.status << endl;
 		logErrorMessage(msg.str(), false);
 		dumpInputData(pTxnInput);
 	}
@@ -811,11 +859,7 @@ void CBrokerageHouse::startListener(void)
 
 	m_Socket.dbt5Listen(m_iListenPort);
 
-#ifndef NO_DEBUG_INFO
-	ostringstream msg;
-	msg<<"startListener!"<<endl;
-	logErrorMessage(msg.str(), false);
-#endif
+	int t_cnt = 0;
 	while (true) {
 		acc_socket = 0;
 		try {
@@ -827,7 +871,16 @@ void CBrokerageHouse::startListener(void)
 
 			pThrParam->iSockfd = acc_socket;
 			pThrParam->pBrokerageHouse = this;
-
+			pThrParam->t_id = t_cnt;
+			strcpy(pThrParam->outputDir, outputDir);
+			t_cnt++;
+			connectionCnt = t_cnt;
+#ifndef NO_DEBUG_INFO
+			ostringstream msg;
+			msg<<"connectionCnt = "<<t_cnt<<endl;
+			logErrorMessage(msg.str(), false);
+#endif
+			assert(connectionCnt < 1024);
 			// call entry point
 			entryWorkerThread(reinterpret_cast<void *>(pThrParam));
 		} catch (CSocketErr *pErr) {
