@@ -54,7 +54,7 @@ void signal_kill_handler(int signum){
 void *workerThread(void *data)
 {
 #ifdef CAL_RESP_TIME
-	signal(SIGTERM, signal_kill_handler);
+//	signal(SIGTERM, signal_kill_handler);
 #endif
 	try {
 		PThreadParameter pThrParam = reinterpret_cast<PThreadParameter>(data);
@@ -130,6 +130,7 @@ void *workerThread(void *data)
 		CTradeResult tradeResult = CTradeResult(&tradeResultDB);
 
 		int txn_cnt = 0;
+		double txn_time = 0;
 		do {
 			try {
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
@@ -150,11 +151,12 @@ void *workerThread(void *data)
 			timeval t1, t2;
 		 	gettimeofday(&t1, NULL);
 #endif
+			iRet = CBaseTxnErr::SUCCESS;
 			try {
 				//  Parse Txn type
-				/*switch (pMessage->TxnType) {
+				switch (pMessage->TxnType) {
 
-				case BROKER_VOLUME:
+				/*case BROKER_VOLUME:
 					iRet = pThrParam->pBrokerageHouse->RunBrokerVolume(
 							&(pMessage->TxnInput.BrokerVolumeTxnInput),
 							brokerVolume);
@@ -180,7 +182,7 @@ void *workerThread(void *data)
 				case TRADE_LOOKUP:
 					iRet = pThrParam->pBrokerageHouse->RunTradeLookup(
 							&(pMessage->TxnInput.TradeLookupTxnInput), tradeLookup);
-					break;
+					break;*/
 				case TRADE_ORDER:
 					iRet = pThrParam->pBrokerageHouse->RunTradeOrder(
 							&(pMessage->TxnInput.TradeOrderTxnInput), tradeOrder);
@@ -189,11 +191,11 @@ void *workerThread(void *data)
 					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
 							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
-				case TRADE_STATUS:*/
+				/*case TRADE_STATUS:
 					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
 							&(pMessage->TxnInput.TradeStatusTxnInput),
 							tradeStatus);
-				/*	break;
+					break;
 				case TRADE_UPDATE:
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
@@ -207,28 +209,36 @@ void *workerThread(void *data)
 					iRet = pThrParam->pBrokerageHouse->RunTradeCleanup(
 							&(pMessage->TxnInput.TradeCleanupTxnInput),
 							tradeCleanup);
-					break;
+					break;*/
 				default:
 					cout << "wrong txn type" << endl;
 					iRet = ERR_TYPE_WRONGTXN;
-				}*/
+				}
 					txn_cnt++;
-					pDBConnection->outfile<<"txn cnt: "<<txn_cnt<<endl;
-					pDBConnection->outfile.flush();
 			} catch (const char *str) {
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
-			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
+			double exec_time = difftimeval(t2, t1);
+			txn_time += exec_time;
+			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
+			pDBConnection->outfile<<"error: "<<str<<endl;
+			pDBConnection->outfile.flush();
 #endif
 				ostringstream msg;
 				msg << time(NULL) << " " << (long long) pthread_self() << " " <<
-						szTransactionName[pMessage->TxnType] << endl;
+						szTransactionName[pMessage->TxnType] << "; "<<str<<endl;
 				pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 			}
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
+			double exec_time = difftimeval(t2, t1);
+			txn_time += exec_time;
+
 			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
+			pDBConnection->outfile<<"start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+			pDBConnection->outfile.flush();
+
 #endif
 
 			// send status to driver
@@ -775,7 +785,7 @@ INT32 CBrokerageHouse::RunTradeOrder(PTradeOrderTxnInput pTxnInput,
 	if (toOutput.status != CBaseTxnErr::SUCCESS &&
 	    !(toOutput.status == CBaseTxnErr::EXPECTED_ROLLBACK && pTxnInput->roll_it_back)) {
 		ostringstream msg;
-		msg << __FILE__ << " " << __LINE__ << " " << toOutput.status << endl;
+		msg << __FILE__ << " (error) " << __LINE__ << " " << toOutput.status << endl;
 		logErrorMessage(msg.str(), false);
 		dumpInputData(pTxnInput);
 	}
@@ -877,7 +887,7 @@ void CBrokerageHouse::startListener(void)
 			connectionCnt = t_cnt;
 #ifndef NO_DEBUG_INFO
 			ostringstream msg;
-			msg<<"connectionCnt = "<<t_cnt<<endl;
+			msg<<"connectionCnt = "<<t_cnt<<", socket = "<<acc_socket<<endl;
 			logErrorMessage(msg.str(), false);
 #endif
 			assert(connectionCnt < 1024);

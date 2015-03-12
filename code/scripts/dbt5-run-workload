@@ -457,11 +457,15 @@ echo "Results can be found in: ${OUTPUT_DIR}"
 #
 echo
 echo "1. Starting Brokerage House server"
-echo "BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &"
-BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
-
+#BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
+#gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#quit
+#GDB_INPUT
+#
 do_sleep 1
 
 #
@@ -522,6 +526,16 @@ DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
 DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"
+
+#DEBUG in script!
+gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+pwd
+run
+backtrace
+quit
+GDB_INPUT
+
 
 do_sleep ${SLEEP_RAMPUP}
 

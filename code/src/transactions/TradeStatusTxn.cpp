@@ -11,7 +11,7 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 	char* val;
 
 	sprintf(query, TRADE_STATUS_1, pIn->acct_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_STATUS_1") && result.result_set){
+	if(dbt5_sql_execute(query, &result, "TRADE_STATUS_1")==1 && result.result_set){
 			pOut->num_found = result.num_rows;
 			for(int i=0; i<result.num_rows; i++){
 						//snprintf(query, TRADE_STATUS_2, pIn->acct_id);
@@ -46,14 +46,20 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 						pOut->trade_qty[i] = atoi(dbt5_sql_getvalue(&result, 5, length));
 						val = dbt5_sql_getvalue(&result, 3, length);
 						strncpy(pOut->type_name[i], val, length);
+
 			}
 	}else{
+				outfile<<"\terror: "<<query<<endl;
+				outfile.flush();
 				string fail_msg("query1 fails");
 				throw fail_msg.c_str();
 	}
 
+	dbt5_sql_close_cursor(&result);
 	sprintf(query, TRADE_STATUS_2, pIn->acct_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_STATUS_2") && result.result_set){
+	if(dbt5_sql_execute(query, &result, "TRADE_STATUS_2")==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
 			val = dbt5_sql_getvalue(&result, 2, length);
 			strncpy(pOut->broker_name, val, length);
 
@@ -63,12 +69,14 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 			val = dbt5_sql_getvalue(&result, 0, length);
 			strncpy(pOut->cust_l_name, val, length);
 
-
 			dbt5_sql_close_cursor(&result);
 
 	}else{
+				outfile<<"\terror: "<<query<<endl;
+				outfile.flush();
 				string fail_msg("query2 fails");
 				throw fail_msg.c_str();
 	}
+
 }
 #endif

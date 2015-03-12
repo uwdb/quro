@@ -1803,10 +1803,10 @@ void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
 #endif
 }
 
+#ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 		TTradeOrderFrame1Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeOrderFrame1(" << pIn->acct_id << ")";
 
@@ -1828,14 +1828,11 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 	pOut->tax_id[cTAX_ID_len] = '\0';
 	pOut->tax_status = atoi(PQgetvalue(res, 0, 9));
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 		TTradeOrderFrame2Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame2(" <<
@@ -1858,14 +1855,11 @@ void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 		pOut->ap_acl[0] = '\0';
 	}
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 		TTradeOrderFrame3Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame3(" <<
@@ -1907,14 +1901,11 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 	pOut->type_is_market = (PQgetvalue(res, 0, 12)[0] == 't' ? 1 : 0);
 	pOut->type_is_sell = (PQgetvalue(res, 0, 13)[0] == 't' ? 1 : 0);
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 		TTradeOrderFrame4Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame4(" <<
@@ -1939,14 +1930,13 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 
 	pOut->trade_id = atol(PQgetvalue(res, 0, 0));
 	PQclear(res);
-#else
-#endif
 }
+#endif
 
+#ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 		TTradeResultFrame1Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame1(" << pIn->trade_id << ")";
 
@@ -1968,14 +1958,11 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 	strncpy(pOut->type_name, PQgetvalue(res, 0, 11), cTT_NAME_len);
 	pOut->type_name[cTT_NAME_len] = '\0';
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 		TTradeResultFrame2Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame2(" <<
 			pIn->acct_id << "," <<
@@ -2002,14 +1989,11 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 			&pOut->trade_dts.minute,
 			&pOut->trade_dts.second);
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 		TTradeResultFrame3Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame3(" <<
 			pIn->buy_value << "," <<
@@ -2021,14 +2005,11 @@ void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 
 	pOut->tax_amount = atof(PQgetvalue(res, 0, 0));
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 		TTradeResultFrame4Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame4(" <<
 			pIn->cust_id << ",'" <<
@@ -2042,13 +2023,10 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 	strncpy(pOut->s_name, PQgetvalue(res, 0, 1), cS_NAME_len);
 	pOut->s_name[cS_NAME_len] = '\0';
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeResultFrame5(" <<
 			pIn->broker_id << "," <<
@@ -2069,14 +2047,11 @@ void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 	// or SERIALIZABLE.
 	PGresult *res = exec(osSQL.str().c_str());
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 		TTradeResultFrame6Output *pOut)
 {
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeResultFrame6(" <<
@@ -2107,9 +2082,8 @@ void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 
 	pOut->acct_bal = atof(PQgetvalue(res, 0, 0));
 	PQclear(res);
-#else
-#endif
 }
+#endif
 
 #ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
@@ -3074,7 +3048,7 @@ char * CDBConnection::dbt5_sql_getvalue(sql_result_t *sql_result, int field, int
 {
 	if (sql_result->current_row && field < sql_result->num_fields)
   {
-    if (sql_result->current_row[field])
+		if (sql_result->current_row[field])
     {
 				length = sql_result->lengths[field];
         return (char*)((sql_result->current_row)[field]);
@@ -3150,6 +3124,8 @@ int CDBConnection::dbt5_sql_execute(char * query, sql_result_t * sql_result,
     {
       sql_result->num_fields= mysql_num_fields(sql_result->result_set);
       sql_result->num_rows= mysql_num_rows(sql_result->result_set);
+			if(sql_result->num_rows==0)
+						return 2;
     }
     else
     {
@@ -3207,11 +3183,9 @@ void CDBConnection::init_profile_node(int t_id, char* outputDir){
 			cur = head;
 			char filename[256];
 			sprintf(filename, "%s/connection_%d.log", outputDir, t_id);
-			logErrorMessage("tid = %d, filename = %s", t_id, filename);
 			outfile.open(filename, ios::out);
 }
 void CDBConnection::append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit){
-			logErrorMessage("difftime = %f", difftimeval(_end, _start));
 			cur->start = _start;
 			cur->end = _end;
 			cur->type = _type;

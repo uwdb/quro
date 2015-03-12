@@ -38,6 +38,7 @@ if [ ${USE_TABLESPACES} -eq 1 ]; then
 		exit 1
 	fi
 
+	TS_SEQ_TRADE_ID_DIR=${DBT5TSDIR}/seq_trade_id/ts
 	TS_ACCOUNT_PERMISSION_DIR=${DBT5TSDIR}/account_permission/ts
 	TS_CUSTOMER_DIR=${DBT5TSDIR}/customer/ts
 	TS_CUSTOMER_ACCOUNT_DIR=${DBT5TSDIR}/customer_account/ts
@@ -77,6 +78,7 @@ if [ ${USE_TABLESPACES} -eq 1 ]; then
 	# 'lost+found' directory if a device was mounted at
 	# '${DBT5TSDIR}/warehouse'.
 	#
+	mkdir -p ${TS_SEQ_TRADE_ID_DIR}
 	mkdir -p ${TS_ACCOUNT_PERMISSION_DIR}  
 	mkdir -p ${TS_CUSTOMER_DIR}  
 	mkdir -p ${TS_CUSTOMER_ACCOUNT_DIR}  
@@ -144,10 +146,13 @@ if [ ${USE_TABLESPACES} -eq 1 ]; then
 	TS_STATUS_TYPE="TABLESPACE dbt5_status_type"
 	TS_TAXRATE="TABLESPACE dbt5_taxrate"
 	TS_ZIP_CODE="TABLESPACE dbt5_zip_code"
+	TS_SEQ_TRADE_ID="TABELSPACE dbt5_seq_trade_id"
 
 	#
 	# Don't need to ' ' in case the tablespaces do not already exist.
 	#
+	${MYSQL} ${DB_NAME} -e "DROP ${TS_SEQ_TRADE_ID};"
+	${MYSQL} ${DB_NAME} -e "CREATE ${TS_SEQ_TRADE_ID} LOCATION '${TS_SEQ_TRADE_ID_DIR}';"
 	${MYSQL} ${DB_NAME} -e "DROP ${TS_ACCOUNT_PERMISSION};"
 	${MYSQL} ${DB_NAME} -e \
 			"CREATE ${TS_ACCOUNT_PERMISSION} LOCATION '${TS_ACCOUNT_PERMISSION_DIR}';"
@@ -273,6 +278,13 @@ fi
 # Customer Tables
 
 # Clause 2.2.5.1
+# create incrementing table
+${MYSQL} ${DB_NAME} -e "
+CREATE TABLE seq_trade_id (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY)
+	${TS_SEQ_TRADE_ID};
+"
+
 ${MYSQL} ${DB_NAME} -e "
 CREATE TABLE account_permission (
     ap_ca_id BIGINT NOT NULL,

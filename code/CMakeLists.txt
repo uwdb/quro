@@ -114,7 +114,9 @@ SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
                ${TXN}/TradeUpdateDB.cpp
                ${TXN}/TradeLookupDB.cpp
                ${TXN}/TradeResultDB.cpp
+							 ${TXN}/TradeResultTxn.cpp
                ${TXN}/TradeOrderDB.cpp
+							 ${TXN}/TradeOrderTxn.cpp
                ${TXN}/TradeStatusDB.cpp
 							 ${TXN}/TradeStatusTxn.cpp)
 

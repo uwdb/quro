@@ -797,6 +797,7 @@ public:
 
     void InitializeDefaults(void)
     {
+						/*
         dft.BrokerVolumeMixLevel        =   49;
         dft.CustomerPositionMixLevel    =  130;
         dft.MarketWatchMixLevel         =  180;
@@ -805,6 +806,16 @@ public:
         dft.TradeOrderMixLevel          =  101;
         dft.TradeStatusMixLevel         =  190;
         dft.TradeUpdateMixLevel         =   20;
+				*/
+				dft.BrokerVolumeMixLevel        =   0;
+        dft.CustomerPositionMixLevel    =   0;
+        dft.MarketWatchMixLevel         =   0;
+        dft.SecurityDetailMixLevel      =   0;
+        dft.TradeLookupMixLevel         =   0;
+        dft.TradeOrderMixLevel          =   100;
+        dft.TradeStatusMixLevel         =   0;
+        dft.TradeUpdateMixLevel         =   0;
+
     }
 
     void CheckDefaults(void)
