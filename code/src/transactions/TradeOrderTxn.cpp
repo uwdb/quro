@@ -430,6 +430,5 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 	}
 
 	pOut->trade_id = next_t_id;
-
 }
 #endif

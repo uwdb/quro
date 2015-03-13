@@ -4,8 +4,6 @@
 #ifndef DB_PGSQL
 
 #define FAIL_MSG(msg) \
-				outfile<<"error query:"<<query<<endl; \
-				outfile.flush(); \
 				string fail_msg(msg); \
 				throw fail_msg.c_str();
 
@@ -18,7 +16,8 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 	char* val;
 
 	sprintf(query, TRADE_RESULT1_1, pIn->trade_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT1_1")==1 && result.result_set){
+  int r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->acct_id = atol(dbt5_sql_getvalue(&result, 0, length));
@@ -37,7 +36,7 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 			pOut->trade_is_cash = atoi(dbt5_sql_getvalue(&result, 6, length));
 
 	}else{
-			FAIL_MSG("trade result frame1 query1 fails");
+				FAIL_MSG("trade result frame1 query 1 fails...");
 	}
 
 
@@ -51,7 +50,7 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 			pOut->type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length));
 			pOut->type_is_market = atoi(dbt5_sql_getvalue(&result, 2, length));
 	}else{
-			FAIL_MSG("trade result frame1 query2 fails");
+			FAIL_MSG("trade result frame1 query 2 fails");
 	}
 
 
@@ -61,7 +60,7 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 
 			pOut->hs_qty = atol(dbt5_sql_getvalue(&result, 0, length));
 	}else{
-			FAIL_MSG("trade result frame1 query3 fails");
+			FAIL_MSG("trade result frame1 query 3 fails");
 	}
 
 }
@@ -102,7 +101,7 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 
 			pOut->tax_status = atoi(dbt5_sql_getvalue(&result, 2, length));
 	}else{
-			FAIL_MSG("trade result frame2 query1 fails");
+			FAIL_MSG("trade result frame2 query 1 fails");
 	}
 
 
@@ -110,12 +109,12 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 			if(pIn->hs_qty == 0){
 					sprintf(query, TRADE_RESULT2_2a, pIn->acct_id, pIn->symbol, (-1)*pIn->trade_qty);
 					if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a")){
-							FAIL_MSG("trade result frame2 query2 fails");
+							FAIL_MSG("trade result frame2 query 2 fails");
 					}
 			}else if(pIn->hs_qty != pIn->trade_qty){
 					sprintf(query, TRADE_RESULT2_2b, pIn->hs_qty-pIn->trade_qty, pIn->acct_id, pIn->symbol);
 					if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_2b")){
-							FAIL_MSG("trade result frame2 query3 fails");
+							FAIL_MSG("trade result frame2 query 3 fails");
 					}
 			}
 
@@ -308,7 +307,7 @@ void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 
 			tax_rate = atof(dbt5_sql_getvalue(&result, 0, length));
 	}else{
-			FAIL_MSG("trade result frame3 query1 fails");
+			FAIL_MSG("trade result frame3 query 1 fails");
 	}
 
 
@@ -338,7 +337,7 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 			val = dbt5_sql_getvalue(&result, 1, length);
 			strncpy(pOut->s_name, val, length);
 	}else{
-			FAIL_MSG("trade result frame4 query1 fails");
+			FAIL_MSG("trade result frame4 query 1 fails");
 	}
 
 
@@ -348,7 +347,7 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length));
 	}else{
-			FAIL_MSG("trade result frame4 query2 fails");
+			FAIL_MSG("trade result frame4 query 2 fails");
 	}
 
 
@@ -358,7 +357,7 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 
 			pOut->comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
 	}else{
-			FAIL_MSG("trade result frame4 query3 fails");
+			FAIL_MSG("trade result frame4 query 3 fails");
 	}
 }
 
@@ -385,7 +384,7 @@ void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 	sprintf(query, TRADE_RESULT5_3, pIn->comm_amount, pIn->broker_id);
 	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_3")){
 	}else{
-			FAIL_MSG("trade result frame5 query4 fails");
+			FAIL_MSG("trade result frame5 query 3 fails");
 	}
 }
 

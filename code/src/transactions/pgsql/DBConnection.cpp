@@ -206,6 +206,7 @@ void CDBConnection::commit()
                            mysql_errno(dbc), mysql_error(dbc));
 				assert(false);
       }
+
 #endif
 
 }

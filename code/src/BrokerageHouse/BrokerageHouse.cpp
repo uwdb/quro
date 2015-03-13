@@ -151,6 +151,7 @@ void *workerThread(void *data)
 			timeval t1, t2;
 		 	gettimeofday(&t1, NULL);
 #endif
+loop:
 			iRet = CBaseTxnErr::SUCCESS;
 			try {
 				//  Parse Txn type
@@ -229,6 +230,9 @@ void *workerThread(void *data)
 						szTransactionName[pMessage->TxnType] << "; "<<str<<endl;
 				pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
+
+				//XXX:debug for trade result
+				pDBConnection->rollback();
 			}
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
