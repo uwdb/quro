@@ -58,14 +58,16 @@ protected:
 	void execute(const TTradeOrderFrame2Input *, TTradeOrderFrame2Output *);
 	void execute(const TTradeOrderFrame3Input *, TTradeOrderFrame3Output *);
 	void execute(const TTradeOrderFrame4Input *, TTradeOrderFrame4Output *);
-
+#ifdef REORDER
+	void execute(PTradeResultTxnInput, PTradeResultTxnOutput);
+#else
 	void execute(const TTradeResultFrame1Input *, TTradeResultFrame1Output *);
 	void execute(const TTradeResultFrame2Input *, TTradeResultFrame2Output *);
 	void execute(const TTradeResultFrame3Input *, TTradeResultFrame3Output *);
 	void execute(const TTradeResultFrame4Input *, TTradeResultFrame4Output *);
 	void execute(const TTradeResultFrame5Input *);
 	void execute(const TTradeResultFrame6Input *, TTradeResultFrame6Output *);
-
+#endif
 	void execute(const TTradeStatusFrame1Input *, TTradeStatusFrame1Output *);
 
 	void execute(const TTradeUpdateFrame1Input *, TTradeUpdateFrame1Output *);

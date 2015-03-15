@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(dbt5 CXX)
-
+SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
 #
@@ -67,29 +67,28 @@ ENDIF (GETCONF_FOUND)
 #    MESSAGE(FATAL_ERROR "Need to specify -DDBMS=pgsql")
 #
 #ENDIF (DBMS STREQUAL "pgsql")
-SET(DBCFLAGS "-DLIBPQ -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
+IF (DEF_REORDER)
+				SET(DBCFLAGS "-DLIBPQ -DREORDER -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
+ELSE (NOT DEFINED DEF_REORDER)
+				SET(DBCFLAGS "-DLIBPQ -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
+ENDIF (DEF_REORDER)
 SET(DB_LIBS "-L${HOME}/mysql-bin/lib -lmysqlclient -lz -lm -lrt -ldl")
- SET(DB_SCRIPTS scripts/mysql/dbt5-mysql-start-db
+SET(DB_SCRIPTS scripts/mysql/dbt5-mysql-start-db
                        scripts/mysql/dbt5-mysql-create-indexes
                        scripts/mysql/dbt5-mysql-create-tables
-											 #scripts/pgsql/dbt5-pgsql-drop-tables
-											 #scripts/pgsql/dbt5-pgsql-restore-db
-											 #scripts/pgsql/dbt5-pgsql-load-stored-procs
-											 #scripts/pgsql/dbt5-pgsql-backup-db
-											 #scripts/pgsql/dbt5-pgsql-db-plans
-											 #scripts/pgsql/dbt5-pgsql-drop-db
-											 #scripts/pgsql/dbt5-pgsql-check-db
-											 #scripts/pgsql/dbt5-pgsql-db-stat
-											 #scripts/pgsql/dbt5-pgsql-stop-db
 											 scripts/mysql/dbt5-mysql-create-db
                        scripts/mysql/dbt5-mysql-build-db)
 
 #
 # Defining commonly used paths.
 #
-
-SET(EGENINC egen/inc)
-SET(EGENSRC egen/src)
+IF (DEF_REORDER)
+				SET(EGENINC egen_reorder/inc)
+				SET(EGENSRC egen_reorder/src)
+ELSE (NOT_DEFINED DEF_REORDER)
+				SET(EGENINC egen/inc)
+				SET(EGENSRC egen/src)
+ENDIF (DEF_REORDER)
 
 SET(TXN src/transactions)
 SET(INTF src/interfaces)
@@ -101,8 +100,8 @@ SET(ME src/MarketExchange)
 #
 # Defining common groups of source files.
 #
-
-SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
+IF (DEF_REORDER)
+			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
                ${TXN}/TxnBaseDB.cpp
                ${TXN}/MarketFeedDB.cpp
                ${TXN}/TradeCleanupDB.cpp
@@ -114,12 +113,30 @@ SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
                ${TXN}/TradeUpdateDB.cpp
                ${TXN}/TradeLookupDB.cpp
                ${TXN}/TradeResultDB.cpp
-							 ${TXN}/TradeResultTxn.cpp
                ${TXN}/TradeOrderDB.cpp
-							 ${TXN}/TradeOrderTxn.cpp
+							 ${TXN}/TradeOrderReorderTxn.cpp
+							 ${TXN}/TradeResultReorderTxn.cpp
                ${TXN}/TradeStatusDB.cpp
 							 ${TXN}/TradeStatusTxn.cpp)
-
+ELSE (NOT_DEFINED_REORDER)
+				SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
+               ${TXN}/TxnBaseDB.cpp
+               ${TXN}/MarketFeedDB.cpp
+               ${TXN}/TradeCleanupDB.cpp
+               ${TXN}/DataMaintenanceDB.cpp
+               ${TXN}/MarketWatchDB.cpp
+               ${TXN}/SecurityDetailDB.cpp
+               ${TXN}/BrokerVolumeDB.cpp
+               ${TXN}/CustomerPositionDB.cpp
+               ${TXN}/TradeUpdateDB.cpp
+               ${TXN}/TradeLookupDB.cpp
+               ${TXN}/TradeResultDB.cpp
+               ${TXN}/TradeOrderDB.cpp
+							 ${TXN}/TradeOrderTxn.cpp
+							 ${TXN}/TradeResultTxn.cpp
+               ${TXN}/TradeStatusDB.cpp
+							 ${TXN}/TradeStatusTxn.cpp)
+ENDIF (DEF_REORDER)
 #
 # Files to build.
 #
@@ -223,8 +240,11 @@ ADD_EXECUTABLE(${DBT5_MARKET_EXCHANGE}
 #
 # Set compiler flags.
 #
-
-SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include")
+IF (DEF_REORDER)
+				SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DREORDER")
+ELSE (NOT DEFINED DEF_REORDER)
+				SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include")
+ENDIF (DEF_REORDER)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_FORMAT_MACROS")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_CONSTANT_MACROS")
 

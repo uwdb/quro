@@ -10,6 +10,16 @@
 
 #include "TradeResultDB.h"
 
+#ifdef REORDER
+void CTradeResultDB::DoTradeResultFrame(
+						PTradeResultTxnInput pIn,
+						PTradeResultTxnOutput pOut)
+{
+		startTransaction();
+		execute(pIn, pOut);
+		commitTransaction();
+}
+#else
 // Call Trade Result Frame 1
 void CTradeResultDB::DoTradeResultFrame1(
 		const TTradeResultFrame1Input *pIn,
@@ -200,3 +210,4 @@ void CTradeResultDB::DoTradeResultFrame6(
 	cout << pid << " >>> TRF6" << endl;
 #endif //DEBUG
 }
+#endif

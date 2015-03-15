@@ -187,6 +187,7 @@ public:
 	CTradeResultDB(CDBConnection *pDBConn) : CTxnBaseDB(pDBConn) {};
 	~CTradeResultDB() {};
 
+#ifndef REORDER
 	virtual void DoTradeResultFrame1(const TTradeResultFrame1Input *pIn,
 			TTradeResultFrame1Output *pOut);
 	virtual void DoTradeResultFrame2(const TTradeResultFrame2Input *pIn,
@@ -198,7 +199,9 @@ public:
 	virtual void DoTradeResultFrame5(const TTradeResultFrame5Input *pIn);
 	virtual void DoTradeResultFrame6(const TTradeResultFrame6Input *pIn,
 			TTradeResultFrame6Output *pOut);
-
+#else
+	virtual void DoTradeResultFrame(PTradeResultTxnInput pIn, PTradeResultTxnOutput pOut);
+#endif
 	// Function to pass any exception thrown inside
 	// database class frame implementation
 	// back into the database class

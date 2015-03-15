@@ -1,6 +1,6 @@
 import os
 
-filename = "/tmp/results5/bh/connection_98.log"
+filename = "/tmp/64_users_mixed_profile/bh/connection_28.log"
 
 fp = open(filename, "r")
 
