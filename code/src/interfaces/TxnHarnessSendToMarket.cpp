@@ -29,9 +29,6 @@ CSendToMarket::~CSendToMarket()
 bool CSendToMarket::SendToMarket(TTradeRequest &trade_mes)
 {
 	try {
-		ostringstream msg;
-		msg<<"sendToMarket: tid = "<<trade_mes.trade_id<<", qty = "<<trade_mes.trade_qty<<endl;
-		LogErrorMessage(msg.str());
 		// send Trade Request to MEE
 		m_Socket->dbt5Send(reinterpret_cast<void *>(&trade_mes),
 				sizeof(TTradeRequest));

@@ -62,9 +62,9 @@ void *workerThread(void *data)
 		CSocket sockDrv;
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
 #ifndef NO_DEBUG_INFO
-		ostringstream msg;
-		msg<<"workerThread "<<pThrParam->t_id<<", start"<<endl;
-		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
+		ostringstream msg2;
+		msg2<<"workerThread "<<pThrParam->t_id<<", start, iSockfd = "<<pThrParam->iSockfd<<endl;
+		pThrParam->pBrokerageHouse->logErrorMessage(msg2.str());
 #endif
 		PMsgDriverBrokerage pMessage = new TMsgDriverBrokerage;
 		memset(pMessage, 0, sizeof(TMsgDriverBrokerage)); // zero the structure
@@ -94,10 +94,6 @@ void *workerThread(void *data)
 #endif
 #endif
 
-#ifndef NO_DEBUG_INFO
-		msg<<"connection establised"<<endl;
-		pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
-#endif
 
 		pDBConnection->setBrokerageHouse(pThrParam->pBrokerageHouse);
 		CSendToMarket sendToMarket = CSendToMarket(
@@ -223,6 +219,9 @@ loop:
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
 			pDBConnection->outfile<<"error: "<<str<<endl;
+#ifdef PROFILE_EACH_QUERY
+			pDBConnection->print_profile_query();
+#endif
 			pDBConnection->outfile.flush();
 #endif
 				ostringstream msg;
@@ -241,6 +240,9 @@ loop:
 
 			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
 			pDBConnection->outfile<<"start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+#ifdef PROFILE_EACH_QUERY
+			pDBConnection->print_profile_query();
+#endif
 			pDBConnection->outfile.flush();
 
 #endif
@@ -872,6 +874,9 @@ void CBrokerageHouse::startListener(void)
 	PThreadParameter pThrParam = NULL;
 
 	m_Socket.dbt5Listen(m_iListenPort);
+	ostringstream msg1;
+	msg1<<"STARTLISTENER: m_iListenPort = "<<m_iListenPort<<endl;
+	logErrorMessage(msg1.str(), false);
 
 	int t_cnt = 0;
 	while (true) {

@@ -5,6 +5,8 @@
 
 #define FAIL_MSG(msg) \
 				string fail_msg(msg); \
+				if (r==2) fail_msg.append("\tempty result"); \
+				else {outfile<<query<<endl; outfile.flush();} \
 				throw fail_msg.c_str();
 
 void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
@@ -14,9 +16,10 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 	sql_result_t result;
 	int length;
 	char* val;
+	int r = 0;
 
 	sprintf(query, TRADE_RESULT1_1, pIn->trade_id);
-  int r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
+  r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
 	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
@@ -41,7 +44,8 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 
 
 	sprintf(query, TRADE_RESULT1_2, pOut->type_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT1_2")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_2");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			val = dbt5_sql_getvalue(&result, 0, length);
@@ -55,7 +59,8 @@ void CDBConnection::execute(const TTradeResultFrame1Input *pIn,
 
 
 	sprintf(query, TRADE_RESULT1_3, pOut->acct_id, pOut->symbol);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT1_3")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_3");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->hs_qty = atol(dbt5_sql_getvalue(&result, 0, length));
@@ -74,6 +79,7 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 	sql_result_t result_t;
 	int length;
 	char* val;
+	int r = 0;
 	bool tt_is_sell = false;
 	bool tt_is_mrkt = false;
 	long unsigned int hold_id;
@@ -85,7 +91,8 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 	char now_dts[100]={0};
 	sprintf(query, TRADE_RESULT_HELPER);
 
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT_HELPER")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT_HELPER");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			val = dbt5_sql_getvalue(&result, 0, length);
@@ -93,7 +100,8 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 	}
 
 	sprintf(query, TRADE_RESULT2_1, pIn->acct_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT2_1")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_1");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->broker_id = atol(dbt5_sql_getvalue(&result, 0, length));
@@ -108,11 +116,13 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 	if(pIn->type_is_sell){
 			if(pIn->hs_qty == 0){
 					sprintf(query, TRADE_RESULT2_2a, pIn->acct_id, pIn->symbol, (-1)*pIn->trade_qty);
+					r=0;
 					if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a")){
 							FAIL_MSG("trade result frame2 query 2 fails");
 					}
 			}else if(pIn->hs_qty != pIn->trade_qty){
 					sprintf(query, TRADE_RESULT2_2b, pIn->hs_qty-pIn->trade_qty, pIn->acct_id, pIn->symbol);
+					r=0;
 					if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_2b")){
 							FAIL_MSG("trade result frame2 query 3 fails");
 					}
@@ -123,19 +133,22 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 			if(pIn->hs_qty > 0){
 					if(pIn->is_lifo){
 							sprintf(query, TRADE_RESULT2_3a, pIn->acct_id, pIn->symbol);
-							if(dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a")==1 && result.result_set){
+							r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
 									num_rows = result_t.num_rows;
 							}else{
 									FAIL_MSG("trade result frame2 query 4 fails");
 							}
 					}else{
 							sprintf(query, TRADE_RESULT2_3b, pIn->acct_id, pIn->symbol);
-							if(dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3b")==1 && result.result_set){
+							r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3b");
+							if(r==1 && result.result_set){
 									num_rows = result_t.num_rows;
 							}else{
 									FAIL_MSG("trade result frame2 query 5 fails");
 							}
 					}
+					r = 0;
 					while(needed_qty > 0 && cnt < num_rows){
 							dbt5_sql_fetchrow(&result_t);
 							cnt++;
@@ -211,14 +224,16 @@ void CDBConnection::execute(const TTradeResultFrame2Input *pIn,
 			if(pIn->hs_qty < 0){
 					if(pIn->is_lifo){
 							sprintf(query, TRADE_RESULT2_3a, pIn->acct_id, pIn->symbol);
-							if(dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a")==1 && result.result_set){
+							r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
 									num_rows = result_t.num_rows;
 							}else{
 									FAIL_MSG("trade result frame2 query 15 fails");
 							}
 					}else{
 							sprintf(query, TRADE_RESULT2_3a, pIn->acct_id, pIn->symbol);
-							if(dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a")==1 && result.result_set){
+							r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
 					outfile.flush();
 									num_rows = result_t.num_rows;
 							}else{
@@ -299,10 +314,12 @@ void CDBConnection::execute(const TTradeResultFrame3Input *pIn,
 	sql_result_t result;
 	int length;
 	char* val;
+	int r = 0;
 
 	double tax_rate;
 	sprintf(query, TRADE_RESULT3_1, pIn->cust_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT3_1")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT3_1");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			tax_rate = atof(dbt5_sql_getvalue(&result, 0, length));
@@ -326,9 +343,11 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 	char* val;
 	char sec_ex_id[20]={0};
 	int cust_tier;
+	int r = 0;
 
 	sprintf(query, TRADE_RESULT4_1, pIn->symbol);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT4_1")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_1");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			val = dbt5_sql_getvalue(&result, 0, length);
@@ -342,7 +361,8 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 
 
 	sprintf(query, TRADE_RESULT4_2, pIn->cust_id);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT4_2")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_2");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length));
@@ -352,7 +372,8 @@ void CDBConnection::execute(const TTradeResultFrame4Input *pIn,
 
 
 	sprintf(query, TRADE_RESULT4_3, cust_tier, pIn->type_id, sec_ex_id, pIn->trade_qty, pIn->trade_qty);
-	if(dbt5_sql_execute(query, &result, "TRADE_RESULT4_3")==1 && result.result_set){
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_3");
+	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
@@ -367,6 +388,7 @@ void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 	sql_result_t result;
 	int length;
 	char* val;
+	int r = 0;
 
 	char now_dts[20]={0};
 	sprintf(now_dts, "%d-%d-%d %d:%d:%d", pIn->trade_dts.year, pIn->trade_dts.month, pIn->trade_dts.day, pIn->trade_dts.hour, pIn->trade_dts.minute, pIn->trade_dts.second);
@@ -383,7 +405,6 @@ void CDBConnection::execute(const TTradeResultFrame5Input *pIn)
 
 	sprintf(query, TRADE_RESULT5_3, pIn->comm_amount, pIn->broker_id);
 	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_3")){
-	}else{
 			FAIL_MSG("trade result frame5 query 3 fails");
 	}
 }
@@ -395,6 +416,7 @@ void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 	sql_result_t result;
 	int length;
 	char* val;
+	int r = 0;
 
 	char cash_type[10]={0};
 	if(pIn->trade_is_cash){
@@ -426,7 +448,8 @@ void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 			}
 
 			sprintf(query, TRADE_RESULT6_4, pIn->acct_id);
-			if(dbt5_sql_execute(query, &result, "TRADE_RESULT6_4")==1 && result.result_set){
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_4");
+			if(r==1 && result.result_set){
 					dbt5_sql_fetchrow(&result);
 
 					pOut->acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));

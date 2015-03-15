@@ -75,13 +75,14 @@ protected:
 	void reconect();
 
 	void rollbackTransaction();
+
+	void startTransaction();
 #ifdef DB_PGSQL
 	void setReadCommitted();
 	void setReadUncommitted();
 	void setRepeatableRead();
 	void setSerializable();
 
-	void startTransaction();
 #endif
 public:
 	CTxnBaseDB(CDBConnection *pDB);

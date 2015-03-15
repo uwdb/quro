@@ -21,6 +21,7 @@ TIdent iConfiguredCustomerCount = iDefaultCustomerCount;
 // total number of customers in the database
 TIdent iActiveCustomerCount = iDefaultCustomerCount;
 
+int iUsers = 1;
 // EGen flat_ing directory location
 char szFileLoc[iMaxPath + 1];
 // path to output files
@@ -37,6 +38,9 @@ void usage()
 	cout << "   -i string               Location of EGen flat_in directory" <<
 			endl;
 	printf("   -l integer  %-10d  Socket listen port\n", iListenPort);
+	printf("   -u integer  %-10d  Number of Users\n",
+			iUsers);
+
 	printf("   -h string   %-10s  Brokerage House address\n", szBHaddr);
 	printf("   -o string   %-10s  directory for output files\n",
 			outputDirectory);
@@ -56,7 +60,7 @@ void parse_command_line(int argc, char *argv[])
 	// Scan the command line arguments
 	for (arg = 1; arg < argc; ++arg) {
 
-		// Look for a switch 
+		// Look for a switch
 		sp = argv[arg];
 		if (*sp == '-') {
 			++sp;
@@ -99,6 +103,9 @@ void parse_command_line(int argc, char *argv[])
 		case 't':
 			iConfiguredCustomerCount = atol(vp);
 			break;
+		case 'u':
+			iUsers = atoi(vp);
+			break;
 		default:
 			usage();
 			cout << endl << "Error: Unrecognized option: " << sp << endl;
@@ -128,7 +135,7 @@ int main(int argc, char *argv[])
 
 	try {
 		CMarketExchange MarketExchange(szFileLoc, iConfiguredCustomerCount,
-				iActiveCustomerCount, iListenPort, szBHaddr, iBHlistenPort,
+				iActiveCustomerCount, iListenPort, iUsers, szBHaddr, iBHlistenPort,
 				outputDirectory);
 		cout << "Market Exchange started, waiting for trade requests..." <<
 				endl;

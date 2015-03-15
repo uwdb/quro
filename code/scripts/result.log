@@ -1,0 +1,72 @@
+*****************************64 users******************************
+frame 1:  query 1(0.010501) query 2(0.011094) query 3(0.010809)
+frame 2:  query 1(0.000580)
+frame 3:  query 1(0.000164) query 2(0.010373) query 3(0.000496) query 4(0.010018) query 5(0.009901) query 6(0.010066) query 7(0.009821) query 8(0.010249) query 9(0.013555) query 10(0.010432) query 11(0.013095) query 12(0.010542) query 13(0.009176) query 14(0.009528) query 15(0.007824) query 16(0.007261)
+frame 4:  query 1(0.009621) query 2(0.009027) query 3(0.024596) query 4(0.012524) query 5(0.008509)
+frame 5:
+frame 6:
+-----------variance------
+frame 1:  query 1(0.000025) query 2(0.000033) query 3(0.000120)
+frame 2:  query 1(0.000029)
+frame 3:  query 1(0.000000) query 2(0.000021) query 3(0.000002) query 4(0.000017) query 5(0.000018) query 6(0.000021) query 7(0.000027) query 8(0.000017) query 9(0.000671) query 10(0.000044) query 11(0.000377) query 12(0.000016) query 13(0.000021) query 14(0.000134) query 15(0.000028) query 16(0.000020)
+frame 4:  query 1(0.002052) query 2(0.000111) query 3(0.003814) query 4(0.002499) query 5(0.001330)
+frame 5:
+frame 6:
+-----------max------
+frame 1:  query 1(0.032111) query 2(0.075406) query 3(0.179061)
+frame 2:  query 1(0.099529)
+frame 3:  query 1(0.000777) query 2(0.026770) query 3(0.008710) query 4(0.026214) query 5(0.027953) query 6(0.027098) query 7(0.061752) query 8(0.023467) query 9(0.236709) query 10(0.042650) query 11(0.151136) query 12(0.021299) query 13(0.025774) query 14(0.162892) query 15(0.022183) query 16(0.017982)
+frame 4:  query 1(0.644957) query 2(0.169543) query 3(0.435100) query 4(0.361372) query 5(0.342512)
+frame 5:
+frame 6:
+--------
+avg txn time: 0.157860
+
+
+***********************1 user********************************
+frame 1:  query 1(0.000146) query 2(0.000137) query 3(0.000121)
+frame 2:  query 1(0.000130)
+frame 3:  query 1(0.000150) query 2(0.000184) query 3(0.000119) query 4(0.000119) query 5(0.000121) query 6(0.000122) query 7(0.000137) query 8(0.000270) query 9(0.000268) query 10(0.000311) query 11(0.000365) query 12(0.001468) query 13(0.000210) query 14(0.000131) query 15(0.000116) query 16(0.000307)
+frame 4:  query 1(0.000250) query 2(0.000106) query 3(0.001417) query 4(0.001759) query 5(0.000509)
+frame 5:
+frame 6:
+-----------variance------
+frame 1:  query 1(0.000000) query 2(0.000000) query 3(0.000000)
+frame 2:  query 1(0.000000)
+frame 3:  query 1(0.000000) query 2(0.000000) query 3(0.000000) query 4(0.000000) query 5(0.000000) query 6(0.000000) query 7(0.000000) query 8(0.000000) query 9(0.000000) query 10(0.000003) query 11(0.000011) query 12(0.000000) query 13(0.000000) query 14(0.000000) query 15(0.000000) query 16(0.000006)
+frame 4:  query 1(0.000019) query 2(0.000000) query 3(0.000151) query 4(0.000198) query 5(0.000063)
+frame 5:
+frame 6:
+-----------max------
+frame 1:  query 1(0.004584) query 2(0.002612) query 3(0.003309)
+frame 2:  query 1(0.002963)
+frame 3:  query 1(0.001456) query 2(0.001768) query 3(0.002004) query 4(0.001416) query 5(0.002561) query 6(0.002632) query 7(0.001852) query 8(0.002203) query 9(0.001587) query 10(0.073790) query 11(0.157713) query 12(0.003583) query 13(0.004198) query 14(0.001849) query 15(0.001035) query 16(0.104246)
+frame 4:  query 1(0.346617) query 2(0.002168) query 3(0.355554) query 4(0.393038) query 5(0.618768)
+frame 5:
+frame 6:
+--------
+avg txn time: 0.005385
+
+**********************64 users***************with only TradeOrder*******
+frame 1:  query 1(0.002768) query 2(0.002657) query 3(0.002592)
+frame 2:  query 1(0.000165)
+frame 3:  query 1(0.000157) query 2(0.002688) query 3(0.000258) query 4(0.002616) query 5(0.002282) query 6(0.002410) query 7(0.002621) query 8(0.002237) query 9(0.003193) query 10(0.002554) query 11(0.002703) query 12(0.004147) query 13(0.002640) query 14(0.002541) query 15(0.001917) query 16(0.002191)
+frame 4:  query 1(0.004693) query 2(0.002493) query 3(0.007254) query 4(0.007105) query 5(0.002216)
+frame 5:
+frame 6:
+-----------variance------
+frame 1:  query 1(0.000002) query 2(0.000002) query 3(0.000002)
+frame 2:  query 1(0.000000)
+frame 3:  query 1(0.000000) query 2(0.000001) query 3(0.000000) query 4(0.000002) query 5(0.000001) query 6(0.000001) query 7(0.000001) query 8(0.000001) query 9(0.000004) query 10(0.000002) query 11(0.000002) query 12(0.000001) query 13(0.000002) query 14(0.000002) query 15(0.000002) query 16(0.000002)
+frame 4:  query 1(0.000745) query 2(0.000001) query 3(0.000799) query 4(0.001857) query 5(0.000176)
+frame 5:
+frame 6:
+-----------max------
+frame 1:  query 1(0.008046) query 2(0.007575) query 3(0.007359)
+frame 2:  query 1(0.000859)
+frame 3:  query 1(0.000300) query 2(0.005122) query 3(0.002851) query 4(0.006557) query 5(0.004836) query 6(0.007365) query 7(0.006190) query 8(0.005148) query 9(0.007443) query 10(0.004713) query 11(0.005008) query 12(0.006349) query 13(0.006622) query 14(0.005533) query 15(0.004503) query 16(0.005150)
+frame 4:  query 1(0.223095) query 2(0.005584) query 3(0.261013) query 4(0.329092) query 5(0.129869)
+frame 5:
+frame 6:
+--------
+avg txn time: 0.045921

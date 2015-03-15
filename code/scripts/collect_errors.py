@@ -1,6 +1,6 @@
 import os
 
-filename = "/tmp/results/bh/connection_0.log"
+filename = "/tmp/results2/bh/connection_0.log"
 
 fp = open(filename, "r")
 _bin = [[0 for x in range(23)] for x in range(6)]

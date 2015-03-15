@@ -58,7 +58,26 @@ struct profile_node
 	}
 };
 #endif
-
+#ifdef PROFILE_EACH_QUERY
+struct p_query{
+		size_t frame;
+		size_t query;
+		double exec_time;
+		bool commit;
+		p_query(){
+				frame = 0;
+				query = 0;
+				exec_time = 0.0;
+				commit = false;
+		}
+		void set(size_t _frame, size_t _query, double _exec_time, bool _commit){
+				frame = _frame;
+				query = _query;
+				exec_time = _exec_time;
+				commit = _commit;
+		}
+};
+#endif
 class CDBConnection
 {
 private:
@@ -105,7 +124,25 @@ public:
 	void init_profile_node(int t_id, char* outputDir);
 	void append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit);
 #endif
+#ifdef PROFILE_EACH_QUERY
+	p_query queries[40];
+	size_t q_cnt;
 
+	double exec_time;
+	timeval t1, t2;
+
+	inline void add_profile_node(size_t _frame, size_t _query, double _exec_time, bool _commit){
+			queries[q_cnt].set(_frame, _query, _exec_time, _commit);
+			q_cnt++;
+	}
+	inline void print_profile_query(){
+			for(size_t i=0; i<q_cnt; i++){
+					outfile<<queries[i].frame<<"_"<<queries[i].query<<" ("<<queries[i].exec_time<<") ";
+			}
+			outfile<<endl;
+			q_cnt = 0;
+	}
+#endif
 	//PGresult *exec(const char *);
 	void exec(const char *);
 

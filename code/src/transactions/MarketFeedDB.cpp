@@ -30,8 +30,9 @@ void CMarketFeedDB::DoMarketFeedFrame1(
 			pid << " -- type_stop_loss: " <<
 					pIn->StatusAndTradeType.type_stop_loss << endl;
 #endif // DEBUG
-#ifdef DB_PGSQL
+
 	startTransaction();
+#ifdef DB_PGSQL
 	// Isolation level required by Clause 7.4.1.3
 	setRepeatableRead();
 #endif

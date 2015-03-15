@@ -1,3 +1,4 @@
 dbt5-run-workload -c 1000 -t 1000 -d 20 -u 1 -f 500 -w 1 -n dbt5 -o /tmp/results
+./dbt5-run-workload -c 5000 -t 5000 -d 20 -u 1 -f 500 -w 20 -n dbt5 -o /tmp/results
 
 vi egen/inc/DriverParamSettings.h

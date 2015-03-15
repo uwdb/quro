@@ -23,7 +23,7 @@ void *MarketWorkerThread(void* data)
 
 #ifndef NO_DEBUG_INFO
 	ostringstream msg;
-	msg<<"MarketWorkerThread start"<<std::endl;
+	msg<<"MarketWorkerThread start iSockfd = "<<pThrParam->iSockfd<<std::endl;
 	pThrParam->pMarketExchange->logErrorMessage(msg.str());
 #endif
 	do {
@@ -32,7 +32,7 @@ void *MarketWorkerThread(void* data)
 					sizeof(TTradeRequest));
 
 			// submit trade request
-			pThrParam->pMarketExchange->m_pCMEE->SubmitTradeRequest(pMessage);
+			pThrParam->pMarketExchange->m_pCMEE[pThrParam->t_id]->SubmitTradeRequest(pMessage);
 		} catch(CSocketErr *pErr) {
 			sockDrv.dbt5Disconnect(); // close connection
 
@@ -102,7 +102,7 @@ void EntryMarketWorkerThread(void *data)
 // Constructor
 CMarketExchange::CMarketExchange(char *szFileLoc,
 		TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-		int iListenPort, char *szBHaddr, int iBHlistenPort,
+		int iListenPort, int iUsers, char *szBHaddr, int iBHlistenPort,
 		char *outputDirectory)
 : m_iListenPort(iListenPort)
 {
@@ -120,9 +120,13 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	msg<<"starting: szBHaddr = "<<szBHaddr<<", iBHlistenPort = "<<iBHlistenPort<<endl;
 	logErrorMessage(msg.str());
 #endif
+	Users = iUsers;
 	// Initialize MEESUT
-	m_pCMEESUT = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
-			&m_LogLock, &m_MixLock);
+	assert(iUsers <= 128);
+	for(int i=0; i<iUsers; i++){
+			m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
+					&m_LogLock, &m_MixLock);
+	}
 #ifndef NO_DEBUG_INFO
 	msg<<"finish CMEESUT"<<endl;
 	msg<<"inputFiles initialize: "<<iConfiguredCustomerCount<<", "<<iActiveCustomerCount<<", "<<szFileLoc<<endl;
@@ -133,15 +137,17 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	CInputFiles inputFiles;
 	inputFiles.Initialize(eDriverEGenLoader, iConfiguredCustomerCount,
 			iActiveCustomerCount, szFileLoc);
-	m_pCMEE = new CMEE(0, m_pCMEESUT, m_pLog, inputFiles, 1);
-	m_pCMEE->SetBaseTime();
+	for(int i=0; i<iUsers; i++){
+			m_pCMEE[i] = new CMEE(0, m_pCMEESUT[i], m_pLog, inputFiles, 1);
+			m_pCMEE[i]->SetBaseTime();
+	}
 }
 
 // Destructor
 CMarketExchange::~CMarketExchange()
 {
-	delete m_pCMEE;
-	delete m_pCMEESUT;
+//	delete m_pCMEE;
+//	delete m_pCMEESUT;
 
 	m_fMix.close();
 	m_fLog.close();
@@ -160,10 +166,16 @@ void CMarketExchange::startListener(void)
 	msg<<"start listener"<<endl;
 	logErrorMessage(msg.str());
 #endif
+	int t_cnt = 0;
 	while (true) {
 		acc_socket = 0;
 		try {
 			acc_socket = m_Socket.dbt5Accept();
+#ifndef NO_DEBUG_INFO
+			ostringstream msg;
+			msg<<"MarketExchange: connectionCnt = "<<t_cnt<<", socket = "<<acc_socket<<", iListenPort = "<<m_iListenPort<<endl;
+			logErrorMessage(msg.str());
+#endif
 
 			// create new parameter structure
 			pThrParam = new TMarketThreadParam;
@@ -173,6 +185,8 @@ void CMarketExchange::startListener(void)
 			pThrParam->iSockfd = acc_socket;
 			pThrParam->pMarketExchange = this;
 
+			pThrParam->t_id = t_cnt%Users;
+			t_cnt++;
 			// call entry point
 			EntryMarketWorkerThread(reinterpret_cast<void*>(pThrParam));
 		} catch(CSocketErr *pErr) {

@@ -28,21 +28,23 @@ private:
 	CSocket m_Socket;
 	CLogFormatTab m_fmt;
 	CEGenLogger *m_pLog;
-	CMEESUT *m_pCMEESUT;
+	CMEESUT* m_pCMEESUT[128];
 	CSecurityFile *m_pSecurities;
 	CMutex m_LogLock;
 	CMutex m_MixLock;
 	ofstream m_fLog; // error log file
 	ofstream m_fMix; // mix log file
+	int Users;
+
 
 	friend void *marketWorkerThread(void *);
 	// entry point for driver worker thread
 	friend void entryMarketWorkerThread(void *);
 
 public:
-	CMEE *m_pCMEE;
+	CMEE* m_pCMEE[128];
 
-	CMarketExchange(char *, TIdent, TIdent, int, char *, int, char *);
+	CMarketExchange(char *, TIdent, TIdent, int, int, char *, int, char *);
 	~CMarketExchange();
 
 	void logErrorMessage(const string);
@@ -54,6 +56,7 @@ typedef struct TMarketThreadParam
 {
 	CMarketExchange *pMarketExchange;
 	int iSockfd;
+	int t_id;
 } *PMarketThreadParam;
 
 #endif // MARKET_EXCHANGE_H

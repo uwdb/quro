@@ -1,6 +1,12 @@
 #include "DBConnection.h"
 #include "TradeOrderDB.h"
 
+#ifdef PROFILE_EACH_QUERY
+#define ADD_QUERY_NODE(f, q, commit) \
+				gettimeofday(&t2, NULL); \
+				add_profile_node(f, q, difftimeval(t2, t1), commit);
+#endif
+
 #ifndef DB_PGSQL
 void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 		TTradeOrderFrame1Output *pOut)
@@ -10,7 +16,11 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 	int length;
 	char* val;
 
+
 	sprintf(query, SQLTOF1_1, pIn->acct_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_1")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
@@ -24,12 +34,18 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 			pOut->tax_status = atoi(dbt5_sql_getvalue(&result, 3, length));
 
 			pOut->num_found = result.num_rows;
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 1, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame1 query1 fails");
+			string fail_msg("trade order frame1 query 1 fails");
 			throw fail_msg.c_str();
 	}
 
 	sprintf(query, SQLTOF1_2, pOut->cust_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_2")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
@@ -43,22 +59,30 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 
 			val = dbt5_sql_getvalue(&result, 2, length);
 			strncpy(pOut->tax_id, val, length);
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 2, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame1 query2 fails");
+			string fail_msg("trade order frame1 query 2 fails");
 			throw fail_msg.c_str();
 	}
 
 
 	sprintf(query, SQLTOF1_3, pOut->broker_id);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_3")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			val = dbt5_sql_getvalue(&result, 0, length);
 			strncpy(pOut->broker_name, val, length);
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 3, 1);
+#endif
 	}else{
-			outfile<<"error: "<<query<<endl;
-			outfile.flush();
-			string fail_msg("trade order frame1 query3 fails");
+			string fail_msg("trade order frame1 query 3 fails");
 			throw fail_msg.c_str();
 	}
 
@@ -74,15 +98,20 @@ void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 	char* val;
 
 	sprintf(query, SQLTOF2_1, pIn->acct_id, pIn->exec_f_name, pIn->exec_l_name, pIn->exec_tax_id);
-
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){
 				dbt5_sql_fetchrow(&result);
 
 				val = dbt5_sql_getvalue(&result, 0, length);
 				strncpy(pOut->ap_acl, val, length);
+#ifdef PROFILE_EACH_QUERY
+				ADD_QUERY_NODE(2, 1, 1);
+#endif
 	}else{
-			//string fail_msg("trade order frame1 query3 fails");
-			//throw fail_msg.c_str();
+			string fail_msg("trade order frame2 query 1 fails");
+			throw fail_msg.c_str();
 	}
 	dbt5_sql_close_cursor(&result);
 }
@@ -108,18 +137,27 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 
 	if(strlen(pIn->symbol)==0){
 		sprintf(query, SQLTOF3_1a, pIn->co_name);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){
 				dbt5_sql_fetchrow(&result);
 
 				co_id = atol(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+				ADD_QUERY_NODE(3, 1, 1);
+#endif
 		}else{
 				outfile<<"error query:"<<query<<endl;
 				outfile.flush();
-				string fail_msg("trade order frame 3 query 1 fails");
+				string fail_msg("trade order frame3 query 1 fails");
 				throw fail_msg.c_str();
 		}
 
 		sprintf(query, SQLTOF3_2a, co_id, pIn->issue);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_5")==1 && result.result_set){
 				dbt5_sql_fetchrow(&result);
 
@@ -131,14 +169,20 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 
 				val = dbt5_sql_getvalue(&result, 2, length);
 				strncpy(pOut->symbol, val, length);
+#ifdef PROFILE_EACH_QUERY
+				ADD_QUERY_NODE(3, 2, 1);
+#endif
 		}else{
-				string fail_msg("trade order frame 3 query 2 fails");
+				string fail_msg("trade order frame3 query 2 fails");
 				throw fail_msg.c_str();
 		}
 
 	}else{
 		strcpy(pOut->symbol, pIn->symbol);
 		sprintf(query, SQLTOF3_1b, pIn->symbol);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4b")==1 && result.result_set){
 				dbt5_sql_fetchrow(&result);
 
@@ -149,45 +193,64 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 
 				val = dbt5_sql_getvalue(&result, 2, length);
 				strncpy(pOut->s_name, val, length);
+#ifdef PROFILE_EACH_QUERY
+				ADD_QUERY_NODE(3, 3, 1);
+#endif
 		}else{
-				outfile<<"\terror--: "<<query<<endl;
-				outfile.flush();
-				string fail_msg("trade order frame 3 query 1 fails");
+				string fail_msg("trade order frame3 query 3 fails");
 				throw fail_msg.c_str();
 		}
 
 		sprintf(query, SQLTOF3_2b, co_id);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_5b")==1 && result.result_set){
 				dbt5_sql_fetchrow(&result);
 
 				val = dbt5_sql_getvalue(&result, 0, length);
 				strncpy(pOut->co_name, val, length);
+#ifdef PROFILE_EACH_QUERY
+				ADD_QUERY_NODE(3, 4, 1);
+#endif
 		}else{
-				string fail_msg("trade order frame 3 query 2 fails");
+				string fail_msg("trade order frame3 query 4 fails");
 				throw fail_msg.c_str();
 		}
 
 	}
 
 	sprintf(query, SQLTOF3_3, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_6")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->market_price = atol(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 5, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame 3 query 3 fails");
+			string fail_msg("trade order frame3 query 5 fails");
 			throw fail_msg.c_str();
 	}
 
 	sprintf(query, SQLTOF3_4, pIn->trade_type_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_7")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			tt_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length));
 			tt_is_mrkt = atoi(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 6, 1);
+#endif
 
 	}else{
-			string fail_msg("trade order frame 3 query 4 fails");
+			string fail_msg("trade order frame3 query 6 fails");
 			throw fail_msg.c_str();
 	}
 
@@ -199,14 +262,18 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 
 
 	sprintf(query, SQLTOF3_5, pIn->acct_id, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_8")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			hs_qty = atol(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 7, 1);
+#endif
 	}else{
-			outfile<<"error: "<<query<<endl;
-			outfile.flush();
-			string fail_msg("trade order frame 3 query 5 fails");
+			string fail_msg("trade order frame3 query 7 fails");
 			throw fail_msg.c_str();
 	}
 
@@ -218,18 +285,30 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 					if(pIn->is_lifo){
 
 							sprintf(query, SQLTOF3_6a, pIn->acct_id, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+								gettimeofday(&t1, NULL);
+#endif
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_9") && result.result_set){
 									num_rows = result.num_rows;
+#ifdef PROFILE_EACH_QUERY
+									ADD_QUERY_NODE(3, 8, 1);
+#endif
 							}else{
-									string fail_msg("trade order frame 3 query 6 fails");
+									string fail_msg("trade order frame3 query 8 fails");
 									throw fail_msg.c_str();
 							}
 					}else{
 							sprintf(query, SQLTOF3_6b, pIn->acct_id, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+								gettimeofday(&t1, NULL);
+#endif
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_10") && result.result_set){
 									num_rows = result.num_rows;
+#ifdef PROFILE_EACH_QUERY
+									ADD_QUERY_NODE(3, 9, 1);
+#endif
 							}else{
-									string fail_msg("trade order frame 3 query 7 fails");
+									string fail_msg("trade order frame3 query 9 fails");
 									throw fail_msg.c_str();
 							}
 					}
@@ -256,19 +335,30 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 
 					if(pIn->is_lifo){
 							sprintf(query, SQLTOF3_6a, pIn->acct_id, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+								gettimeofday(&t1, NULL);
+#endif
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_9") && result.result_set){
 									num_rows = result.num_rows;
+#ifdef PROFILE_EACH_QUERY
+									ADD_QUERY_NODE(3, 10, 1);
+#endif
 							}else{
-									string fail_msg("trade order frame 3 query 6 fails");
+									string fail_msg("trade order frame3 query 10 fails");
 									throw fail_msg.c_str();
 							}
 					}else{
 							sprintf(query, SQLTOF3_6b, pIn->acct_id, pOut->symbol);
-							sprintf(query, SQLTOF3_6b, pIn->acct_id, pOut->symbol);
+#ifdef PROFILE_EACH_QUERY
+								gettimeofday(&t1, NULL);
+#endif
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_10") && result.result_set){
 									num_rows = result.num_rows;
+#ifdef PROFILE_EACH_QUERY
+									ADD_QUERY_NODE(3, 11, 1);
+#endif
 							}else{
-									string fail_msg("trade order frame 3 query 7 fails");
+									string fail_msg("trade order frame3 query 11 fails");
 									throw fail_msg.c_str();
 							}
 					}
@@ -296,55 +386,83 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 	double tax_rates = 0.0;
 	if(sell_value > buy_value && ((pIn->tax_status == 1 ) || (pIn->tax_status == 2))){
 			sprintf(query, SQLTOF3_7, pIn->cust_id);
+#ifdef PROFILE_EACH_QUERY
+				gettimeofday(&t1, NULL);
+#endif
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_11")==1 && result.result_set){
 					dbt5_sql_fetchrow(&result);
 
 					tax_rates = atof(dbt5_sql_getvalue(&result, 0, length));
-
+#ifdef PROFILE_EACH_QUERY
+					ADD_QUERY_NODE(3, 12, 1);
+#endif
 			}else{
-					string fail_msg("trade order frame 3 query 8 fails");
+					string fail_msg("trade order frame3 query 12 fails");
 					throw fail_msg.c_str();
 			}
 			pOut->tax_amount = (sell_value - buy_value) * tax_rates;
 	}
 
 	sprintf(query, SQLTOF3_8, pIn->cust_tier, pIn->trade_type_id, exch_id, pIn->trade_qty, pIn->trade_qty);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_12")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
-
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 13, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame 3 query 9 fails");
+			string fail_msg("trade order frame3 query 13 fails");
 			throw fail_msg.c_str();
 	}
 
 	sprintf(query, SQLTOF3_9, pIn->cust_tier, pIn->trade_type_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_13")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 
 			pOut->charge_amount = atof(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 14, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame 3 query 10 fails");
+			string fail_msg("trade order frame3 query 14 fails");
 			throw fail_msg.c_str();
 	}
 
 	if(pIn->type_is_margin){
 			sprintf(query, SQLTOF3_10, pIn->acct_id);
+#ifdef PROFILE_EACH_QUERY
+				gettimeofday(&t1, NULL);
+#endif
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_14")==1 && result.result_set){
 					dbt5_sql_fetchrow(&result);
 
 					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+					ADD_QUERY_NODE(3, 15, 1);
+#endif
 			}else{
-					string fail_msg("trade order frame 3 query 11 fails");
+					string fail_msg("trade order frame3 query 15 fails");
 					throw fail_msg.c_str();
 			}
 
 			sprintf(query, SQLTOF3_11, pIn->acct_id);
+#ifdef PROFILE_EACH_QUERY
+				gettimeofday(&t1, NULL);
+#endif
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_15")==1 && result.result_set){
 					dbt5_sql_fetchrow(&result);
 
 					pOut->acct_assets = acct_bal + atof(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+					ADD_QUERY_NODE(3, 16, 1);
+#endif
 			}else{
 					if(result.num_rows==0){
 							pOut->acct_assets = acct_bal;
@@ -375,11 +493,21 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 
 	//FIXME: now_dts and trade_id
 	sprintf(query, SQLTOF4_0);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_16")){
 			string fail_msg("trade order frame 4 query 1 fails");
 			throw fail_msg.c_str();
 	}
+#ifdef PROFILE_EACH_QUERY
+	ADD_QUERY_NODE(4, 1, 1);
+#endif
+
 	sprintf(query, SQLTOF4_00);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_17")==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 //			next_t_id = atol(dbt5_sql_getvalue(&result, 0, length));
@@ -387,8 +515,11 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 //			outfile<<"val = "<<val<<endl;
 //			outfile.flush();
 			next_t_id = atol(val);
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(4, 2, 1);
+#endif
 	}else{
-			string fail_msg("trade order frame 4 query 2 fails");
+			string fail_msg("trade order frame4 query 2 fails");
 			throw fail_msg.c_str();
 	}
 	/*
@@ -408,27 +539,44 @@ void CDBConnection::execute(const TTradeOrderFrame4Input *pIn,
 	sprintf(query, SQLTOF4_1, next_t_id, pIn->status_id, pIn->trade_type_id, pIn->is_cash, pIn->symbol, pIn->trade_qty, pIn->requested_price, pIn->acct_id, pIn->exec_name, pIn->charge_amount, pIn->comm_amount, pIn->is_lifo);
 //	outfile<<"query: "<<query<<endl;
 //	outfile.flush();
-
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_18")){
-			string fail_msg("trade order frame 4 query 3 fails");
+			string fail_msg("trade order frame4 query 3 fails");
 			throw fail_msg.c_str();
 	}
+#ifdef PROFILE_EACH_QUERY
+	ADD_QUERY_NODE(4, 3, 1);
+#endif
 
 	if(pIn->type_is_market == 0){
 			sprintf(query, SQLTOF4_2, next_t_id, pIn->trade_type_id, pIn->symbol, pIn->trade_qty, pIn->requested_price, pIn->broker_id);
+
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
 			if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_19")){
 					outfile<<"query fails: "<<query<<endl;
-					string fail_msg("trade order from 4 query 4 fails");
+					string fail_msg("trade order frame4 query 4 fails");
 					throw fail_msg.c_str();
 			}
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(4, 4, 1);
+#endif
 	}
 
 	sprintf(query, SQLTOF4_3, next_t_id, pIn->status_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_20")){
-			string fail_msg("trade order from 4 query 5 fails");
+			string fail_msg("trade order frame4 query 5 fails");
 			throw fail_msg.c_str();
 	}
-
+#ifdef PROFILE_EACH_QUERY
+	ADD_QUERY_NODE(4, 5, 1);
+#endif
 	pOut->trade_id = next_t_id;
 }
 #endif

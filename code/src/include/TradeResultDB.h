@@ -174,7 +174,7 @@ using namespace TPCE;
 
 #define TRADE_RESULT6_3 \
 		"INSERT INTO cash_transaction(ct_dts, ct_t_id, ct_amt, ct_name)\n" \
-		"VALUES ('%s', %ld, %f, %s %d shared of %s')"
+		"VALUES ('%s', %ld, %f, '%s %d shared of %s')"
 
 #define TRADE_RESULT6_4 \
 		"SELECT ca_bal\n" \

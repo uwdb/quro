@@ -187,12 +187,12 @@ void CTxnBaseDB::rollbackTransaction()
 {
 	pDB->rollback();
 }
-#ifdef DB_PGSQL
 void CTxnBaseDB::startTransaction()
 {
 	pDB->begin();
 }
 
+#ifdef DB_PGSQL
 void CTxnBaseDB::setReadCommitted()
 {
 	pDB->setReadCommitted();

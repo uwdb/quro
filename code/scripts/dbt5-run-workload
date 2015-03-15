@@ -18,6 +18,8 @@ trap 'echo "Test was interrupted. Got TERM signal."; \
 	killall sadc; killall vmstat; killall iostat; \
 	${DB_COMMAND} dbt5-${DBMS}-stop-db' TERM
 
+EGENDIR=~/dbt5/egen
+
 do_sleep()
 {
     echo "Sleeping $1 seconds"
@@ -457,8 +459,8 @@ echo "Results can be found in: ${OUTPUT_DIR}"
 #
 echo
 echo "1. Starting Brokerage House server"
-#BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-#		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
+BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
 #gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
 #				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
 #pwd
@@ -475,7 +477,7 @@ echo
 echo "2. Starting Market Exchange server"
 MarketExchangeMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 		-i ${EGENDIR}/flat_in \
-		-o ${MEE_OUTPUT_DIR} > ${MEE_OUTPUT_DIR}/mee.out 2>&1 &
+		-o ${MEE_OUTPUT_DIR} -u ${USERS}> ${MEE_OUTPUT_DIR}/mee.out 2>&1 &
 
 # Start collecting data before we start the test.
 SLEEP_RAMPUP=`expr ${USERS} + 1`
@@ -528,16 +530,27 @@ DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"
 
 #DEBUG in script!
-gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
-pwd
-run
-backtrace
-quit
-GDB_INPUT
+#gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
 
 
-do_sleep ${SLEEP_RAMPUP}
+#gdb --args ${HOME}/dbt5/bin/MarketExchangeMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+#		-i ${EGENDIR}/flat_in \
+#		-o ${MEE_OUTPUT_DIR} -u ${USERS} << GDBINPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
+
+
+
+#do_sleep ${SLEEP_RAMPUP}
 
 # Clear the readprofile data after the driver ramps up.
 if [ ${USE_READPROFILE} -eq 1 ]; then

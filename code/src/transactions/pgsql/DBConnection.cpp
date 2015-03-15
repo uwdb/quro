@@ -139,6 +139,7 @@ CDBConnection::CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_my
 		strcpy(mysql_socket_t, _mysql_socket);
 	}
   connect();
+	q_cnt = 0;
 }
 #endif
 
@@ -156,6 +157,14 @@ void CDBConnection::begin()
 #ifdef DB_PGSQL
 	PGresult *res = PQexec(m_Conn, "BEGIN;");
 	PQclear(res);
+#else
+	if (mysql_real_query(dbc, "START TRANSACTION", 17))
+  {
+    	LOG_ERROR_MESSAGE("START TRANSACTION failed. mysql reports: %d %s",
+                           mysql_errno(dbc), mysql_error(dbc));
+			assert(false);
+  }
+
 #endif
 }
 
