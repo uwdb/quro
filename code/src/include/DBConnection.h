@@ -171,14 +171,15 @@ public:
 	void execute(const TTradeLookupFrame2Input *, TTradeLookupFrame2Output *);
 	void execute(const TTradeLookupFrame3Input *, TTradeLookupFrame3Output *);
 	void execute(const TTradeLookupFrame4Input *, TTradeLookupFrame4Output *);
-
+#ifdef REORDER
+	void execute(PTradeResultTxnInput, PTradeResultTxnOutput);
+  void execute(PTradeOrderTxnInput, PTradeOrderIntermediate, PTradeOrderTxnOutput);
+#else
 	void execute(const TTradeOrderFrame1Input *, TTradeOrderFrame1Output *);
 	void execute(const TTradeOrderFrame2Input *, TTradeOrderFrame2Output *);
 	void execute(const TTradeOrderFrame3Input *, TTradeOrderFrame3Output *);
 	void execute(const TTradeOrderFrame4Input *, TTradeOrderFrame4Output *);
-#ifdef REORDER
-	void execute(PTradeResultTxnInput, PTradeResultTxnOutput);
-#else
+
 	void execute(const TTradeResultFrame1Input *, TTradeResultFrame1Output *);
 	void execute(const TTradeResultFrame2Input *, TTradeResultFrame2Output *);
 	void execute(const TTradeResultFrame3Input *, TTradeResultFrame3Output *);

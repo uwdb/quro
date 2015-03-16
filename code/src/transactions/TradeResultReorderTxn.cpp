@@ -165,7 +165,199 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			FAIL_MSG("trade result frame2 query 1 fails");
 	}
 
+	sscanf(now_dts, "%hd-%hd-%hd %hd:%hd:%hd.%*d",
+			&trade_dts.year,
+			&trade_dts.month,
+			&trade_dts.day,
+			&trade_dts.hour,
+			&trade_dts.minute,
+			&trade_dts.second);
+	/*
+//---------------------Frame 4----------------
 
+	sprintf(query, TRADE_RESULT4_1, symbol);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_1");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			val = dbt5_sql_getvalue(&result, 0, length);
+			strncpy(sec_ex_id, val, length);
+
+			val = dbt5_sql_getvalue(&result, 1, length);
+			strncpy(s_name, val, length);
+#ifdef PROFILE_EACH_QUERY
+			ADD_PROFILE_NODE(4, 1, 1);
+#endif
+	}else{
+			FAIL_MSG("trade result frame4 query 1 fails");
+	}
+
+
+	sprintf(query, TRADE_RESULT4_2, cust_id);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_2");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_PROFILE_NODE(4, 2, 1);
+#endif
+	}else{
+			FAIL_MSG("trade result frame4 query 2 fails");
+	}
+
+
+	sprintf(query, TRADE_RESULT4_3, cust_tier, type_id, sec_ex_id, trade_qty, trade_qty);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_3");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_PROFILE_NODE(4, 3, 1);
+#endif
+	}else{
+			FAIL_MSG("trade result frame4 query 3 fails");
+	}
+//-----------------end Frame 4----------------------
+//--------------------Frame 5--------------------
+	comm_amount = ( comm_rate / 100.00 ) * ( trade_qty * trade_price );
+  // round up for correct precision (cents only)
+  comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
+
+//	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
+
+//	sprintf(query, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
+//#ifdef PROFILE_EACH_QUERY
+//	gettimeofday(&t1, NULL);
+//#endif
+//	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_1")){
+//			FAIL_MSG("trade result frame5 query 1 fails");
+//	}
+//#ifdef PROFILE_EACH_QUERY
+//	ADD_PROFILE_NODE(5, 1, 1);
+//#endif
+
+	sprintf(query, TRADE_RESULT5_2, trade_id, now_dts, st_completed_id);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_2")){
+			FAIL_MSG("trade result frame5 query 2 fails");
+	}
+#ifdef PROFILE_EACH_QUERY
+	ADD_PROFILE_NODE(5, 2, 1);
+#endif
+
+	sprintf(query, TRADE_RESULT5_3, comm_amount, broker_id);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_3")){
+			FAIL_MSG("trade result frame5 query 3 fails");
+	}
+#ifdef PROFILE_EACH_QUERY
+	ADD_PROFILE_NODE(5, 3, 1);
+#endif
+//-----------------end Frame 5-----------------
+//-----------------Frame 6--------------------
+	if (type_is_sell)
+  {
+      se_amount = trade_qty * trade_price
+                                        - charge
+                                        - comm_amount;
+  }
+  else
+  {
+      se_amount = -1 * ( trade_qty * trade_price
+                                                + charge
+                                                + comm_amount);
+  }
+
+  // withhold tax only for certain account tax status
+  if (tax_status == 1)
+  {
+      se_amount -= tax_amount;
+  }
+
+	if(trade_is_cash){
+			sprintf(cash_type, "Cash Account");
+	}else{
+			sprintf(cash_type, "Margin");
+	}
+
+	char due_dts[20]={0};
+	CDateTime due_date_time(&trade_dts);
+	due_date_time.Add(2, 0);
+	due_date_time.SetHMS(0,0,0,0);
+	due_date_time.GetTimeStamp(&due_date);
+
+	sprintf(due_dts, "%d-%d-%d %d:%d:%d", due_date.year, due_date.month, due_date.day, due_date.hour, due_date.minute, due_date.second);
+
+	sprintf(query, TRADE_RESULT6_1, trade_id, cash_type, due_dts, se_amount);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT6_1")){
+			FAIL_MSG("trade result frame6 query 1 fails");
+	}
+#ifdef PROFILE_EACH_QUERY
+	ADD_PROFILE_NODE(6, 1, 1);
+#endif
+
+//	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
+
+	if(trade_is_cash){
+			sprintf(query, TRADE_RESULT6_2, se_amount, acct_id);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
+			if(!dbt5_sql_execute(query, &result, "TRADE_RESULT6_2")){
+					FAIL_MSG("trade result frame6 query 2 fails");
+			}
+#ifdef PROFILE_EACH_QUERY
+			ADD_PROFILE_NODE(6, 2, 1);
+#endif
+
+			sprintf(query, TRADE_RESULT6_3, now_dts, trade_id, se_amount, type_name, trade_qty, s_name);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
+			if(!dbt5_sql_execute(query, &result, "TRADE_RESULT6_3")){
+					FAIL_MSG("trade result frame6 query 3 fails");
+			}
+#ifdef PROFILE_EACH_QUERY
+			ADD_PROFILE_NODE(6, 3, 1);
+#endif
+
+			sprintf(query, TRADE_RESULT6_4, acct_id);
+#ifdef PROFILE_EACH_QUERY
+			gettimeofday(&t1, NULL);
+#endif
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_4");
+			if(r==1 && result.result_set){
+					dbt5_sql_fetchrow(&result);
+
+					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+					ADD_PROFILE_NODE(6, 4, 1);
+#endif
+			}else{
+					FAIL_MSG("trade result frame6 query4 fails");
+			}
+
+	}
+//-----------------end Frame 6----------------
+*/
 	if(type_is_sell){
 			if(hs_qty == 0){
 					sprintf(query, TRADE_RESULT2_2a, acct_id, symbol, (-1)*trade_qty);
@@ -486,13 +678,6 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			}
 	}
 
-	sscanf(now_dts, "%hd-%hd-%hd %hd:%hd:%hd.%*d",
-			&trade_dts.year,
-			&trade_dts.month,
-			&trade_dts.day,
-			&trade_dts.hour,
-			&trade_dts.minute,
-			&trade_dts.second);
 
 //----------------Frame 3---------------
 	if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
@@ -587,7 +772,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
   // round up for correct precision (cents only)
   comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
 
-	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
+//	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
 
 	sprintf(query, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
 #ifdef PROFILE_EACH_QUERY
@@ -667,7 +852,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 	ADD_PROFILE_NODE(6, 1, 1);
 #endif
 
-	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
+//	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
 
 	if(trade_is_cash){
 			sprintf(query, TRADE_RESULT6_2, se_amount, acct_id);
@@ -709,6 +894,17 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			}
 
 	}
+
+//	sprintf(query, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
+//#ifdef PROFILE_EACH_QUERY
+//	gettimeofday(&t1, NULL);
+//#endif
+//	if(!dbt5_sql_execute(query, &result, "TRADE_RESULT5_1")){
+//			FAIL_MSG("trade result frame5 query 1 fails");
+//	}
+//#ifdef PROFILE_EACH_QUERY
+//	ADD_PROFILE_NODE(5, 1, 1);
+//#endif
 
 //---------------set output-------------
 	pOut->acct_id = acct_id;

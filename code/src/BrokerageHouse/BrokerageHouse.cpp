@@ -127,6 +127,7 @@ void *workerThread(void *data)
 
 		int txn_cnt = 0;
 		double txn_time = 0;
+		bool commit = true;
 		do {
 			try {
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
@@ -145,7 +146,9 @@ void *workerThread(void *data)
 			}
 #ifdef CAL_RESP_TIME
 			timeval t1, t2;
+			double exec_time;
 		 	gettimeofday(&t1, NULL);
+			commit = true;
 #endif
 loop:
 			iRet = CBaseTxnErr::SUCCESS;
@@ -215,7 +218,7 @@ loop:
 			} catch (const char *str) {
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
-			double exec_time = difftimeval(t2, t1);
+			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
 			pDBConnection->outfile<<"error: "<<str<<endl;
@@ -230,23 +233,23 @@ loop:
 				pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
+				commit = false;
 				//XXX:debug for trade result
 				pDBConnection->rollback();
 			}
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
-			double exec_time = difftimeval(t2, t1);
+			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 
 			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
-			pDBConnection->outfile<<"start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
 #ifdef PROFILE_EACH_QUERY
 			pDBConnection->print_profile_query();
 #endif
 			pDBConnection->outfile.flush();
 
 #endif
-
 			// send status to driver
 			Reply.iStatus = iRet;
 			try {

@@ -152,7 +152,11 @@ class CTradeOrderDB : public CTxnBaseDB, public CTradeOrderDBInterface
 public:
 	CTradeOrderDB(CDBConnection *pDBConn) : CTxnBaseDB(pDBConn) {};
 	~CTradeOrderDB() {};
-
+#ifdef REORDER
+	virtual void DoTradeOrderFrame(PTradeOrderTxnInput pIn,
+									PTradeOrderIntermediate pInter,
+									PTradeOrderTxnOutput pOut);
+#else
 	virtual void DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn,
 			TTradeOrderFrame1Output *pOut);
 	virtual void DoTradeOrderFrame2(const TTradeOrderFrame2Input *pIn,
@@ -163,7 +167,7 @@ public:
 			TTradeOrderFrame4Output *pOut);
 	virtual void DoTradeOrderFrame5();
 	virtual void DoTradeOrderFrame6();
-
+#endif
 	// Function to pass any exception thrown inside
 	// database class frame implementation
 	// back into the database class

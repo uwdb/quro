@@ -1,6 +1,6 @@
 import os
 
-filename = "/tmp/64_users_mixed_profile/bh/connection_28.log"
+filename = "/tmp/result/bh/connection_98.log"
 
 fp = open(filename, "r")
 
@@ -15,14 +15,20 @@ for i in range(6):
 				_max[i][j] = 0.0
 				_var[i][j] = 0.0
 avg = 0.0
-cnt = 0
-exec_time = 0
+commit_cnt = 0
+abort_cnt = 0
+commit_exec_time = 0
+abort_exec_time = 0
 
 for line in fp:
 		chs = line.split(" ")
-		if chs[0] == "start=(":
-				exec_time = exec_time + float(chs[8][0:len(chs[8])-1])
-				cnt = cnt + 1
+		if len(chs)>1 and chs[1] == "start=(":
+				if chs[0] == "0":
+						abort_exec_time = abort_exec_time + float(chs[9][0:len(chs[9])-1])
+						abort_cnt = abort_cnt + 1
+				else:
+						commit_exec_time = commit_exec_time +  float(chs[9][0:len(chs[9])-1])
+						commit_cnt = commit_cnt + 1
 
 		elif len(chs)>10 and ('_' in chs[0]):
 				for i in range(len(chs)):
@@ -64,14 +70,24 @@ for i in range(6):
 						print "query %d(%f)"%(j+1, _var[i][j]/float(_cnt[i][j])),
 		print ""
 
-print "-----------max------"
+#print "-----------max------"
+#for i in range(6):
+#		print "frame %d: "%(i+1),
+#		for j in range(23):
+#				if(_bin[i][j]>0):
+#						print "query %d(%f)"%(j+1, _max[i][j]),
+#		print ""
+
+print "-----------cnt------"
 for i in range(6):
 		print "frame %d: "%(i+1),
 		for j in range(23):
 				if(_bin[i][j]>0):
-						print "query %d(%f)"%(j+1, _max[i][j]),
+						print "query %d(%d)"%(j+1, _cnt[i][j]),
 		print ""
 
-
 print "--------"
-print "avg txn time: %f"%(exec_time/float(cnt))
+print "abort cnt: %d"%abort_cnt
+print "avg abort txn time: %f"%(abort_exec_time/float(abort_cnt))
+print "commit cnt: %d"%commit_cnt
+print "avg commit txn time: %f"%(commit_exec_time/float(commit_cnt))

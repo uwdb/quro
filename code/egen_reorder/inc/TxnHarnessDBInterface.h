@@ -54,12 +54,13 @@ namespace TPCE {
 
 class CTradeOrderDBInterface {
     public:
-        virtual void DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn, TTradeOrderFrame1Output *pOut) = 0;
-        virtual void DoTradeOrderFrame2(const TTradeOrderFrame2Input *pIn, TTradeOrderFrame2Output *pOut) = 0;
-        virtual void DoTradeOrderFrame3(const TTradeOrderFrame3Input *pIn, TTradeOrderFrame3Output *pOut) = 0;
-        virtual void DoTradeOrderFrame4(const TTradeOrderFrame4Input *pIn, TTradeOrderFrame4Output *pOut) = 0;
-        virtual void DoTradeOrderFrame5(void                                                            ) = 0;
-        virtual void DoTradeOrderFrame6(void                                                            ) = 0;
+				virtual void DoTradeOrderFrame(PTradeOrderTxnInput pIn, PTradeOrderIntermediate, PTradeOrderTxnOutput pOut) = 0;
+       // virtual void DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn, TTradeOrderFrame1Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame2(const TTradeOrderFrame2Input *pIn, TTradeOrderFrame2Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame3(const TTradeOrderFrame3Input *pIn, TTradeOrderFrame3Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame4(const TTradeOrderFrame4Input *pIn, TTradeOrderFrame4Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame5(void                                                            ) = 0;
+       // virtual void DoTradeOrderFrame6(void                                                            ) = 0;
         virtual ~CTradeOrderDBInterface  () { }
 };
 

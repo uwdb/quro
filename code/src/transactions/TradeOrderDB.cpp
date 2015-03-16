@@ -10,6 +10,17 @@
 
 #include "TradeOrderDB.h"
 
+#ifdef REORDER
+void CTradeOrderDB::DoTradeOrderFrame(
+						PTradeOrderTxnInput pIn,
+						PTradeOrderIntermediate pInter,
+						PTradeOrderTxnOutput pOut)
+{
+		startTransaction();
+		execute(pIn, pInter, pOut);
+		commitTransaction();
+}
+#else
 // Call Trade Order Frame 1
 void CTradeOrderDB::DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn,
 		TTradeOrderFrame1Output *pOut)
@@ -175,3 +186,4 @@ void CTradeOrderDB::DoTradeOrderFrame6()
 	cout << pid << " >>> TOF6" << endl;
 #endif
 }
+#endif

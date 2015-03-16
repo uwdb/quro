@@ -691,6 +691,7 @@ typedef struct TTradeOrderTxnOutput
     double  tax_amount;
     TTrade  trade_id;
     INT32   status;
+		INT32   type_is_market;
 } *PTradeOrderTxnOutput;
 
 typedef struct TTradeOrderFrame1Input

@@ -684,6 +684,15 @@ typedef struct TTradeOrderTxnInput
     char            symbol[cSYMBOL_len+1];
     char            trade_type_id[cTT_ID_len+1];
 } *PTradeOrderTxnInput;
+
+typedef struct TTradeOrderIntermediate{
+		double requested_price;
+		char symbol[cSYMBOL_len+1];
+		TIdent trade_id;
+		INT32 trade_qty;
+		INT32 type_is_market;
+} *PTradeOrderIntermediate;
+
 typedef struct TTradeOrderTxnOutput
 {
     double  buy_value;

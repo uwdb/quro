@@ -100,7 +100,14 @@ void CTxnBaseDB::execute(const TTradeLookupFrame4Input *pIn,
 {
 	pDB->execute(pIn, pOut);
 }
-
+#ifdef REORDER
+void CTxnBaseDB::execute(PTradeOrderTxnInput pIn,
+					PTradeOrderIntermediate pInter,
+					PTradeOrderTxnOutput pOut)
+{
+		pDB->execute(pIn, pInter, pOut);
+}
+#else
 void CTxnBaseDB::execute(const TTradeOrderFrame1Input *pIn,
 		TTradeOrderFrame1Output *pOut)
 {
@@ -124,6 +131,7 @@ void CTxnBaseDB::execute(const TTradeOrderFrame4Input *pIn,
 {
 	pDB->execute(pIn, pOut);
 }
+#endif
 #ifdef REORDER
 void CTxnBaseDB::execute(PTradeResultTxnInput pIn, PTradeResultTxnOutput pOut)
 {
