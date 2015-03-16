@@ -120,8 +120,9 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	msg<<"starting: szBHaddr = "<<szBHaddr<<", iBHlistenPort = "<<iBHlistenPort<<endl;
 	logErrorMessage(msg.str());
 #endif
-	Users = iUsers;
 	// Initialize MEESUT
+	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
+	Users = iUsers;
 	assert(iUsers <= 128);
 	for(int i=0; i<iUsers; i++){
 			m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,

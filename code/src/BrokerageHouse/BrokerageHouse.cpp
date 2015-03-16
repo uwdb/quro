@@ -211,11 +211,13 @@ loop:
 							tradeCleanup);
 					break;*/
 				default:
-					cout << "wrong txn type" << endl;
+					//cout << "wrong txn type" << endl;
 					iRet = ERR_TYPE_WRONGTXN;
 				}
 					txn_cnt++;
 			} catch (const char *str) {
+
+			pDBConnection->rollback();
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
 			exec_time = difftimeval(t2, t1);
@@ -235,7 +237,6 @@ loop:
 
 				commit = false;
 				//XXX:debug for trade result
-				pDBConnection->rollback();
 			}
 #ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);

@@ -1,8 +1,11 @@
 import os
 
-filename = "/tmp/result/bh/connection_98.log"
+filename = "/tmp/64_users_mixed/bh/connection_28.log"
 
 fp = open(filename, "r")
+
+def cal_time(start_s, start_u):
+		return float(start_s) + float(start_u)/1000000.0
 
 _bin = [[0 for x in range(23)] for x in range(6)]
 _cnt = [[0 for x in range(23)] for x in range(6)]
@@ -19,6 +22,8 @@ commit_cnt = 0
 abort_cnt = 0
 commit_exec_time = 0
 abort_exec_time = 0
+waiting_time = 0
+last_time = 0
 
 for line in fp:
 		chs = line.split(" ")
@@ -29,6 +34,10 @@ for line in fp:
 				else:
 						commit_exec_time = commit_exec_time +  float(chs[9][0:len(chs[9])-1])
 						commit_cnt = commit_cnt + 1
+				cur_time = cal_time(int(chs[2], 10), int(chs[3], 10))
+				if last_time > 0:
+						waiting_time = waiting_time + cur_time-last_time;
+				last_time = cal_time(int(chs[6], 10), int(chs[7], 10))
 
 		elif len(chs)>10 and ('_' in chs[0]):
 				for i in range(len(chs)):
@@ -91,3 +100,4 @@ print "abort cnt: %d"%abort_cnt
 print "avg abort txn time: %f"%(abort_exec_time/float(abort_cnt))
 print "commit cnt: %d"%commit_cnt
 print "avg commit txn time: %f"%(commit_exec_time/float(commit_cnt))
+print "waiting time: %f"%(waiting_time)

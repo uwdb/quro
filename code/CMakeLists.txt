@@ -67,11 +67,7 @@ ENDIF (GETCONF_FOUND)
 #    MESSAGE(FATAL_ERROR "Need to specify -DDBMS=pgsql")
 #
 #ENDIF (DBMS STREQUAL "pgsql")
-IF (DEF_REORDER)
-				SET(DBCFLAGS "-DLIBPQ -DREORDER -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
-ELSE (NOT DEFINED DEF_REORDER)
-				SET(DBCFLAGS "-DLIBPQ -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
-ENDIF (DEF_REORDER)
+SET(DBCFLAGS "-DLIBPQ -DREORDER -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
 SET(DB_LIBS "-L${HOME}/mysql-bin/lib -lmysqlclient -lz -lm -lrt -ldl")
 SET(DB_SCRIPTS scripts/mysql/dbt5-mysql-start-db
                        scripts/mysql/dbt5-mysql-create-indexes
@@ -82,13 +78,8 @@ SET(DB_SCRIPTS scripts/mysql/dbt5-mysql-start-db
 #
 # Defining commonly used paths.
 #
-IF (DEF_REORDER)
-				SET(EGENINC egen_reorder/inc)
-				SET(EGENSRC egen_reorder/src)
-ELSE (NOT_DEFINED DEF_REORDER)
-				SET(EGENINC egen/inc)
-				SET(EGENSRC egen/src)
-ENDIF (DEF_REORDER)
+SET(EGENINC egen_reorder/inc)
+SET(EGENSRC egen_reorder/src)
 
 SET(TXN src/transactions)
 SET(INTF src/interfaces)
@@ -240,11 +231,7 @@ ADD_EXECUTABLE(${DBT5_MARKET_EXCHANGE}
 #
 # Set compiler flags.
 #
-IF (DEF_REORDER)
-				SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DREORDER")
-ELSE (NOT DEFINED DEF_REORDER)
-				SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include")
-ENDIF (DEF_REORDER)
+SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DREORDER")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_FORMAT_MACROS")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_CONSTANT_MACROS")
 
