@@ -121,7 +121,7 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	logErrorMessage(msg.str());
 #endif
 	// Initialize MEESUT
-	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
+	iUsers = (iUsers>>2)>1?(iUsers>>2):1;
 	Users = iUsers;
 	assert(iUsers <= 128);
 	for(int i=0; i<iUsers; i++){
@@ -203,9 +203,9 @@ void CMarketExchange::startListener(void)
 
 void CMarketExchange::logErrorMessage(const string sErr)
 {
-	m_LogLock.lock();
-	cout << sErr;
-	m_fLog << sErr;
-	m_fLog.flush();
-	m_LogLock.unlock();
+//	m_LogLock.lock();
+//	cout << sErr;
+//	m_fLog << sErr;
+//	m_fLog.flush();
+//	m_LogLock.unlock();
 }

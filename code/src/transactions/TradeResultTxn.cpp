@@ -12,7 +12,6 @@
 #define FAIL_MSG(msg) \
 				string fail_msg(msg); \
 				if (r==2) fail_msg.append("\tempty result"); \
-				outfile<<query<<endl; outfile.flush(); \
 				throw fail_msg.c_str();
 
 void CDBConnection::execute(PTradeResultTxnInput pIn,

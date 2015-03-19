@@ -128,10 +128,17 @@ void *workerThread(void *data)
 		int txn_cnt = 0;
 		double txn_time = 0;
 		bool commit = true;
+		double receiving_time = 0;
 		do {
 			try {
+				timeval tt1, tt2;
+				gettimeofday(&tt1, NULL);
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
 						sizeof(TMsgDriverBrokerage));
+				gettimeofday(&tt2, NULL);
+				receiving_time += difftimeval(tt2, tt1);
+				if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
+				pDBConnection->outfile.flush();
 			} catch(CSocketErr *pErr) {
 				sockDrv.dbt5Disconnect();
 
@@ -144,13 +151,14 @@ void *workerThread(void *data)
 				// The socket has been closed, break and let this thread die.
 				break;
 			}
+loop:
 #ifdef CAL_RESP_TIME
 			timeval t1, t2;
 			double exec_time;
 		 	gettimeofday(&t1, NULL);
-			commit = true;
 #endif
-loop:
+
+			commit = true;
 			iRet = CBaseTxnErr::SUCCESS;
 			try {
 				//  Parse Txn type
@@ -223,7 +231,7 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
-			pDBConnection->outfile<<"error: "<<str<<endl;
+			//pDBConnection->outfile<<"error: "<<str<<endl;
 #ifdef PROFILE_EACH_QUERY
 			pDBConnection->print_profile_query();
 #endif
@@ -243,7 +251,7 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 
-			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
+//			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
 			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
 #ifdef PROFILE_EACH_QUERY
 			pDBConnection->print_profile_query();
@@ -921,9 +929,9 @@ void CBrokerageHouse::startListener(void)
 // logErrorMessage
 void CBrokerageHouse::logErrorMessage(const string sErr, bool bScreen)
 {
-	m_LogLock.lock();
-	if (bScreen) cout << sErr;
-	m_fLog << sErr;
-	m_fLog.flush();
-	m_LogLock.unlock();
+//	m_LogLock.lock();
+//	if (bScreen) cout << sErr;
+//	m_fLog << sErr;
+//	m_fLog.flush();
+//	m_LogLock.unlock();
 }

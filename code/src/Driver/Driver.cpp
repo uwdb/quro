@@ -99,7 +99,7 @@ void *customerWorkerThread(void *data)
 		customer->DoTxn();
 
 		// wait for pacing delay -- this delays happens after the mix logging
-		while (nanosleep(&ts, &rem) == -1) {
+		/*while (nanosleep(&ts, &rem) == -1) {
 			if (errno == EINTR) {
 				memcpy(&ts, &rem, sizeof(timespec));
 			} else {
@@ -108,7 +108,7 @@ void *customerWorkerThread(void *data)
 				pThrParam->pDriver->logErrorMessage(osErr.str());
 				break;
 			}
-		}
+		}*/
 	} while (time(NULL) < stop_time);
 
 	osErr << "User thread # " << pthread_self() << " terminated." << endl;
