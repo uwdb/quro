@@ -32,7 +32,7 @@ private:
 
 	friend void entryWorkerThread(void *); // entry point for worker thread
 
-	INT32 RunFindFlight(TFindFlightTxnInput pTxnInput,
+	INT32 RunFindFlight(TFindFlightTxnInput* pTxnInput,
 									CFindFlightDB &FindFlight);
 	friend void *workerThread(void *);
 

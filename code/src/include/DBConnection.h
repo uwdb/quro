@@ -31,8 +31,9 @@
 #include "CommonStructs.h"
 
 using namespace TPCE;
-
+#ifdef WORKLOAD_SEATS
 class SeatsRunner;
+#endif
 
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
 //#define LOG_ERROR_MESSAGE logErrorMessage

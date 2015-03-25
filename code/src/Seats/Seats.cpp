@@ -248,7 +248,7 @@ void SeatsRunner::startListener(void)
 }
 
 // logErrorMessage
-void CBrokerageHouse::logErrorMessage(const string sErr, bool bScreen)
+void SeatsRunner::logErrorMessage(const string sErr, bool bScreen)
 {
 	m_LogLock.lock();
 	if (bScreen) cout << sErr;

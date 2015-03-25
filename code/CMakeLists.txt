@@ -217,22 +217,23 @@ IF (WORKLOAD_TPCE)
 
 ELSEIF (WORKLOAD_SEATS)
 	ADD_EXECUTABLE(${DBT5_SEATS}
-							 ${EGENSRC}/DateTime
+							 ${EGENSRC}/DateTime.cpp
                ${EGENSRC}/locking.cpp
                ${INTF}/CSocket.cpp
 							 ${INTF}/CSeats.cpp
                ${TXN_SOURCE}
+							 ${INTF}/BaseInterface.cpp
 							 src/Seats/SeatsMain.cpp
 							 src/Seats/Seats.cpp)
-			 #	ADD_EXECUTABLE(${DBT5_DRIVER}
-			 #               ${CE}/Driver.cpp
-			 #               ${CE}/DriverMain.cpp
-			 #               src/Customer/Customer.cpp
-			 #							 ${EGENSRC}/DateTime.cpp
-			 #							 ${EGENSRC}/locking.cpp
-			 #							 ${INTF}/CSocket.cpp
-			 #						   ${INTF}/CSeats.cpp
-			 #               ${INTF}/BaseInterface.cpp)
+			 	ADD_EXECUTABLE(${DBT5_DRIVER}
+			                src/Customer/Customer.cpp
+			                ${CE}/Driver.cpp
+			                ${CE}/DriverMain.cpp
+			 							  ${EGENSRC}/DateTime.cpp
+			 							  ${EGENSRC}/locking.cpp
+			 							  ${INTF}/CSocket.cpp
+			 						    ${INTF}/CSeats.cpp
+			                ${INTF}/BaseInterface.cpp)
 ENDIF (WORKLOAD_TPCE)
 
 
@@ -265,7 +266,7 @@ IF (WORKLOAD_TPCE)
 ELSEIF (WORKLOAD_SEATS)
 		SET_TARGET_PROPERTIES(${DBT5_SEATS} PROPERTIES LINK_FLAGS
 				"-L${HOME}/mysql-bin/lib ${DB_LIBS} -lpthread")
-#	SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${HOME}/mysql-bin/lib")
+		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${HOME}/mysql-bin/lib")
 ENDIF (WORKLOAD_TPCE)
 #SET_TARGET_PROPERTIES(${DBT5_TEST_TXN} PROPERTIES LINK_FLAGS
 #        "${DB_LIBS} -lpthread")

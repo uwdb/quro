@@ -23,8 +23,8 @@
 #include <thread>
 #include <mutex>
 using namespace std;
-#define TIdent long unsigned int
-#define INT32 long int
+#define TIdent int64_t
+#define INT32 int32_t
 #define iMaxPath 50
 #define iMaxHostname 20
 #endif

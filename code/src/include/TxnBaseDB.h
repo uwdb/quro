@@ -18,9 +18,14 @@ using namespace std;
 #include "DBT5Consts.h"
 using namespace TPCE;
 
-//#include "DBConnection.h"
 #include "locking.h"
+
+#ifdef WORKLOAD_TPCE
+#include "DBConnection.h"
+#else
+//#include "DBConnection.h"
 class CDBConnection;
+#endif
 
 class CTxnBaseDB
 {

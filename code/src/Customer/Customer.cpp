@@ -56,8 +56,7 @@ CCustomer::CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
 			TIdent iActiveCustomerCount, INT32 iScaleFactor,
 			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
-			char *outputDirectory, ofstream *m_fMix, mutex* m_MixLock)
-: m_iUsers(iUsers), m_iPacingDelay(iPacingDelay)
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock)
 {
 
 	char filename[iMaxPath + 1];
