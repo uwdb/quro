@@ -11,8 +11,11 @@
 #ifndef COMMON_STRUCTS_H
 #define COMMON_STRUCTS_H
 
-#include "CE.h"
+#include "DateTime.h"
+
 using namespace TPCE;
+#ifdef WORKLOAD_TPCE
+#include "CE.h"
 
 // Transaction types
 enum eTxnType
@@ -58,5 +61,92 @@ typedef struct TMsgBrokerageDriver
 {
 	int			iStatus;
 } *PMsgBrokerageDriver;
+#elif WORKLOAD_SEATS
+#include <fstream>
+#include <iostream>
+#include <sstream>
+using namespace std;
+enum eTxnType
+{
+		NULL_TXN = -1,
+		FIND_FLIGHT,
+		NEW_RESERVATION,
+		UPDATE_CUSTOMER,
+		UPDATE_RESERVATION
+};
+
+typedef struct TFindFlightTxnInput
+{
+		long unsigned int depart_aid;
+		long unsigned int arrive_aid;
+		TIMESTAMP_STRUCT start_date;
+		TIMESTAMP_STRUCT end_date;
+		long unsigned int distance;
+};
+
+typedef struct TNewReservationTxnInput
+{
+		long unsigned int r_id;
+		long unsigned int c_id;
+		long unsigned int f_id;
+		long unsigned int seatnum;
+		double price;
+		TIMESTAMP_STRUCT ts;
+};
+
+typedef struct TUpdateCustomerTxnInput
+{
+		long unsigned int c_id;
+		char* c_id_str;
+		long unsigned int update_ff;
+};
+
+typedef struct TUpdateReservationTxnInput
+{
+		long unsigned int r_id;
+		long unsigned int c_id;
+		long unsigned int seatnum;
+		char* attr_idx;
+		long unsigned int attr_val;
+};
+
+typedef struct TFindFlightTxnOutput
+{
+		int status;
+};
+
+typedef struct TNewReservationTxnOutput
+{
+		int status;
+};
+
+typedef struct TUpdateCustomerTxnOutput
+{
+		int status;
+};
+
+typedef struct TUpdateReservationTxnOutput
+{
+		int status;
+};
+
+typedef struct TMsgDriverSeats
+{
+		eTxnType TxnType;
+		union
+		{
+				TFindFlightTxnInput FindFlightTxnInput;
+				TNewReservationTxnInput NewReservationTxnInput;
+				TUpdateCustomerTxnInput UpdateCustomerTxnInput;
+				TUpdateReservationTxnInput UpdateReservationTxnInput;
+		}TxnInput;
+} *PMsgDriverSeats;
+
+typedef struct TMsgSeatsDriver
+{
+	int			iStatus;
+} *PMsgSeatsDriver;
+
+#endif
 
 #endif	//COMMON_STRUCTS_H

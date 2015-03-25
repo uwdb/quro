@@ -97,25 +97,25 @@ inline double CMEETradingFloor::GenProcessingDelay( double Mean )
 
 INT32 CMEETradingFloor::SubmitTradeRequest( PTradeRequest pTradeRequest )
 {
-    //switch( pTradeRequest->eAction )
-    //{
-    //case eMEEProcessOrder:
+    switch( pTradeRequest->eAction )
+    {
+    case eMEEProcessOrder:
         {//Use {...} to keep compiler from complaining that other cases/default skip initialization of pNewOrder.
         // This is either a market order or a limit order that has been triggered, so it gets traded right away.
         // Make a copy in storage under our control.
         PTradeRequest pNewOrder = new TTradeRequest;
         *pNewOrder = *pTradeRequest;
-        //return( m_OrderTimers.StartTimer( GenProcessingDelay( m_OrderProcessingDelayMean ), this, &CMEETradingFloor::SendTradeResult, pNewOrder ));
-				SendTradeResult(pNewOrder);
+        return( m_OrderTimers.StartTimer( GenProcessingDelay( m_OrderProcessingDelayMean ), this, &CMEETradingFloor::SendTradeResult, pNewOrder ));
+				//SendTradeResult(pNewOrder);
         }//Use {...} to keep compiler from complaining that other cases/default skip initialization of pNewOrder.
-    //case eMEESetLimitOrderTrigger:
-    //    // This is a limit order
-    //    m_pTickerTape->PostLimitOrder( pTradeRequest );
-    //    return( m_OrderTimers.ProcessExpiredTimers() );
-    //default:
-    //    // Throw and exception - SHOULD NEVER GET HERE!
-    //    return( m_OrderTimers.ProcessExpiredTimers() );
-    //}
+    case eMEESetLimitOrderTrigger:
+        // This is a limit order
+        m_pTickerTape->PostLimitOrder( pTradeRequest );
+        return( m_OrderTimers.ProcessExpiredTimers() );
+    default:
+        // Throw and exception - SHOULD NEVER GET HERE!
+        return( m_OrderTimers.ProcessExpiredTimers() );
+    }
 }
 
 INT32 CMEETradingFloor::GenerateTradeResult( void )

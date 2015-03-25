@@ -128,7 +128,8 @@ readprofile_collect()
 	PROFILE=${DIR}/readprofile.txt
 	if [ -n "${COMMAND}" ]; then
 		${COMMAND} "/usr/sbin/readprofile -n -m /boot/System.map-`${COMMAND} uname -r` > ${PROFILE}"
-		${COMMAND} "cat ${PROFILE} | sort -n -r -k1 > ${DIR}/readprofile_ticks.txt"
+		${COMMAND} "catecho
+ 		${PROFILE} | sort -n -r -k1 > ${DIR}/readprofile_ticks.txt"
 		${COMMAND} "cat ${PROFILE} | sort -n -r -k3 > ${DIR}/readprofile_load.txt"
 	else
 		/usr/sbin/readprofile -n \
@@ -170,7 +171,16 @@ oprofile_init()
 	${COMMAND} sudo opcontrol --start
 }
 
-readprofile_clear()
+echo "3. Starting Customer driver: ${USERS} user(s)"
+echo "   1 user starting every ${SLEEPY} milliseconds..."
+DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
+		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
+		-i ${EGENDIR}/flat_in \
+		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
+DCMPID=`ps -C DriverMain -o pid=`
+echo "Results will be written to: $OUTPUT_DIR"
+
 {
 	COMMAND=""
 	HOST=${1}
@@ -589,7 +599,7 @@ do_sleep $DURATION
 
 # Wait for DriverMain to exit
 #if [ -n ${DCMPID} ]; then
-	#wait ${DCMPID}
+# wait ${DCMPID}
 #fi
 
 # Collect profile data.

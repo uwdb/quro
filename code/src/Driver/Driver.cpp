@@ -26,11 +26,12 @@ CDriver::CDriver(char *szInDir,
 {
 	char filename[iMaxPath + 1];
 	snprintf(filename, iMaxPath, "%s/Driver.log", outputDirectory);
+#ifdef WORKLOAD_TPCE
 	m_pLog = new CEGenLogger(eDriverEGenLoader, 0, filename, &m_fmt);
 	m_pDriverCETxnSettings = new TDriverCETxnSettings;
 	m_InputFiles.Initialize(eDriverEGenLoader, iConfiguredCustomerCount,
 			iActiveCustomerCount, szInDir);
-
+#endif
 	snprintf(filename, iMaxPath, "%s/Driver_Error.log", outputDirectory);
 	m_fLog.open(filename, ios::out);
 	snprintf(filename, iMaxPath, "%s/%s", outputDirectory, CE_MIX_LOG_NAME);
@@ -50,6 +51,7 @@ CDriver::CDriver(char *szInDir,
 	this->iPacingDelay = iPacingDelay;
 	strncpy(this->outputDirectory, outputDirectory, iMaxPath);
 	this->outputDirectory[iMaxPath] = '\0';
+#ifdef WORKLOAD_TPCE
 	//
 	// initialize DMSUT interface
 	m_pCDMSUT = new CDMSUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
@@ -67,6 +69,7 @@ CDriver::CDriver(char *szInDir,
 				iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor,
 				iDaysOfInitialTrades, pthread_self(), iSeed);
 	}
+#endif
 }
 
 void *customerWorkerThread(void *data)
@@ -125,33 +128,36 @@ void entryCustomerWorkerThread(void* data, int iThrNumber)
 			reinterpret_cast<PCustomerThreadParam>(data);
 	pthread_attr_t threadAttribute; // thread attribute
 
-	try {
+//	try {
 		// initialize the attribute object
 		int status = pthread_attr_init(&threadAttribute);
-		if (status != 0) {
-			throw new CThreadErr( CThreadErr::ERR_THREAD_ATTR_INIT );
-		}
+		assert(status == 0);
+//		if (status != 0) {
+//			throw new CThreadErr( CThreadErr::ERR_THREAD_ATTR_INIT );
+//		}
 
 		// create the thread in the joinable state
 		status = pthread_create(&g_tid[iThrNumber], &threadAttribute,
 				&customerWorkerThread, data);
 
-		if (status != 0) {
-			throw new CThreadErr( CThreadErr::ERR_THREAD_CREATE );
-		}
-	} catch(CThreadErr *pErr) {
-		ostringstream osErr;
-		osErr << "Thread " << iThrNumber << " didn't spawn correctly" << endl <<
-				endl << "Error: " << pErr->ErrorText() <<
-				" at EntryCustomerWorkerThread" << endl;
-		pThrParam->pDriver->logErrorMessage(osErr.str());
-		delete pErr;
-	}
+		assert (status == 0);
+//		if (status != 0) {
+//			throw new CThreadErr( CThreadErr::ERR_THREAD_CREATE );
+//		}
+//	} catch(CThreadErr *pErr) {
+//		ostringstream osErr;
+//		osErr << "Thread " << iThrNumber << " didn't spawn correctly" << endl <<
+//				endl << "Error: " << pErr->ErrorText() <<
+//				" at EntryCustomerWorkerThread" << endl;
+//		pThrParam->pDriver->logErrorMessage(osErr.str());
+//		delete pErr;
+//	}
 }
 
 // Destructor
 CDriver::~CDriver()
 {
+#ifdef WORKLOAD_TPCE
 	delete m_pCDM;
 	delete m_pCDMSUT;
 
@@ -160,6 +166,10 @@ CDriver::~CDriver()
 
 	delete m_pDriverCETxnSettings;
 	delete m_pLog;
+#elif WORKLOAD_SEATS
+	m_fMix.close();
+	m_fLog.close();
+#endif
 }
 
 // RunTest
@@ -171,9 +181,10 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 	cout << endl <<
 			"Running Trade-Cleanup transaction before starting the test..." <<
 			endl;
+#ifdef WORKLOAD_TPCE
 	m_pCDM->DoCleanupTxn();
 	cout << "Trade-Cleanup transaction completed." << endl << endl;
-
+#endif
 	// time to sleep between thread creation, convert from millaseconds to
 	// nanoseconds.
 	struct timespec ts, rem;
@@ -184,7 +195,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 	int threads_start_time =
 			(int) ((double) iSleep / 1000.0 * (double) iUsers);
 	stop_time = time(NULL) + iTestDuration + threads_start_time;
-
+#ifdef WORKLOAD_TPCE
 	CDateTime dtAux;
 	dtAux.SetToCurrent();
 
@@ -199,7 +210,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 
 	// start thread that runs the Data Maintenance transaction
 	entryDMWorkerThread(this);
-
+#endif
 	// parameter for the new thread
 	PCustomerThreadParam pThrParam;
 
@@ -243,7 +254,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 	}
 }
 
-
+#ifdef WORKLOAD_TPCE
 // DM worker thread
 void *dmWorkerThread(void *data)
 {
@@ -299,7 +310,7 @@ void entryDMWorkerThread(CDriver *ptr)
 		exit(1);
 	}
 }
-
+#endif
 // logErrorMessage
 void CDriver::logErrorMessage(const string sErr)
 {

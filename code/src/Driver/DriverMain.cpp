@@ -12,7 +12,13 @@
 // constructor.
 
 #include "Driver.h"
+
 #include "DBT5Consts.h"
+
+#ifndef WORKLOAD_TPCE
+#define iDefaultCustomerCount 1
+#define iDefaultLoadUnitSize 1
+#endif
 
 // Establish defaults for command line options
 char szBHaddr[iMaxHostname + 1] = "localhost"; // Brokerage House address
@@ -140,12 +146,14 @@ void parse_command_line(int argc, char *argv[])
 		default:
 			usage();
 			cout << endl << "Error: Unrecognized option: " << sp << endl;
-			exit (ERROR_BAD_OPTION);
+			//exit (ERROR_BAD_OPTION);
+			exit(1);
 		}
 	}
 
 }
 
+#ifdef WORKLOAD_TPCE
 // Validate Parameters
 bool ValidateParameters()
 {
@@ -209,6 +217,7 @@ bool ValidateParameters()
 
 	return bRet;
 }
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -219,12 +228,12 @@ int main(int argc, char *argv[])
 
 	// Parse command line
 	parse_command_line(argc, argv);
-
+#ifdef WORKLOAD_TPCE
 	// Validate parameters
 	if (!ValidateParameters()) {
 		return ERROR_INVALID_OPTION_VALUE; // exit returning a non-zero code
 	}
-
+#endif
 	// Let the user know what settings will be used.
 	cout << "Using the following settings:" << endl << endl;
 
@@ -245,13 +254,15 @@ int main(int argc, char *argv[])
 	cout << "Pacing Delay (msec): " << iPacingDelay << endl << endl;
 	cout << "Unique ID (seed): " << iSeed << endl;
 
+#ifdef WORKLOAD_TPCE
 	try {
+#endif
 		CDriver Driver(szInDir, iConfiguredCustomerCount,
 				iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades,
 				iSeed, szBHaddr, iBHListenerPort, iUsers, iPacingDelay,
 				outputDirectory);
 		Driver.runTest(iSleep, iTestDuration);
-
+#ifdef WORKLOAD_TPCE
 	} catch (CBaseErr *pErr) {
 		cout << endl << "Error " << pErr->ErrorNum() << ": " <<
 				pErr->ErrorText();
@@ -262,6 +273,6 @@ int main(int argc, char *argv[])
 		}
 		return(1);
 	}
-
+#endif
 	return(0);
 }

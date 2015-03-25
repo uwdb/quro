@@ -10,18 +10,28 @@
 
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
-
+#ifdef WORKLOAD_TPCE
 #include "EGenLogger.h"
 #include "InputFlatFilesStructure.h"
 #include "locking.h"
 
 #include "CESUT.h"
 using namespace TPCE;
+#elif WORKLOAD_SEATS
+#include <iostream>
+#include <fstream>
+using namespace std;
+#include "locking.h"
+#include <thread>
+#include <mutex>
+#include "CSeats.h"
+#endif
 
 class CCustomer
 {
 	int m_iUsers;
 	int m_iPacingDelay;
+#ifdef WORKLOAD_TPCE
 	CLogFormatTab m_fmt;
 	CEGenLogger *m_pLog;
 	CInputFiles m_InputFiles;
@@ -30,6 +40,11 @@ class CCustomer
 	PDriverCETxnSettings m_pDriverCETxnSettings;
 	CMutex m_LogLock;
 	ofstream m_fLog; // error log file
+#elif WORKLOAD_SEATS
+	CSEATS *m_pSEATS;
+	ofstream m_fLog; // error log file
+	mutex m_LogLock;
+#endif
 
 private:
 	void LogErrorMessage(const string);
@@ -41,11 +56,19 @@ private:
 	friend void *DMWorkerThread(void *);
 	friend void EntryDMWorkerThread(CCustomer *);
 public:
+#ifdef WORKLOAD_TPCE
 	CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
 			TIdent iActiveCustomerCount, INT32 iScaleFactor,
 			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
 			char *outputDirectory, ofstream *m_fMix, CMutex *m_MixLock);
+#elif WORKLOAD_SEATS
+	CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
+			TIdent iActiveCustomerCount, INT32 iScaleFactor,
+			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
+			int iBHlistenPort, int iUsers, int iPacingDelay,
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock);
+#endif
 	~CCustomer();
 
 	void DoTxn();

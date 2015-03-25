@@ -80,7 +80,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 	double charge_amount = 0.0;
 	double comm_amount;
 	double comm_rate;
-
+/*
 	sprintf(query, SQLTOF1_1, acct_id);
 #ifdef PROFILE_EACH_QUERY
 		gettimeofday(&t1, NULL);
@@ -130,7 +130,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			throw fail_msg.c_str();
 	}
 
-/*
+
 	sprintf(query, SQLTOF1_3, broker_id);
 #ifdef PROFILE_EACH_QUERY
 	gettimeofday(&t1, NULL);
@@ -148,7 +148,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			string fail_msg("trade order frame1 query 3 fails");
 			throw fail_msg.c_str();
 	}
-*/
+
 //--------------------Frame 2------------------
 	if(strcmp(exec_l_name, cust_l_name)
             || strcmp(exec_f_name, cust_f_name)
@@ -171,6 +171,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 					throw fail_msg.c_str();
 			}
 	}
+						*/
 //--------------------Frame 3-----------------------
 	if(strlen(symbol)==0){
 		sprintf(query, SQLTOF3_1a, co_name);
@@ -255,7 +256,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 		}
 
 	}
-
+/*
 	sprintf(query, SQLTOF3_3, symbol);
 #ifdef PROFILE_EACH_QUERY
 		gettimeofday(&t1, NULL);
@@ -271,7 +272,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			string fail_msg("trade order frame3 query 5 fails");
 			throw fail_msg.c_str();
 	}
-
+*/
 	sprintf(query, SQLTOF3_4, trade_type_id);
 #ifdef PROFILE_EACH_QUERY
 		gettimeofday(&t1, NULL);
@@ -315,159 +316,6 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 
 	size_t num_rows = 0;
 	size_t cnt = 0;
-//--------------------------------
-	sprintf(query, SQLTOF3_8, cust_tier,  trade_type_id, exch_id, trade_qty, trade_qty);
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_12")==1 && result.result_set){
-			dbt5_sql_fetchrow(&result);
-
-			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
-#ifdef PROFILE_EACH_QUERY
-			ADD_QUERY_NODE(3, 13, 1);
-#endif
-	}else{
-			string fail_msg("trade order frame3 query 13 fails");
-			throw fail_msg.c_str();
-	}
-
-	sprintf(query, SQLTOF3_9, cust_tier,  trade_type_id);
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_13")==1 && result.result_set){
-			dbt5_sql_fetchrow(&result);
-
-			charge_amount = atof(dbt5_sql_getvalue(&result, 0, length));
-#ifdef PROFILE_EACH_QUERY
-			ADD_QUERY_NODE(3, 14, 1);
-#endif
-	}else{
-			string fail_msg("trade order frame3 query 14 fails");
-			throw fail_msg.c_str();
-	}
-
-	if(type_is_margin){
-			sprintf(query, SQLTOF3_10, acct_id);
-#ifdef PROFILE_EACH_QUERY
-				gettimeofday(&t1, NULL);
-#endif
-			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_14")==1 && result.result_set){
-					dbt5_sql_fetchrow(&result);
-
-					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));
-#ifdef PROFILE_EACH_QUERY
-					ADD_QUERY_NODE(3, 15, 1);
-#endif
-			}else{
-					string fail_msg("trade order frame3 query 15 fails");
-					throw fail_msg.c_str();
-			}
-
-			sprintf(query, SQLTOF3_11, acct_id);
-#ifdef PROFILE_EACH_QUERY
-				gettimeofday(&t1, NULL);
-#endif
-			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_15")==1 && result.result_set){
-					dbt5_sql_fetchrow(&result);
-
-					acct_assets = acct_bal + atof(dbt5_sql_getvalue(&result, 0, length));
-#ifdef PROFILE_EACH_QUERY
-					ADD_QUERY_NODE(3, 16, 1);
-#endif
-			}else{
-					if(result.num_rows==0){
-							acct_assets = acct_bal;
-					}
-			}
-	}
-	if(type_is_margin){
-			strcpy(status_id, st_submitted_id);
-	}else{
-			strcpy(status_id, st_pending_id);
-	}
-/*
-//------------------Frame 4-----------------------
-	comm_amount = comm_rate / 100
-                                          * trade_qty
-                                          * requested_price;
-	comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
-
-	//FIXME: now_dts and trade_id
-	sprintf(query, SQLTOF4_0);
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_16")){
-			string fail_msg("trade order frame 4 query 1 fails");
-			throw fail_msg.c_str();
-	}
-#ifdef PROFILE_EACH_QUERY
-	ADD_QUERY_NODE(4, 1, 1);
-#endif
-
-	sprintf(query, SQLTOF4_00);
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_17")==1 && result.result_set){
-			dbt5_sql_fetchrow(&result);
-//			next_t_id = atol(dbt5_sql_getvalue(&result, 0, length));
-			val = dbt5_sql_getvalue(&result, 0, length);
-//			outfile<<"val = "<<val<<endl;
-//			outfile.flush();
-			next_t_id = atol(val);
-#ifdef PROFILE_EACH_QUERY
-			ADD_QUERY_NODE(4, 2, 1);
-#endif
-	}else{
-			string fail_msg("trade order frame4 query 2 fails");
-			throw fail_msg.c_str();
-	}
-	sprintf(query, SQLTOF4_1, next_t_id, status_id,  trade_type_id, is_cash, symbol, trade_qty, requested_price, acct_id, exec_name, charge_amount, comm_amount, is_lifo);
-//	outfile<<"query: "<<query<<endl;
-//	outfile.flush();
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_18")){
-			string fail_msg("trade order frame4 query 3 fails");
-			throw fail_msg.c_str();
-	}
-#ifdef PROFILE_EACH_QUERY
-	ADD_QUERY_NODE(4, 3, 1);
-#endif
-
-	if(type_is_market == 0){
-			sprintf(query, SQLTOF4_2, next_t_id, trade_type_id, symbol, trade_qty, requested_price, broker_id);
-
-#ifdef PROFILE_EACH_QUERY
-			gettimeofday(&t1, NULL);
-#endif
-			if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_19")){
-					outfile<<"query fails: "<<query<<endl;
-					string fail_msg("trade order frame4 query 4 fails");
-					throw fail_msg.c_str();
-			}
-#ifdef PROFILE_EACH_QUERY
-			ADD_QUERY_NODE(4, 4, 1);
-#endif
-	}
-
-	sprintf(query, SQLTOF4_3, next_t_id, status_id);
-#ifdef PROFILE_EACH_QUERY
-		gettimeofday(&t1, NULL);
-#endif
-	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_20")){
-			string fail_msg("trade order frame4 query 5 fails");
-			throw fail_msg.c_str();
-	}
-#ifdef PROFILE_EACH_QUERY
-	ADD_QUERY_NODE(4, 5, 1);
-#endif
-	trade_id = next_t_id;
-*/
 
 //--------------------------------
 	if(type_is_sell){
@@ -572,7 +420,115 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 					}
 			}
 	}
+//==================START DOING EARLIER QURIES
+	sprintf(query, SQLTOF1_1, acct_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
+	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_1")==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
 
+			val = dbt5_sql_getvalue(&result, 0, length);
+			strncpy(acct_name, val, length);
+
+		 	broker_id = atol(dbt5_sql_getvalue(&result, 1, length));
+
+			cust_id = atol(dbt5_sql_getvalue(&result, 2, length));
+
+			tax_status = atoi(dbt5_sql_getvalue(&result, 3, length));
+
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 1, 1);
+#endif
+	}else{
+			string fail_msg("trade order frame1 query 1 fails");
+			throw fail_msg.c_str();
+	}
+
+	sprintf(query, SQLTOF1_2, cust_id);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
+	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_2")==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			val = dbt5_sql_getvalue(&result, 0, length);
+			strncpy(cust_f_name, val, length);
+
+			val = dbt5_sql_getvalue(&result, 1, length);
+			strncpy(cust_l_name, val, length);
+
+			cust_tier = atoi(dbt5_sql_getvalue(&result, 2, length));
+
+			val = dbt5_sql_getvalue(&result, 2, length);
+			strncpy(tax_id, val, length);
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 2, 1);
+#endif
+	}else{
+			string fail_msg("trade order frame1 query 2 fails");
+			throw fail_msg.c_str();
+	}
+
+
+	sprintf(query, SQLTOF1_3, broker_id);
+#ifdef PROFILE_EACH_QUERY
+	gettimeofday(&t1, NULL);
+#endif
+
+	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_3")==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			val = dbt5_sql_getvalue(&result, 0, length);
+			strncpy(broker_name, val, length);
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(1, 3, 1);
+#endif
+	}else{
+			string fail_msg("trade order frame1 query 3 fails");
+			throw fail_msg.c_str();
+	}
+
+//--------------------Frame 2------------------
+	if(strcmp(exec_l_name, cust_l_name)
+            || strcmp(exec_f_name, cust_f_name)
+            || strcmp(exec_tax_id, tax_id)){
+
+			sprintf(query, SQLTOF2_1, acct_id, exec_f_name, exec_l_name, exec_tax_id);
+#ifdef PROFILE_EACH_QUERY
+				gettimeofday(&t1, NULL);
+#endif
+			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){
+					dbt5_sql_fetchrow(&result);
+
+					val = dbt5_sql_getvalue(&result, 0, length);
+					strncpy(ap_acl, val, length);
+#ifdef PROFILE_EACH_QUERY
+					ADD_QUERY_NODE(2, 1, 1);
+#endif
+			}else{
+					string fail_msg("trade order frame2 query 1 fails");
+					throw fail_msg.c_str();
+			}
+	}
+
+	sprintf(query, SQLTOF3_3, symbol);
+#ifdef PROFILE_EACH_QUERY
+		gettimeofday(&t1, NULL);
+#endif
+	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_6")==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+
+			market_price = atol(dbt5_sql_getvalue(&result, 0, length));
+#ifdef PROFILE_EACH_QUERY
+			ADD_QUERY_NODE(3, 5, 1);
+#endif
+	}else{
+			string fail_msg("trade order frame3 query 5 fails");
+			throw fail_msg.c_str();
+	}
+
+//=================END DOING EARLIER QUERIES
 	if(sell_value > buy_value && ((tax_status == 1 ) || ( tax_status == 2))){
 			sprintf(query, SQLTOF3_7, cust_id);
 #ifdef PROFILE_EACH_QUERY
@@ -591,7 +547,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			}
 			tax_amount = (sell_value - buy_value) * tax_rates;
 	}
-/*
+
 	sprintf(query, SQLTOF3_8, cust_tier,  trade_type_id, exch_id, trade_qty, trade_qty);
 #ifdef PROFILE_EACH_QUERY
 		gettimeofday(&t1, NULL);
@@ -663,24 +619,6 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 	}else{
 			strcpy(status_id, st_pending_id);
 	}
-*/
-	sprintf(query, SQLTOF1_3, broker_id);
-#ifdef PROFILE_EACH_QUERY
-	gettimeofday(&t1, NULL);
-#endif
-
-	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_3")==1 && result.result_set){
-			dbt5_sql_fetchrow(&result);
-
-			val = dbt5_sql_getvalue(&result, 0, length);
-			strncpy(broker_name, val, length);
-#ifdef PROFILE_EACH_QUERY
-			ADD_QUERY_NODE(1, 3, 1);
-#endif
-	}else{
-			string fail_msg("trade order frame1 query 3 fails");
-			throw fail_msg.c_str();
-	}
 
 //------------------Frame 4-----------------------
 	comm_amount = comm_rate / 100
@@ -719,7 +657,6 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			string fail_msg("trade order frame4 query 2 fails");
 			throw fail_msg.c_str();
 	}
-
 	sprintf(query, SQLTOF4_1, next_t_id, status_id,  trade_type_id, is_cash, symbol, trade_qty, requested_price, acct_id, exec_name, charge_amount, comm_amount, is_lifo);
 //	outfile<<"query: "<<query<<endl;
 //	outfile.flush();
@@ -733,6 +670,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 #ifdef PROFILE_EACH_QUERY
 	ADD_QUERY_NODE(4, 3, 1);
 #endif
+
 	if(type_is_market == 0){
 			sprintf(query, SQLTOF4_2, next_t_id, trade_type_id, symbol, trade_qty, requested_price, broker_id);
 
@@ -748,6 +686,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			ADD_QUERY_NODE(4, 4, 1);
 #endif
 	}
+
 	sprintf(query, SQLTOF4_3, next_t_id, status_id);
 #ifdef PROFILE_EACH_QUERY
 		gettimeofday(&t1, NULL);
@@ -759,8 +698,8 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 #ifdef PROFILE_EACH_QUERY
 	ADD_QUERY_NODE(4, 5, 1);
 #endif
-
 	trade_id = next_t_id;
+
 	if(pIn->roll_it_back){
 			string msg("force roll back");
 			throw msg.c_str();

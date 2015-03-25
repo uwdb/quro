@@ -15,29 +15,48 @@
 
 #include "CommonStructs.h"
 #include "CSocket.h"
+
+#ifndef WORKLOAD_TPCE
+#include <thread>
+#include <mutex>
+#endif
+
 using namespace TPCE;
 
 class CBaseInterface
 {
 protected:
+#ifdef WORKLOAD_TPCE
 	bool talkToSUT(PMsgDriverBrokerage);
+#elif WORKLOAD_SEATS
+	bool talkToSUT(PMsgDriverSeats);
+#endif
 	void logErrorMessage(const string);
 
 	char *m_szBHAddress;
 	int m_iBHlistenPort;
+#ifdef WORKLOAD_TPCE
 	CMutex *m_pLogLock;
 	CMutex *m_pMixLock;
+#else
+	mutex *m_pLogLock;
+	mutex *m_pMixLock;
+#endif
 	ofstream *m_pfLog; // error log file
 	ofstream *m_pfMix; // mix log file
 
 private:
 	CSocket	*sock;
 	void logResponseTime(int, int, double);
-	
-public:
 
+public:
+#ifdef WORKLOAD_TPCE
 	CBaseInterface(char *, const int, ofstream *, ofstream *, CMutex *,
 			CMutex *);
+#else
+	CBaseInterface(char *, const int, ofstream *, ofstream *, mutex *,
+			mutex *);
+#endif
 	~CBaseInterface(void);
 	bool biConnect();
 	bool biDisconnect();

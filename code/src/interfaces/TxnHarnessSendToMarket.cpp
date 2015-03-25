@@ -9,7 +9,7 @@
  */
 
 #include "TxnHarnessSendToMarket.h"
-
+#include <sys/time.h>
 CSendToMarket::CSendToMarket(ofstream* pfile, int MEport)
 : m_pfLog(pfile), m_MEport(MEport)
 {
@@ -34,9 +34,10 @@ bool CSendToMarket::SendToMarket(TTradeRequest &trade_mes)
 				sizeof(TTradeRequest));
 	} catch (CSocketErr *pErr) {
 		m_Socket->dbt5Disconnect();	// close connection
-
+		timeval t1;
+		gettimeofday(&t1, NULL);
 		ostringstream osErr;
-		osErr << "Cannot send to market" << endl <<
+		osErr << "Cannot send to market, time "<<t1.tv_sec<<", "<<t1.tv_usec<<", m_Socket = "<<m_Socket->getSocketFd() << endl <<
 				"Error: " << pErr->ErrorText() <<
 				" at CSendToMarket::SendToMarket" << endl;
 		delete pErr;

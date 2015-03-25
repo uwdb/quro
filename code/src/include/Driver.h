@@ -10,23 +10,39 @@
 
 #ifndef DRIVER_H
 #define DRIVER_H
-
+#ifdef WORKLOAD_TPCE
 #include "EGenLogFormatterTab.h"
 #include "EGenLogger.h"
 #include "InputFlatFilesStructure.h"
 #include "DMSUT.h"
 #include "locking.h"
+#elif WORKLOAD_SEATS
+#include <iostream>
+#include <fstream>
+#include "locking.h"
+#include <thread>
+#include <mutex>
+using namespace std;
+#define TIdent long unsigned int
+#define INT32 long int
+#define iMaxPath 50
+#define iMaxHostname 20
+#endif
 
 using namespace TPCE;
 
 class CDriver
 {
 private:
+#ifdef WORKLOAD_TPCE
 	CLogFormatTab m_fmt;
 	CEGenLogger *m_pLog;
 	CInputFiles m_InputFiles;
 	PDriverCETxnSettings m_pDriverCETxnSettings;
 	CMutex m_LogLock;
+#else
+	mutex m_LogLock;
+#endif
 	ofstream m_fLog; // error log file
 	ofstream m_fMix; // mix log file
 
@@ -51,9 +67,13 @@ public:
 	int iUsers;
 	int iPacingDelay;
 	char outputDirectory[iMaxPath + 1];
-	CMutex m_MixLock;
+#ifdef WORKLOAD_TPCE
 	CDMSUT *m_pCDMSUT;
 	CDM *m_pCDM;
+	CMutex m_MixLock;
+#else
+	mutex m_MixLock;
+#endif
 
 	CDriver(char *, TIdent, TIdent, INT32, INT32, UINT32, char *, int, int,
 			int, char *);

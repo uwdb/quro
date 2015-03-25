@@ -18,8 +18,9 @@ using namespace std;
 #include "DBT5Consts.h"
 using namespace TPCE;
 
-#include "DBConnection.h"
+//#include "DBConnection.h"
 #include "locking.h"
+class CDBConnection;
 
 class CTxnBaseDB
 {
@@ -27,8 +28,14 @@ protected:
 	CDBConnection *pDB;
 
 	void commitTransaction();
-	string escape(string);
+	void reconect();
 
+	void rollbackTransaction();
+
+	void startTransaction();
+
+	string escape(string);
+#ifdef WORKLOAD_TPCE
 	void execute(const TBrokerVolumeFrame1Input *,
 			TBrokerVolumeFrame1Output *);
 
@@ -75,11 +82,6 @@ protected:
 	void execute(const TTradeUpdateFrame2Input *, TTradeUpdateFrame2Output *);
 	void execute(const TTradeUpdateFrame3Input *, TTradeUpdateFrame3Output *);
 
-	void reconect();
-
-	void rollbackTransaction();
-
-	void startTransaction();
 #ifdef DB_PGSQL
 	void setReadCommitted();
 	void setReadUncommitted();
@@ -87,6 +89,7 @@ protected:
 	void setSerializable();
 
 #endif
+#endif //WORKLOAD_TPCE
 public:
 	CTxnBaseDB(CDBConnection *pDB);
 	~CTxnBaseDB();

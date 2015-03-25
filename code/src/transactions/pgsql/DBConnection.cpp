@@ -117,9 +117,15 @@ CDBConnection::CDBConnection(const char *szHost, const char *szDBName,
 	m_Conn = PQconnectdb(szConnectStr);
 }
 #else
+#ifdef WORKLOAD_TPCE
 CDBConnection::CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
 	/* Copy values only if it's not NULL. */
 	setBrokerageHouse(bh);
+#elif WORKLOAD_SEATS
+CDBConnection::CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
+	/* Copy values only if it's not NULL. */
+	setSeatsRunner(_seats);
+#endif
 	if (_mysql_dbname != NULL) {
 		strcpy(mysql_dbname, _mysql_dbname);
 	}
@@ -139,7 +145,6 @@ CDBConnection::CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_my
 		strcpy(mysql_socket_t, _mysql_socket);
 	}
   connect();
-	q_cnt = 0;
 }
 #endif
 
@@ -240,6 +245,8 @@ void CDBConnection::disconnect()
 	mysql_close(dbc);
 #endif
 }
+
+#ifdef WORKLOAD_TPCE
 #ifdef DB_PGSQL
 PGresult *CDBConnection::exec(const char *sql)
 #else
@@ -453,6 +460,7 @@ void CDBConnection::execute(const TCustomerPositionFrame1Input *pIn,
 
 	sscanf(PQgetvalue(res, 0, i_c_dob), "%hd-%hd-%hd", &pOut->c_dob.year,
 			&pOut->c_dob.month, &pOut->c_dob.day);
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 	strncpy(pOut->c_email_1, PQgetvalue(res, 0, i_c_email_1), cEMAIL_len);
 	pOut->c_email_1[cEMAIL_len] = '\0';
@@ -521,7 +529,8 @@ void CDBConnection::execute(const TCustomerPositionFrame2Input *pIn,
 	i_trade_id = PQfnumber(res, "trade_id");
 	i_trade_status = PQfnumber(res, "trade_status");
 
-	pOut->hist_len = atoi(PQgetvalue(res, 0, i_hist_len));
+	pOut->hist_len = atoi(PQgetvalue(res, 0,CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+ i_hist_len));
 
 	vector<string> vAux;
 	vector<string>::iterator p;
@@ -752,7 +761,8 @@ void CDBConnection::execute(const TSecurityDetailFrame1Input *pIn,
 	int i_ex_ad_line2;
 	int i_ex_ad_town;
 	int i_ex_ad_zip;
-	int i_ex_close;
+	int i_ex_close;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	int i_ex_date;
 	int i_ex_desc;
 	int i_ex_name;
@@ -957,7 +967,8 @@ void CDBConnection::execute(const TSecurityDetailFrame1Input *pIn,
 				&pOut->fin[i].start_date.month,
 				&pOut->fin[i].start_date.day);
 		pOut->fin[i].rev = atof((*p2++).c_str());
-		pOut->fin[i].net_earn = atof((*p2++).c_str());
+		pOut->fin[i].net_earn = atof((*p2++).c_sCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+tr());
 		pOut->fin[i].basic_eps = atof((*p2++).c_str());
 		pOut->fin[i].dilut_eps = atof((*p2++).c_str());
 		pOut->fin[i].margin = atof((*p2++).c_str());
@@ -995,7 +1006,8 @@ void CDBConnection::execute(const TSecurityDetailFrame1Input *pIn,
 				&pOut->news[i].dts.month,
 				&pOut->news[i].dts.day,
 				&pOut->news[i].dts.hour,
-				&pOut->news[i].dts.minute,
+				&pOut->news[i].dts.minute,CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 				&pOut->news[i].dts.second);
 		strncpy(pOut->news[i].src, (*p2++).c_str(), cNI_SOURCE_len);
 		pOut->news[i].src[cNI_SOURCE_len] = '\0';
@@ -1084,7 +1096,8 @@ void CDBConnection::execute(const TTradeLookupFrame1Input *pIn,
 	i_cash_transaction_name = PQfnumber(res, "cash_transaction_name");
 	i_exec_name = PQfnumber(res, "exec_name");
 	i_is_cash = PQfnumber(res, "is_cash");
-	i_is_market = PQfnumber(res, "is_market");
+	i_is_market = PQfnumber(res, "is_market");CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	i_num_found = PQfnumber(res, "num_found");
 	i_settlement_amount = PQfnumber(res, "settlement_amount");
 	i_settlement_cash_due_date = PQfnumber(res, "settlement_cash_due_date");
@@ -1173,7 +1186,8 @@ void CDBConnection::execute(const TTradeLookupFrame1Input *pIn,
 		pOut->trade_info[i].settlement_amount = atof((*p).c_str());
 		++i;
 	}
-	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
+	check_count(pOut->num_found, vAux.size(), __FILCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+E__, __LINE__);
 	vAux.clear();
 
 	TokenizeSmart(PQgetvalue(res, 0, i_settlement_cash_due_date), vAux);
@@ -1331,7 +1345,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 	// FIXME: According to spec, this may not match the returned number found?
 	vAux.clear();
 
-	TokenizeSmart(PQgetvalue(res, 0, i_cash_transaction_dts), vAux);
+	TokenizeSmart(PQgetvalue(res, 0, i_cash_transacCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+tion_dts), vAux);
 	i = 0;
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
 		sscanf((*p).c_str(), "%hd-%hd-%hd %hd:%hd:%hd",
@@ -1342,7 +1357,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 				&pOut->trade_info[i].cash_transaction_dts.minute,
 				&pOut->trade_info[i].cash_transaction_dts.second);
 		++i;      if (mysql_real_query(dbc, "COMMIT", 6))
-      {
+      {CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
         LOG_ERROR_MESSAGE("COMMIT failed. mysql reports: %d %s",
                            mysql_errno(dbc), mysql_error(dbc));
 				assert(false);
@@ -1377,7 +1393,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 	i = 0;
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
 		pOut->trade_info[i].is_cash = atoi((*p).c_str());
-		++i;
+		++i;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
@@ -1388,7 +1405,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 		pOut->trade_info[i].settlement_amount = atof((*p).c_str());
 		++i;
 	}
-	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
+	check_count(pOut->num_found, vAux.size(), __FILCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+E__, __LINE__);
 	vAux.clear();
 
 	TokenizeSmart(PQgetvalue(res, 0, i_settlement_cash_due_date), vAux);
@@ -1432,7 +1450,8 @@ void CDBConnection::execute(const TTradeLookupFrame2Input *pIn,
 						&pOut->trade_info[i].trade_history_dts[j].hour,
 						&pOut->trade_info[i].trade_history_dts[j].minute,
 						&pOut->trade_info[i].trade_history_dts[j].second);
-			++j;
+			++j;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 		}
 		++i;
 	}
@@ -1494,7 +1513,8 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	int i_settlement_cash_due_date;
 	int i_settlement_cash_type;
 	int i_trade_dts;
-	int i_trade_history_dts;
+	int i_trade_history_dts;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	int i_trade_history_status_id;
 	int i_trade_list;
 	int i_trade_type;
@@ -1544,7 +1564,8 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	TokenizeSmart(PQgetvalue(res, 0, i_acct_id), vAux);
 	int i = 0;
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
-		pOut->trade_info[i].acct_id = atol((*p).c_str());
+		pOut->trade_info[i].acct_id = atol((*p).c_strCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+());
 		++i;
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
@@ -1558,6 +1579,7 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	}
 	// FIXME: According to spec, this may not match the returned number found?
 	vAux.clear();
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 	TokenizeSmart(PQgetvalue(res, 0, i_cash_transaction_dts), vAux);
 	i = 0;
@@ -1608,7 +1630,8 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	TokenizeSmart(PQgetvalue(res, 0, i_price), vAux);
 	i = 0;
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
-		pOut->trade_info[i].price = atof((*p).c_str());
+		pOut->trade_info[i].price = atof((*p).c_str()CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+);
 		++i;
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
@@ -1619,7 +1642,8 @@ void CDBConnection::execute(const TTradeLookupFrame3Input *pIn,
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
 		pOut->trade_info[i].quantity = atoi((*p).c_str());
 		++i;
-	}
+	}CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 
@@ -1783,7 +1807,8 @@ void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
 	TokenizeSmart(PQgetvalue(res, 0, i_holding_history_trade_id), vAux);
 	i = 0;
 	for (p = vAux.begin(); p != vAux.end(); ++p) {
-		pOut->trade_info[i].holding_history_trade_id = atol((*p).c_str());
+		pOut->trade_info[i].holding_history_trade_id CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+= atol((*p).c_str());
 		++i;
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
@@ -1812,6 +1837,7 @@ void CDBConnection::execute(const TTradeLookupFrame4Input *pIn,
 #else
 #endif
 }
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 #ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
@@ -1829,7 +1855,8 @@ void CDBConnection::execute(const TTradeOrderFrame1Input *pIn,
 	pOut->broker_name[cB_NAME_len]  ='\0';
 	strncpy(pOut->cust_f_name, PQgetvalue(res, 0, 3), cF_NAME_len);
 	pOut->cust_f_name[cF_NAME_len] = '\0';
-	pOut->cust_id = atol(PQgetvalue(res, 0, 4));
+	pOut->cust_id = atol(PQgetvalue(res, 0, 4));CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	strncpy(pOut->cust_l_name, PQgetvalue(res, 0, 5), cL_NAME_len);
 	pOut->cust_l_name[cL_NAME_len] = '\0';
 	pOut->cust_tier = atoi(PQgetvalue(res, 0, 6));
@@ -1846,7 +1873,8 @@ void CDBConnection::execute(const TTradeOrderFrame2Input *pIn,
 	ostringstream osSQL;
 	char *tmpstr;
 	osSQL << "SELECT * FROM TradeOrderFrame2(" <<
-			pIn->acct_id << ",";
+			pIn->acct_id << ",";CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	tmpstr = escape(pIn->exec_f_name);
 	osSQL << tmpstr;
 	PQfreemem(tmpstr);
@@ -1872,7 +1900,8 @@ void CDBConnection::execute(const TTradeOrderFrame3Input *pIn,
 {
 	ostringstream osSQL;
 	char *tmpstr;
-	osSQL << "SELECT * FROM TradeOrderFrame3(" <<
+	osSQL << "SELECT * FROM TradeOrderFrame3(" <<CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 			pIn->acct_id << "," <<
 			pIn->cust_id << "," <<
 			pIn->cust_tier << "::SMALLINT," <<
@@ -2087,6 +2116,7 @@ void CDBConnection::execute(const TTradeResultFrame6Input *pIn,
 			pIn->trade_is_cash << "::SMALLINT," <<
 			pIn->trade_qty << ",'" <<
 			pIn->type_name << "')";
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 	PGresult *res = exec(osSQL.str().c_str());
 
@@ -2197,7 +2227,8 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 	TokenizeSmart(PQgetvalue(res, 0, i_symbol), vAux);
 	i = 0;
 	for  (p = vAux.begin(); p != vAux.end(); ++p) {
-		strncpy(pOut->symbol[i], (*p).c_str(), cSYMBOL_len);
+		strncpy(pOut->symbol[i], (*p).c_str(), cSYMBOCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+L_len);
 		pOut->symbol[i][cSYMBOL_len] = '\0';
 		++i;
 	}
@@ -2229,7 +2260,8 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 	vAux.clear();
 
 	TokenizeSmart(PQgetvalue(res, 0, i_trade_qty), vAux);
-	i = 0;
+	i = 0;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	for  (p = vAux.begin(); p != vAux.end(); ++p) {
 		pOut->trade_qty[i] = atoi((*p).c_str());
 		++i;
@@ -2258,7 +2290,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int i_cash_transaction_dts;
 	int i_cash_transaction_name;
 	int i_exec_name;
-	int i_is_cash;
+	int i_is_cash;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	int i_is_market;
 	int i_num_found;
 	int i_num_updated;
@@ -2269,7 +2302,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int i_trade_history_status_id;
 	int i_trade_price;
 #ifdef DB_PGSQL
-	ostringstream osTrades;
+	ostringstream osTrades;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	int i = 0;
 	osTrades << pIn->trade_id[i];
 	for (i = 1; i < pIn->max_trades; i++) {
@@ -2301,7 +2335,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 
 	pOut->num_found = atoi(PQgetvalue(res, 0, i_num_found));
 
-	vector<string> vAux;
+	vector<string> vAux;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	vector<string>::iterator p;
 
 	TokenizeSmart(PQgetvalue(res, 0, i_bid_price), vAux);
@@ -2390,7 +2425,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		sscanf((*p).c_str(), "%hd-%hd-%hd %hd:%hd:%hd",
 				&pOut->trade_info[i].settlement_cash_due_date.year,
 				&pOut->trade_info[i].settlement_cash_due_date.month,
-				&pOut->trade_info[i].settlement_cash_due_date.day,
+				&pOut->trade_info[i].settlement_cash_due_CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+date.day,
 				&pOut->trade_info[i].settlement_cash_due_date.hour,
 				&pOut->trade_info[i].settlement_cash_due_date.minute,
 				&pOut->trade_info[i].settlement_cash_due_date.second);
@@ -2422,7 +2458,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		sscanf((*p2++).c_str(), "%hd-%hd-%hd %hd:%hd:%hd",
 				&pOut->trade_info[i].trade_history_dts[0].year,
 				&pOut->trade_info[i].trade_history_dts[0].month,
-				&pOut->trade_info[i].trade_history_dts[0].day,
+				&pOut->trade_info[i].trade_history_dts[0]CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+.day,
 				&pOut->trade_info[i].trade_history_dts[0].hour,
 				&pOut->trade_info[i].trade_history_dts[0].minute,
 				&pOut->trade_info[i].trade_history_dts[0].second);
@@ -2433,7 +2470,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 				&pOut->trade_info[i].trade_history_dts[1].hour,
 				&pOut->trade_info[i].trade_history_dts[1].minute,
 				&pOut->trade_info[i].trade_history_dts[1].second);
-		sscanf((*p2).c_str(), "%hd-%hd-%hd %hd:%hd:%hd",
+		sscanf((*p2).c_str(), "%hd-%hd-%hd %hd:%hd:%hCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+d",
 				&pOut->trade_info[i].trade_history_dts[2].year,
 				&pOut->trade_info[i].trade_history_dts[2].month,
 				&pOut->trade_info[i].trade_history_dts[2].day,
@@ -2465,6 +2503,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 	TokenizeSmart(PQgetvalue(res, 0, i_trade_price), vAux);
 	i = 0;
@@ -2494,7 +2533,8 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 	int i_settlement_amount;
 	int i_settlement_cash_due_date;
 	int i_settlement_cash_type;
-	int i_trade_history_dts;
+	int i_trade_history_dts;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	int i_trade_history_status_id;
 	int i_trade_list;
 	int i_trade_price;
@@ -2529,7 +2569,8 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 	i_settlement_amount = PQfnumber(res, "settlement_amount");
 	i_settlement_cash_due_date = PQfnumber(res, "settlement_cash_due_date");
 	i_settlement_cash_type = PQfnumber(res, "settlement_cash_type");
-	i_trade_history_dts = PQfnumber(res, "trade_history_dts");
+	i_trade_history_dts = PQfnumber(res, "trade_hisCDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+tory_dts");
 	i_trade_history_status_id = PQfnumber(res, "trade_history_status_id");
 	i_trade_list = PQfnumber(res, "trade_list");
 	i_trade_price = PQfnumber(res, "trade_price");
@@ -2567,7 +2608,8 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 				&pOut->trade_info[i].cash_transaction_dts.hour,
 				&pOut->trade_info[i].cash_transaction_dts.minute,
 				&pOut->trade_info[i].cash_transaction_dts.second);
-		++i;
+		++i;CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
@@ -2833,7 +2875,8 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	i = 0;
 	for  (p = vAux.begin(); p != vAux.end(); ++p) {
 		strncpy(pOut->trade_info[i].exec_name, (*p).c_str(), cEXEC_NAME_len);
-		pOut->trade_info[i].exec_name[cEXEC_NAME_len] = '\0';
+		pOut->trade_info[i].exec_name[cEXEC_NAME_len]CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+ = '\0';
 		++i;
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
@@ -2853,7 +2896,8 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	TokenizeSmart(PQgetvalue(res, 0, i_price), vAux);
 	i = 0;
 	for  (p = vAux.begin(); p != vAux.end(); ++p) {
-		pOut->trade_info[i].price = atof((*p).c_str());
+		pOut->trade_info[i].price = atof((*p).c_str()CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+);
 		++i;
 	}
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
@@ -2897,7 +2941,8 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 				&pOut->trade_info[i].settlement_cash_due_date.minute,
 				&pOut->trade_info[i].settlement_cash_due_date.second);
 		++i;
-	}
+	}CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 
@@ -2965,6 +3010,7 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 		++i;
 	}
 	vAux.clear();
+CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 
 	TokenizeSmart(PQgetvalue(res, 0, i_trade_list), vAux);
 	i = 0;
@@ -2998,6 +3044,7 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 #else
 #endif
 }
+#endif //WORKLOAD_TPCE
 
 void CDBConnection::reconnect()
 {
@@ -3023,11 +3070,17 @@ void CDBConnection::rollback()
 #endif
 
 }
-
+#ifdef WORKLOAD_TPCE
 void CDBConnection::setBrokerageHouse(CBrokerageHouse *bh)
 {
 	this->bh = bh;
 }
+#elif WORKLOAD_SEATS
+void CDBConnection::setSeatsRunner(SeatsRunner *_seats)
+{
+	this->seats = seats;
+}
+#endif
 #ifdef DB_PGSQL
 void CDBConnection::setReadCommitted()
 {
@@ -3185,7 +3238,11 @@ void CDBConnection::logErrorMessage(const char *c, ...){
 			va_end(argptr);
 			string s(msg);
 			s.append("\n");
+#ifdef WORKLOAD_TPCE
 			bh->logErrorMessage(s, false);
+#elif WORKLOAD_SEATS
+			seats->logErrorMessage(s, false);
+#endif
 }
 #ifdef CAL_RESP_TIME
 void CDBConnection::init_profile_node(int t_id, char* outputDir){

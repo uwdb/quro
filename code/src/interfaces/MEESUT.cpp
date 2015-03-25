@@ -44,14 +44,14 @@ bool RunTradeResultAsync(void *data)
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_INIT);
 		}
-	
+
 		// set the detachstate attribute to detached
 		status = pthread_attr_setdetachstate(&threadAttribute,
 				PTHREAD_CREATE_DETACHED);
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_DETACH);
 		}
-	
+
 		// create the thread in the detached state - Call Trade Result
 		// asyncronously
 		status = pthread_create(&threadID, &threadAttribute, &TradeResultAsync,
@@ -70,11 +70,11 @@ bool RunTradeResultAsync(void *data)
 	}
 
 	// return immediatelly
-	return true;	
+	return true;
 }
 
 bool CMEESUT::TradeResult(PTradeResultTxnInput pTxnInput)
-{
+{/*
 	PMEESUTThreadParam pThrParam = new TMEESUTThreadParam;
 	memset(pThrParam, 0, sizeof(TMEESUTThreadParam));
 
@@ -83,6 +83,25 @@ bool CMEESUT::TradeResult(PTradeResultTxnInput pTxnInput)
 			sizeof(TTradeResultTxnInput));
 
 	return (RunTradeResultAsync(reinterpret_cast<void *>(pThrParam)));
+	*/
+	PMEESUTThreadParam pThrParam = new TMEESUTThreadParam;
+	memset(pThrParam, 0, sizeof(TMEESUTThreadParam));
+	memcpy(&(pThrParam->TxnInput.m_TradeResultTxnInput), pTxnInput,
+			sizeof(TTradeResultTxnInput));
+
+	struct TMsgDriverBrokerage request;
+
+	memset(&request, 0, sizeof(TMsgDriverBrokerage));
+
+	request.TxnType = TRADE_RESULT;
+	memcpy(&(request.TxnInput.TradeResultTxnInput),
+			&(pThrParam->TxnInput.m_TradeResultTxnInput),
+			sizeof(request.TxnInput.TradeResultTxnInput));
+
+	//printf("Sending TradeResult input\n");
+	return talkToSUT(&request);
+	//return talkToSUT(&request);
+
 }
 
 // Market Feed
@@ -121,14 +140,14 @@ bool RunMarketFeedAsync(void *data)
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_INIT);
 		}
-	
+
 		// set the detachstate attribute to detached
 		status = pthread_attr_setdetachstate(&threadAttribute,
 				PTHREAD_CREATE_DETACHED);
 		if (status != 0) {
 			throw new CThreadErr(CThreadErr::ERR_THREAD_ATTR_DETACH);
 		}
-	
+
 		// create the thread in the detached state - Call Trade Result
 		// asyncronously
 		status = pthread_create(&threadID, &threadAttribute, &MarketFeedAsync,

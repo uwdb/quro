@@ -22,11 +22,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
+#ifdef WORKLOAD_TPCE
 #include "BrokerageHouse.h"
+#elif WORKLOAD_SEATS
+#include "Seats.h"
+#endif
 #include "DBT5Consts.h"
 #include "CommonStructs.h"
 
 using namespace TPCE;
+
+class SeatsRunner;
 
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
 //#define LOG_ERROR_MESSAGE logErrorMessage
@@ -96,8 +102,11 @@ private:
 
 	char szConnectStr[iMaxConnectString + 1];
 	char name[16];
-
+#ifdef WORKLOAD_TPCE
 	CBrokerageHouse *bh;
+#elif WORKLOAD_SEATS
+	SeatsRunner *seats;
+#endif
 
 	TTradeRequest m_TriggeredLimitOrders;
 
@@ -106,7 +115,11 @@ public:
 #ifdef DB_PGSQL
 	CDBConnection(const char *, const char *, const char *);
 #else
+#ifdef WORKLOAD_TPCE
 	CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+#else
+	CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+#endif
 #endif
 
 	~CDBConnection();
@@ -144,6 +157,7 @@ public:
 			q_cnt = 0;
 	}
 #endif
+#ifdef WORKLOAD_TPCE
 	//PGresult *exec(const char *);
 	void exec(const char *);
 
@@ -193,14 +207,16 @@ public:
 	void execute(const TTradeUpdateFrame2Input *, TTradeUpdateFrame2Output *);
 	void execute(const TTradeUpdateFrame3Input *, TTradeUpdateFrame3Output *);
 
-	void reconnect();
+#endif // WORKLOAD_TPCE
 
-	void rollback();
-
+#ifdef WORKLOAD_TPCE
 	void setBrokerageHouse(CBrokerageHouse *);
-
+#elif WORKLOAD_SEATS
+	void setSeatsRunner(SeatsRunner *);
+#endif
 	void logErrorMessage(const char* c, ...);
-
+	void reconnect();
+	void rollback();
 #ifdef DB_PGSQL
 	void setReadCommitted();
 	void setReadUncommitted();

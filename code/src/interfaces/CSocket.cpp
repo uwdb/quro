@@ -11,10 +11,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <errno.h>
 #include "CSocket.h"
 #include "CThreadErr.h"
-
+#include <iostream>
+using namespace std;
 #define LISTENQ 1024
 
 //Constructor
@@ -49,6 +50,7 @@ int CSocket::dbt5Accept(void)
 	errno = 0;
 	m_sockfd = accept(m_listenfd, (struct sockaddr *) &sa, &addrlen);
 	if (m_sockfd == -1) {
+		printf("HAVE ERROR ACCEPT!\n");
 		throwError(CSocketErr::ERR_SOCKET_ACCEPT);
 	}
 	return m_sockfd;
@@ -60,6 +62,7 @@ void CSocket::dbt5Connect()
 	errno = 0;
 	m_sockfd = socket(AF_INET, SOCK_STREAM, resolveProto("tcp"));
 	if (m_sockfd == -1) {
+		printf("HAVE ERROR WHEN TRYING TO CONNECT!!\n");
 		throwError(CSocketErr::ERR_SOCKET_CREATE);
 	}
 
@@ -91,7 +94,8 @@ void CSocket::dbt5Connect()
 		sleep(1);
 	}
 	if (ok == false) {
-		throwError(CSocketErr::ERR_SOCKET_CONNECT);
+			printf("HAVE ERROR WHEN TRYING TO CONNECT!!\n");
+			throwError(CSocketErr::ERR_SOCKET_CONNECT);
 	}
 }
 

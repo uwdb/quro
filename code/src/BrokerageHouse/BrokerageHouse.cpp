@@ -33,7 +33,7 @@ extern int connectionCnt;
 
 #ifdef CAL_RESP_TIME
 void signal_kill_handler(int signum){
-	for(int i=0; i<connectionCnt; i++){
+/*	for(int i=0; i<connectionCnt; i++){
 			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
 			profile_node *cur = ptr->head;
 			double total_exec = 0;
@@ -46,6 +46,13 @@ void signal_kill_handler(int signum){
 			ptr->outfile<<endl<<endl;
 			ptr->outfile<<"total exec: "<<total_exec<<endl;
 			ptr->outfile.flush();
+	}*/
+	for(int i=0; i<connectionCnt; i++){
+			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
+			timeval t1;
+			gettimeofday(&t1, NULL);
+			ptr->outfile<<"end time:"<<t1.tv_sec<<","<<t1.tv_usec<<endl;
+		 	ptr->outfile.flush();
 	}
 	exit(signum);
 }
@@ -54,7 +61,7 @@ void signal_kill_handler(int signum){
 void *workerThread(void *data)
 {
 #ifdef CAL_RESP_TIME
-//	signal(SIGTERM, signal_kill_handler);
+	signal(SIGTERM, signal_kill_handler);
 #endif
 	try {
 		PThreadParameter pThrParam = reinterpret_cast<PThreadParameter>(data);
@@ -237,10 +244,10 @@ loop:
 #endif
 			pDBConnection->outfile.flush();
 #endif
-				ostringstream msg;
-				msg << time(NULL) << " " << (long long) pthread_self() << " " <<
-						szTransactionName[pMessage->TxnType] << "; "<<str<<endl;
-				pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
+				//ostringstream msg;
+				//msg << time(NULL) << " " << (long long) pthread_self() << " " <<
+				//		szTransactionName[pMessage->TxnType] << "; "<<str<<endl;
+				//pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
 				commit = false;

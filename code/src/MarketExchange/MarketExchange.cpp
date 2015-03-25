@@ -9,7 +9,7 @@
  */
 
 #include "MarketExchange.h"
-
+#include <sys/time.h>
 // worker thread
 void *MarketWorkerThread(void* data)
 {
@@ -33,6 +33,11 @@ void *MarketWorkerThread(void* data)
 
 			// submit trade request
 			pThrParam->pMarketExchange->m_pCMEE[pThrParam->t_id]->SubmitTradeRequest(pMessage);
+//			timeval t1;
+//			gettimeofday(&t1, NULL);
+//			ostringstream msg1;
+//			msg1<<"send request, socketfd = "<<pThrParam->iSockfd<<", time = "<<t1.tv_sec<<","<<t1.tv_usec<<endl;
+//			pThrParam->pMarketExchange->logErrorMessage(msg1.str());
 		} catch(CSocketErr *pErr) {
 			sockDrv.dbt5Disconnect(); // close connection
 
@@ -121,7 +126,7 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	logErrorMessage(msg.str());
 #endif
 	// Initialize MEESUT
-	iUsers = (iUsers>>2)>1?(iUsers>>2):1;
+	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
 	Users = iUsers;
 	assert(iUsers <= 128);
 	for(int i=0; i<iUsers; i++){
@@ -203,9 +208,9 @@ void CMarketExchange::startListener(void)
 
 void CMarketExchange::logErrorMessage(const string sErr)
 {
-//	m_LogLock.lock();
-//	cout << sErr;
-//	m_fLog << sErr;
-//	m_fLog.flush();
-//	m_LogLock.unlock();
+	m_LogLock.lock();
+	cout << sErr;
+	m_fLog << sErr;
+	m_fLog.flush();
+	m_LogLock.unlock();
 }

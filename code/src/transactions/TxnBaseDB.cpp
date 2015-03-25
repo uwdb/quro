@@ -9,7 +9,7 @@
  */
 
 #include "TxnBaseDB.h"
-
+#include "DBConnection.h"
 #include "TxnHarnessSendToMarketInterface.h"
 
 CTxnBaseDB::CTxnBaseDB(CDBConnection *pDB)
@@ -30,7 +30,7 @@ string CTxnBaseDB::escape(string s)
 {
 	return pDB->escape(s);
 }
-
+#ifdef WORKLOAD_TPCE
 void CTxnBaseDB::execute(const TBrokerVolumeFrame1Input *pIn,
 		TBrokerVolumeFrame1Output *pOut)
 {
@@ -195,7 +195,7 @@ void CTxnBaseDB::execute(const TTradeUpdateFrame3Input *pIn,
 {
 	pDB->execute(pIn, pOut);
 }
-
+#endif
 void CTxnBaseDB::rollbackTransaction()
 {
 	pDB->rollback();

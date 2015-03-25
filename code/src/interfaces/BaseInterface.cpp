@@ -10,10 +10,15 @@
 
 #include "BaseInterface.h"
 #include "DBT5Consts.h"
-
+#ifdef WORKLOAD_TPCE
 CBaseInterface::CBaseInterface(char *addr, const int iListenPort,
 		ofstream *pflog, ofstream *pfmix, CMutex *pLogLock,
 		CMutex *pMixLock)
+#else
+CBaseInterface::CBaseInterface(char *addr, const int iListenPort,
+		ofstream *pflog, ofstream *pfmix, mutex *pLogLock,
+		mutex *pMixLock)
+#endif
 : m_szBHAddress(addr),
   m_iBHlistenPort(iListenPort),
   m_pLogLock(pLogLock),
@@ -61,7 +66,7 @@ bool CBaseInterface::biDisconnect()
 		return false;
 	}
 }
-
+#ifdef WORKLOAD_TPCE
 // Connect to BrokerageHouse, send request, receive reply, and calculate RT
 bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 {
@@ -124,6 +129,55 @@ bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 		return true;
 	return false;
 }
+#elif WORKLOAD_SEATS
+bool CBaseInterface::talkToSUT(PMsgDriverSeats pRequest)
+{
+	int length = 0;
+	TMsgSeatsDriver Reply; // reply message from BrokerageHouse
+	memset(&Reply, 0, sizeof(Reply));
+
+
+	// send and wait for response
+	try {
+		length = sock->dbt5Send(reinterpret_cast<void *>(pRequest),
+				sizeof(*pRequest));
+	} catch(CSocketErr *pErr) {
+		sock->dbt5Reconnect();
+		logResponseTime(-1, 0, -1);
+
+		ostringstream msg;
+		msg << time(NULL) << " " << (long long) pthread_self() << " " <<
+				szTransactionName[pRequest->TxnType] << ": " << endl <<
+				"Error sending " << length << " bytes of data" << endl <<
+				pErr->ErrorText() << endl;
+		logErrorMessage(msg.str());
+		length = -1;
+		delete pErr;
+	}
+	try {
+		length = sock->dbt5Receive(reinterpret_cast<void *>(&Reply),
+				sizeof(Reply));
+	} catch(CSocketErr *pErr) {
+		logResponseTime(-1, 0, -2);
+
+		ostringstream msg;
+		msg << time(NULL) << " " << (long long) pthread_self() << " " <<
+				szTransactionName[pRequest->TxnType] << ": " << endl <<
+				"Error receiving " << length << " bytes of data" << endl <<
+				pErr->ErrorText() << endl;
+		logErrorMessage(msg.str());
+		length = -1;
+		if (pErr->getAction() == CSocketErr::ERR_SOCKET_CLOSED)
+			sock->dbt5Reconnect();
+		delete pErr;
+	}
+
+	if (Reply.iStatus == CBaseTxnErr::SUCCESS)
+		return true;
+	return false;
+}
+
+#endif
 
 // Log Transaction Response Times
 void CBaseInterface::logResponseTime(int iStatus, int iTxnType, double dRT)
