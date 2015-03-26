@@ -1,0 +1,42 @@
+#!/bin/bash
+MYSQL=${HOME}/mysql-bin/bin/mysql
+DB_NAME=seats
+
+SEATS_DATA=/data/sanchez/results/silo/results/SEATS_DATA
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Country.txt\" \
+		INTO TABLE country FIELDS TERMINATED BY \"|\" ";
+echo "finish loading country"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Airport.txt\" \
+		INTO TABLE airport FIELDS TERMINATED BY \"|\" ";
+echo "finish loading airport"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/AirportDistance.txt\" \
+		INTO TABLE airport_distance FIELDS TERMINATED BY \"|\" ";
+echo "finish loading country"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Airline.txt\" \
+		INTO TABLE airline FIELDS TERMINATED BY \"|\" ";
+echo "finish loading airline"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Customer.txt\" \
+		INTO TABLE customer FIELDS TERMINATED BY \"|\" ";
+echo "finish loading customer"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/FrequentFlyer.txt\" \
+		INTO TABLE frequent_flyer FIELDS TERMINATED BY \"|\" ";
+echo "finish loading frequet_flyer"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Flight.txt\" \
+		INTO TABLE flight FIELDS TERMINATED BY \"|\" ";
+echo "finish loading flight"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/FlightInfo.txt\" \
+		INTO TABLE flight_info FIELDS TERMINATED BY \"|\" ";
+echo "finish loading flight_info"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Reservation.txt\" \
+		INTO TABLE reservation FIELDS TERMINATED BY \"|\" ";
+echo "finish loading reservation"
+
