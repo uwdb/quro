@@ -1,11 +1,66 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <map>
 using namespace std;
 
 int scale_factor = 1;
+#define FF_PERC 0.05
+//========start helper functions=========
+string GenerateRandomString(int len, bool fixed_len){
+		string s;
+		size_t length;
+		if(fixed_len) length = len;
+		else length = rand()%len;
+		for(int i=0; i<length; i++){
+			int rnd = rand()%60;
+			char c;
+			if(rnd<26)
+				c='a'+rnd;
+			else if(rnd<52)
+				c='A'+rnd-26;
+			else if(rnd==53)
+				c=' ';
+			else
+				c='.';
+			s.append(1, c);
+		}
+		return s;
+}
+float GenerateRandomFloat(){
+		return (rand()%65536)/3;
+}
+struct TimeStamp{
+		int year;
+		int month;
+		int day;
+		int hour;
+		int minute;
+		float second;
+		string to_str(){
+			char str[100]={0};
+			sprintf(str, "%d-%d-%d %d:%d:%f", year, month, day, hour, minute, second);
+			string s(str);
+			return s;
+		}
+};
+TimeStamp GenerateRandomTimestamp(){
+		TimeStamp ts;
+		ts.year = 2011+rand()%4;
+		ts.month = rand()%12+1;
+		ts.day = rand()%30+1;
+		ts.hour = rand()%24;
+		ts.minute = rand()%60;
+		ts.second = 0;
+		return ts;
+}
+
+vector<long unsigned int> ff_set;
+//========end helper functions===========
 
 char filepath[50] = "";
+char outfilepath[50] = "";
 struct CCountry{
 	string c_name;
 	string c_code2;
@@ -20,7 +75,7 @@ struct CAirport{
   string ap_name;
   string ap_city;
   string ap_postal_code;
-  stringcountry_code;
+  string country_code;
 	long unsigned int ap_co_id;
   float ap_longitude;
   float ap_latitude;
@@ -40,9 +95,20 @@ struct CAirline{
 		long unsigned int al_co_id;
 };
 CAirline airlines[1300];
-size_t numAirlines = 0;
+size_t numAirlines = 1250;
 
+struct CCustomer{
+		string c_id_str;
+};
+CCustomer customers[1000000*10];
 size_t numCustomers;
+
+struct CFlight{
+		long unsigned int f_al_id;
+		long unsigned int f_depart_ap_id;
+		long unsigned int f_arrive_ap_id;
+};
+size_t numFlights;
 //===========start loading functions=============
 
 void load_country(){
@@ -57,7 +123,7 @@ void load_country(){
         char c_code2[128];
        	char c_code3[128];
         sscanf(line,"\"%[^\",]\",\"%2s\",\"%3s\"", c_name, c_code2, c_code3);
-				countries[i].c_name.assgin(c_name);
+				countries[i].c_name.assign(c_name);
 				countries[i].c_code2.assign(c_code2);
 				countries[i].c_code3.assign(c_code3);
 				i++;
@@ -121,6 +187,7 @@ void load_airport(){
 	}
   numAirports = i;
 	infile.close();
+	outfile.close();
 }
 
 void load_airline(){
@@ -130,6 +197,17 @@ void load_airline(){
 		char filename[100];
 		sprintf(filename, "%s/table.airline.csv.gz", filepath);
     infile.open(filename);
+
+		ofstream outfile;
+		sprintf(filename, "%s/Airline.txt", outfilepath);
+		outfile.open(filename);
+
+		ofstream outfile2;
+		sprintf(filename, "%s/FrequentFlyer.txt", outfilepath);
+		outfile2.open(filename);
+
+		unsigned int cust_range = numCustomers / numAirlines;
+
 		while(infile.getline(line, 1000) && strlen(line)>0){
     		char al_iata_code[64];
         char al_icao_code[64];
@@ -153,13 +231,110 @@ void load_airline(){
 						outfile<<rand()%301993875;
 						if(k<15)outfile<<"|";
 				}
+				
+				for(unsigned int k=0; k<cust_range; k++){
+						if(float(rand()%numCustomers)/float(numCustomers) < FF_PERC){
+								unsigned int c_id = i*cust_range + k;
+								ff_set.push_back(c_id);
+								//register a frequent flyer
+								outfile2<<c_id<<"|"<<i+1<<"|"<<customers[c_id-1].c_id_str<<"|";	
+						
+								for(size_t k=0; k<4; k++)
+										outfile2<<GenerateRandomString(32, false)<<"|";
+								for(size_t k=0; k<16; k++){
+										outfile<<rand();
+										if(k<15)outfile2<<"|";
+								}
+						}
+				}				
 				i++;
 		}
    	numAirlines = i;
+		infile.close();
+		outfile.close();
+		outfile2.close();
 }
 
 void load_customer(){
-		numCustomers = scale_factor * 10 * 10 * 10 * 10 * 10 * 10;
-
+		ofstream outfile;
+		char filename[100];	
+		sprintf(filename, "%s/Customer.txt", outfilepath);
+		outfile.open(filename);
+		for(size_t i=0; i<numCustomers; i++){
+				outfile<<i+1<<"|";
+				string c_id_str = GenerateRandomString(48, false);
+				customers[i].c_id_str.assign(c_id_str);
+				outfile<<c_id_str<<"|";
+				outfile<<(rand()%numAirports+1)<<"|";
+				outfile<<GenerateRandomFloat()<<"|";
+				outfile<<GenerateRandomString(32, false)<<"|";
+				for(size_t k=1; k<20; k++)
+					outfile<<GenerateRandomString(8, true)<<"|";
+				for(size_t k=0; k<20; k++){
+					outfile<<rand();
+					if(k<19)outfile<<"|";
+				}
+		}	
+		outfile.close();
 }
 
+void load_flight(){
+		
+	ofstream outfile;
+	char filename[100];
+	sprintf(filename, "%s/Flight.txt", outfilepath);
+	outfile.open(filename);
+
+	ofstream outfile2;
+	sprintf(filename, "%s/Reservation.txt", outfilepath);
+	outfile2.open(filename);
+	long unsigned int reservation_id = 1;
+	for(size_t i=0; i<numFlights; i++){
+			outfile<<i+1<<"|";
+			long unsigned int f_al_id = rand()%numAirlines+1;
+			long unsigned int f_depart_ap_id = rand()%numAirports+1;
+			long unsigned int f_arrive_ap_id = rand()%numAirports+1;
+			int seats_total = 50+rand()%200;
+
+			float reservation_perc = 0.6+float(rand()%400)/1000.0;
+			int num_reservation = seats_total*reservation_perc;
+
+			int seats_left = seats_total - num_reservation;
+			float base_price = GenerateRandomFloat();
+			TimeStamp ts = GenerateRandomTimestamp();
+			TimeStamp ts2 = ts;
+			ts2.hour = (ts2.hour+rand()%5)%24;
+			ts2.minute = (ts2.minute+rand()%60)%60;
+			
+			outfile<<f_al_id<<"|"<<f_depart_ap_id<<"|"<<ts.to_str()<<"|"<<f_arrive_ap_id<<"|"<<ts2.to_str()<<"|"<<base_price<<"|"<<seats_total<<"|"<<seats_left<<"|";
+			for(int k=0; k<30; k++){
+					outfile<<rand();
+					if(k<29)outfile<<"|";
+			}
+
+			//reservation
+			for(int k=0; i<num_reservation; k++){
+					long unsigned int c_id = ff_set[rand()%ff_set.size()];
+					float price = base_price + rand()%200;
+					outfile2<<reservation_id<<"|"<<c_id<<"|"<<i+1<<"|"<<k+1<<"|"<<price<<"|";
+					for(int j=0; j<9; j++){
+							outfile2<<rand();
+							if(j<8)outfile<<"|";
+					}
+			}
+			
+	}
+	outfile.close();
+	outfile2.close();
+}
+
+int main(){
+		numCustomers = scale_factor * 10 * 10 * 10 * 10 * 10 * 10;
+		numFlights = scale_factor * 10 * 10 * 10 * 10 * 10;
+		load_country();
+		load_customer();
+		load_airport();
+		load_airline();
+		load_flight();	
+		return 0;
+}
