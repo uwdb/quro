@@ -26,8 +26,11 @@ CBaseInterface::CBaseInterface(char *addr, const int iListenPort,
   m_pfLog(pflog),
   m_pfMix(pfmix)
 {
+	cout<<"CBaseInterface: "<<m_szBHAddress<<", "<<m_iBHlistenPort<<endl;
 	sock = new CSocket(m_szBHAddress, m_iBHlistenPort);
+	cout<<"new socket successfully"<<endl;
 	biConnect();
+	cout<<"biConnection"<<endl;
 }
 
 // destructor

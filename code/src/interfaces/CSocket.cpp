@@ -50,7 +50,7 @@ int CSocket::dbt5Accept(void)
 	errno = 0;
 	m_sockfd = accept(m_listenfd, (struct sockaddr *) &sa, &addrlen);
 	if (m_sockfd == -1) {
-		printf("HAVE ERROR ACCEPT!\n");
+		printf("dbt5 Accept: HAVE ERROR ACCEPT!\n");
 		throwError(CSocketErr::ERR_SOCKET_ACCEPT);
 	}
 	return m_sockfd;
@@ -62,7 +62,6 @@ void CSocket::dbt5Connect()
 	errno = 0;
 	m_sockfd = socket(AF_INET, SOCK_STREAM, resolveProto("tcp"));
 	if (m_sockfd == -1) {
-		printf("HAVE ERROR WHEN TRYING TO CONNECT!!\n");
 		throwError(CSocketErr::ERR_SOCKET_CREATE);
 	}
 
@@ -94,7 +93,7 @@ void CSocket::dbt5Connect()
 		sleep(1);
 	}
 	if (ok == false) {
-			printf("HAVE ERROR WHEN TRYING TO CONNECT!!\n");
+			printf("ok==false: m_sockfd = %d, port = %d, addr = %s, errno = %d, HAVE ERROR WHEN TRYING TO CONNECT!!\n", m_sockfd, port, address, errno);
 			throwError(CSocketErr::ERR_SOCKET_CONNECT);
 	}
 }

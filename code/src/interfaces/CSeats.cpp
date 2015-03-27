@@ -4,6 +4,7 @@ CSEATS::CSEATS(char* addr, const int iListenPort, ofstream* pflog,
 		ofstream* pfmix, mutex* pLogLock, mutex* pMixLock)
 : CBaseInterface(addr, iListenPort, pflog, pfmix, pLogLock, pMixLock)
 {
+		cout<<"into CSEATS create..."<<endl;
 		long unsigned int rnd = rand()%6124908536;
 		r.set_seed(rnd);
 }

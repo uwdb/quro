@@ -84,6 +84,7 @@ void *customerWorkerThread(void *data)
 	ts.tv_sec = (time_t) (pThrParam->pDriver->iPacingDelay / 1000);
 	ts.tv_nsec = (long) (pThrParam->pDriver->iPacingDelay % 1000) *
 			1000000;
+	cout<<"--------before creating Customer"<<endl;
 
 	customer = new CCustomer(pThrParam->pDriver->szInDir,
 			pThrParam->pDriver->iConfiguredCustomerCount,
@@ -98,6 +99,7 @@ void *customerWorkerThread(void *data)
 			pThrParam->pDriver->outputDirectory,
 			&pThrParam->pDriver->m_fMix,
 			&pThrParam->pDriver->m_MixLock);
+	cout<<"Customer created successfully"<<endl;
 	do {
 		customer->DoTxn();
 
@@ -175,13 +177,13 @@ CDriver::~CDriver()
 // RunTest
 void CDriver::runTest(int iSleep, int iTestDuration)
 {
-	g_tid = (pthread_t*) malloc(sizeof(pthread_t) * iUsers);
+	g_tid = (pthread_t*) malloc(sizeof(pthread_t) * (iUsers+1));
 
+#ifdef WORKLOAD_TPCE
 	// before starting the test run Trade-Cleanup transaction
 	cout << endl <<
 			"Running Trade-Cleanup transaction before starting the test..." <<
 			endl;
-#ifdef WORKLOAD_TPCE
 	m_pCDM->DoCleanupTxn();
 	cout << "Trade-Cleanup transaction completed." << endl << endl;
 #endif
@@ -221,9 +223,9 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 		pThrParam->pDriver = this;
 
 		entryCustomerWorkerThread(reinterpret_cast<void *>(pThrParam), i);
-
+		cout<<"successfully created customer "<<i<<endl;
 		// Sleep for between starting terminals
-		/*
+
 		while (nanosleep(&ts, &rem) == -1) {
 			if (errno == EINTR) {
 				memcpy(&ts, &rem, sizeof(timespec));
@@ -234,7 +236,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 				logErrorMessage(osErr.str());
 				break;
 			}
-		}*/
+		}
 	}
 
 	// mark end of ramp-up
@@ -247,7 +249,11 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 
 	// wait until all threads quit
 	// 0 represents the Data-Maintenance thread
+#ifdef WORKLOAD_TPCE
 	for (int i = 0; i <= iUsers; i++) {
+#else
+	for (int i = 1; i<= iUsers; i++) {
+#endif
 		if (pthread_join(g_tid[i], NULL) != 0) {
 			throw new CThreadErr( CThreadErr::ERR_THREAD_JOIN,
 					"Driver::RunTest" );

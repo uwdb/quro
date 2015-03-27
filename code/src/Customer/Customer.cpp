@@ -58,7 +58,6 @@ CCustomer::CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
 			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock)
 {
-
 	char filename[iMaxPath + 1];
 	m_pSEATS = new CSEATS(szBHaddr, iBHlistenPort, &m_fLog, m_fMix,
 			&m_LogLock, m_MixLock);
