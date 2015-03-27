@@ -1,6 +1,7 @@
 #ifndef SEATS_RUNNER
 #define SEATS_RUNNER
 
+#define CAL_RESP_TIME
 #include <fstream>
 using namespace std;
 

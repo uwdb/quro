@@ -8,13 +8,12 @@ do_sleep()
 make_directories()
 {
 	COMMAND=""
-	HOST=${1}
-	if [ -n "${HOST}" ]; then
-		COMMAND="ssh ${HOST}"
-	fi
+#	HOST=${1}
+#	if [ -n "${HOST}" ]; then
+#		COMMAND="ssh ${HOST}"
+#	fi
 	${COMMAND} mkdir -p ${OUTPUT_DIR}
-	${COMMAND} mkdir -p ${BH_OUTPUT_DIR}
-	${COMMAND} mkdir -p ${MEE_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${SEATS_OUTPUT_DIR}
 	${COMMAND} mkdir -p ${DRIVER_OUTPUT_DIR}
 	${COMMAND} mkdir -p ${DB_OUTPUT_DIR}
 }
@@ -151,6 +150,13 @@ SEATS_OUTPUT_DIR=${OUTPUT_DIR}/seats
 DRIVER_OUTPUT_DIR=${OUTPUT_DIR}/driver
 DB_OUTPUT_DIR=${OUTPUT_DIR}/db
 
+if [ -d "${OUTPUT_DIR}" ]; then
+	echo "directory '${OUTPUT_DIR}' exists, removing output dir"
+#	echo "clobbering of data, please specify another -o location"
+#	exit 1
+	rm -rf ${OUTPUT_DIR}
+fi
+
 make_directories
 if [ ! "x${DB_HOSTNAME}" = x ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
 	make_directories ${DB_HOSTNAME}
@@ -188,35 +194,29 @@ echo "Results can be found in: ${OUTPUT_DIR}"
 echo
 echo "1. Starting Seats server"
 SeatsMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-		-o ${SEATS_OUTPUT_DIR} > ${SEATS_OUTPUT_DIR}/bh.out 2>&1 &
+		-o ${SEATS_OUTPUT_DIR} > ${SEATS_OUTPUT_DIR}/seats.out 2>&1 &
 
 do_sleep ${USERS} 
 
 echo
 echo "3. Starting Customer driver: ${USERS} user(s)"
 echo "   1 user starting every ${SLEEPY} milliseconds..."
-echo "DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
 		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
 		-i ${EGENDIR}/flat_in \
 		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
-"
-#DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+#DEBUG in script!
+#gdb --args DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 #		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
 #		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
 #		-i ${EGENDIR}/flat_in \
-#		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
-#DEBUG in script!
-gdb --args DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
-		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
-		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
-		-i ${EGENDIR}/flat_in \
-		-o ${DRIVER_OUTPUT_DIR} <<GDB_INPUT
-pwd
-run
-backtrace
-quit
-GDB_INPUT
+#		-o ${DRIVER_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
 
 DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"

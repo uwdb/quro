@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(dbt5 CXX)
-SET(WORKLOAD_TPCE 1)
+SET(WORKLOAD_SEATS 1)
 #SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.

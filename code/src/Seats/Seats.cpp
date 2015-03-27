@@ -37,6 +37,8 @@ try {
 			pThrParam->pSeats->mysql_port_t,
 			pThrParam->pSeats->mysql_socket_t);
 #ifdef CAL_RESP_TIME
+			timeval t1, t2;
+			double exec_time;
 			pDBClist[pThrParam->t_id] = pDBConnection;
 			pDBConnection->init_profile_node(pThrParam->t_id, pThrParam->outputDir);
 #endif
@@ -210,9 +212,10 @@ void SeatsRunner::startListener(void)
 	int acc_socket;
 	PThreadParameter pThrParam = NULL;
 
+	cout<<"BEFORE STARTLISTENER"<<endl;
 	m_Socket.dbt5Listen(m_iListenPort);
 	ostringstream msg1;
-	msg1<<"STARTLISTENER: m_iListenPort = "<<m_iListenPort<<endl;
+	cout<<"STARTLISTENER: m_iListenPort = "<<m_iListenPort<<endl;
 	logErrorMessage(msg1.str(), false);
 
 	int t_cnt = 0;

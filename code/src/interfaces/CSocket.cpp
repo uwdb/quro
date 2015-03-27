@@ -185,6 +185,7 @@ void CSocket::dbt5Listen(const int port)
 
 	errno = 0;
 	if (bind(m_listenfd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
+		cout<<"errno = "<<errno<<endl;
 		throwError(CSocketErr::ERR_SOCKET_BIND);
 		//perror("_listen");
 	}
