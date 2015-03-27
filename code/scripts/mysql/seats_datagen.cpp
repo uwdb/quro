@@ -83,6 +83,14 @@ struct TimeStamp{
 		int hour;
 		int minute;
 		float second;
+		TimeStamp(){
+				year = 2014;
+				month = 1;
+				day = 1;
+				hour = 0;
+				minute = 0;
+				second = 0.0;
+		}
 		string to_str(){
 			char str[100]={0};
 			sprintf(str, "%d-%d-%d %d:%d:%f", year, month, day, hour, minute, second);
@@ -90,14 +98,57 @@ struct TimeStamp{
 			return s;
 		}
 };
+long unsigned int getAPid(long unsigned int cust_id){
+		long unsigned int ap_id_1 = ((cust_id & 0xFE000)>>6);
+		long unsigned int ap_id_2 = ((cust_id & 0x3FF)>>3);
+		return (ap_id_1+ap_id_2)%(numAirports+1);
+}
+long unsigned int backcheck(long unsigned int ap_id){
+		long unsigned int cust_id_1 = ap_id & 0x7F;
+		long unsigned int cust_id_2 = ap_id & 0x3F80;
+		long unsigned int rnd = rand()%8;
+		long unsigned int x = rand()%4;
+		long unsigned int cust_id = (cust_id_2<<6) + (x<<10) + (cust_id_1<<3) + (rnd);
+		return cust_id;
+}
+
+int calendar[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 TimeStamp GenerateRandomTimestamp(){
 		TimeStamp ts;
-		ts.year = 2011+getRandom()%4;
+		ts.year = 2014;
 		ts.month = getRandom()%12+1;
-		ts.day = getRandom()%30+1;
+		ts.day = getRandom()%calendar[ts.month-1]+1;
 		ts.hour = getRandom()%24;
 		ts.minute = getRandom()%60;
 		ts.second = 0;
+		return ts;
+}
+TimeStamp addTime(TimeStamp t, size_t hour, size_t min){
+		TimeStamp ts;
+		if(t.minute+min >= 60) {
+				ts.minute = (t.minute+min)%60;
+				ts.hour = t.hour + 1;
+		}else{
+				ts.minute = t.minute + min;
+				ts.hour = t.hour;
+		}
+		if(ts.hour + hour >= 24) {
+				ts.hour = (ts.hour + hour)%24;
+				ts.day = t.day + 1;
+		}else{
+				ts.hour = (ts.hour + hour);
+				ts.day = t.day;
+		}
+		if(ts.day >= calendar[t.month-1]){
+				ts.day = 1;
+				ts.month = t.month + 1;
+		}else{
+				ts.month = t.month;
+		}
+		if(ts.month == 13){
+				ts.year = 2015;
+				ts.month = 1;
+		}
 		return ts;
 }
 
@@ -129,7 +180,7 @@ struct CAirport{
   int ap_wac;
 };
 CAirport airports[10000];
-size_t numAirports = 0;
+size_t numAirports = 10000;
 
 struct CAirline{
 		string al_iata_code;
@@ -154,6 +205,8 @@ struct CFlight{
 		long unsigned int f_arrive_ap_id;
 };
 size_t numFlights;
+
+map<long unsigned int, vector<long unsigned int> > ap_cus_mapping;
 //===========start loading functions=============
 
 void load_country(){
@@ -332,7 +385,9 @@ void load_customer(){
 				string c_id_str = GenerateRandomString(48, false);
 				customers[i].c_id_str.assign(c_id_str);
 				outfile<<c_id_str<<"|";
-				outfile<<(getRandom()%numAirports+1)<<"|";
+				long unsigned int ap_id = (getRandom()%numAirports+1);
+				ap_cus_mapping[ap_id].push_back(i+1);
+				outfile<<ap_id<<"|";
 				outfile<<GenerateRandomFloat()<<"|";
 				outfile<<GenerateRandomString(32, false)<<"|";
 				for(size_t k=1; k<20; k++)
@@ -374,9 +429,9 @@ void load_flight(){
 			int seats_left = seats_total - num_reservation;
 			float base_price = GenerateRandomFloat();
 			TimeStamp ts = GenerateRandomTimestamp();
-			TimeStamp ts2 = ts;
-			ts2.hour = (ts2.hour+getRandom()%5)%24;
-			ts2.minute = (ts2.minute+getRandom()%60)%60;
+			TimeStamp ts2 = addTime(ts, getRandom()%12+3, getRandom()%60);
+
+			//cout<<ts.to_str()<<"\t\t"<<ts2.to_str()<<endl;
 
 			outfile<<f_al_id<<"|"<<f_depart_ap_id<<"|"<<ts.to_str()<<"|"<<f_arrive_ap_id<<"|"<<ts2.to_str()<<"|"<<base_price<<"|"<<seats_total<<"|"<<seats_left<<"|";
 
@@ -387,7 +442,6 @@ void load_flight(){
 					if(k<29)outfile<<"|";
 			}
 			outfile<<endl;
-			cout<<"ff_set.size = "<<ff_set.size()<<endl;
 			//reservation
 			for(int k=0; k<num_reservation; k++){
 					long unsigned int c_id = ff_set[getRandom()%ff_set.size()];
@@ -406,11 +460,31 @@ void load_flight(){
 	outfile3.close();
 }
 
+void init(){
+		for(size_t i=0; i<numAirports; i++){
+				vector<long unsigned int> vec;
+				ap_cus_mapping[i+1] = vec;
+		}
+}
+
+void dump(){
+		char filename[100] = {0};
+		sprintf(filename, "%s/AP_CUS_Mapping.txt", outfilepath);
+		ofstream outfile(filename);
+		for(size_t i=1; i<=numAirports; i++){
+				for(size_t j=0; j<ap_cus_mapping[i].size(); j++)
+						outfile<<ap_cus_mapping[i][j]<<" ";
+				outfile<<endl;
+		}
+		outfile.close();
+}
+
 int main(){
 		numCustomers = scale_factor * 10 * 10 * 10 * 10 * 10 * 10;
 		numFlights = scale_factor * 10 * 10 * 10 * 10 * 10;
 //		numCustomers = scale_factor * 1000;
 //		numFlights = scale_factor * 100;
+		init();
 		cout<<"numCustomers: "<<numCustomers<<", numFlights = "<<numFlights<<endl;
 		load_country();
 		cout<<"finish loading country"<<endl;
@@ -422,5 +496,6 @@ int main(){
 		cout<<"finish loading airline"<<endl;
 		load_flight();
 		cout<<"finish loading flight"<<endl;
+		dump();
 		return 0;
 }

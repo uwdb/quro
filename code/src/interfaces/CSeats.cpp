@@ -57,6 +57,8 @@ void CSEATS::GenerateFindFlightInput(){
 		ffInput.depart_aid = 1;
 		ffInput.arrive_aid = 2;
 		ffInput.distance = 1.23;
+		TIMESTAMP_STRUCT start_date;
+		TIMESTAMP_STRUCT end_date;
 }
 void CSEATS::GenerateNewReservationInput(){
 }

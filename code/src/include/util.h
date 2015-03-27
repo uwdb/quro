@@ -99,4 +99,18 @@ private:
   unsigned long seed;
 };
 
+long unsigned int getApId(long unsigned int cust_id){
+		long unsigned int ap_id_1 = ((cust_id & 0xFE000)>>6);
+		long unsigned int ap_id_2 = ((cust_id & 0x3FF)>>3);
+		return (ap_id_1+ap_id_2)%(numAirports+1);
+}
+long unsigned int getCusId(long unsigned int ap_id){
+		long unsigned int cust_id_1 = ap_id & 0x7F;
+		long unsigned int cust_id_2 = ap_id & 0x3F80;
+		long unsigned int rnd = rand()%8;
+		long unsigned int x = rand()%4;
+		long unsigned int cust_id = (cust_id_2<<6) + (x<<10) + (cust_id_1<<3) + (rnd);
+		return cust_id;
+}
+
 #endif //_UTIL_H_

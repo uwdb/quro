@@ -39,6 +39,8 @@ char outputDirectory[iMaxPath + 1] = "."; // path to output files
 // automatic RNG seed generation requires unique input
 UINT32 iSeed = 0;
 
+
+
 // shows program usage
 void usage()
 {
