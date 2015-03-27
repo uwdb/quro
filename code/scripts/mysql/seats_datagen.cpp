@@ -239,18 +239,19 @@ void load_airport(){
   numAirports = i;
 	infile.close();
 	outfile.close();
-
+/*
 	cout<<"start counting distance"<<endl;
 	sprintf(filename, "%s/AirportDistance.txt", outfilepath);
 	outfile.open(filename);
-	for(size_t i=1; i<=numAirports; i++){
-			for(size_t j=i+1; j<=numAirports; j++){
+	for(size_t i=1; i<=numAirports/10; i++){
+			for(size_t j=i+1; j<=numAirports/10; j++){
 					double dist = distance(airports[i-1].ap_latitude, airports[i-1].ap_longitude, airports[j-1].ap_latitude, airports[j-1].ap_longitude);
 					outfile<<i<<"|"<<j<<"|"<<dist<<endl;
 			}
 	}
 	outfile.close();
 	cout<<"end counting distance"<<endl;
+	*/
 }
 
 void load_airline(){
@@ -270,6 +271,7 @@ void load_airline(){
 		outfile2.open(filename);
 
 		unsigned int cust_range = numCustomers / numAirlines;
+		//unsigned int cust_range = 10;
 		while(infile.getline(line, 1000) && strlen(line)>0){
     		char al_iata_code[64];
         char al_icao_code[64];
@@ -366,7 +368,7 @@ void load_flight(){
 			long unsigned int f_arrive_ap_id = getRandom()%numAirports+1;
 			int seats_total = 50+getRandom()%200;
 
-			float reservation_perc = 0.6+float(getRandom()%400)/1000.0;
+			float reservation_perc = 0.4+float(getRandom()%400)/1000.0;
 			int num_reservation = seats_total*reservation_perc;
 
 			int seats_left = seats_total - num_reservation;
@@ -385,6 +387,7 @@ void load_flight(){
 					if(k<29)outfile<<"|";
 			}
 			outfile<<endl;
+			cout<<"ff_set.size = "<<ff_set.size()<<endl;
 			//reservation
 			for(int k=0; k<num_reservation; k++){
 					long unsigned int c_id = ff_set[getRandom()%ff_set.size()];
@@ -406,8 +409,8 @@ void load_flight(){
 int main(){
 		numCustomers = scale_factor * 10 * 10 * 10 * 10 * 10 * 10;
 		numFlights = scale_factor * 10 * 10 * 10 * 10 * 10;
-//		numCustomers = scale_factor * 10000;
-//		numFlights = scale_factor * 1000;
+//		numCustomers = scale_factor * 1000;
+//		numFlights = scale_factor * 100;
 		cout<<"numCustomers: "<<numCustomers<<", numFlights = "<<numFlights<<endl;
 		load_country();
 		cout<<"finish loading country"<<endl;

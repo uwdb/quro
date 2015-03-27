@@ -9,5 +9,6 @@ void CFindFlightDB::DoFindFlight(TFindFlightTxnInput* pIn, TFindFlightTxnOutput 
 
 void CFindFlightDB::execute(TFindFlightTxnInput* pIn, TFindFlightTxnOutput* pOut){
 	pOut->status = CBaseTxnErr::SUCCESS;
+	pDB->outfile<<"get input: "<<pIn->depart_aid<<", "<<pIn->arrive_aid<<","<<pIn->distance<<endl;
 }
 

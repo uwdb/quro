@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(dbt5 CXX)
-SET(WORKLOAD_SEATS 1)
+SET(WORKLOAD_TPCE 1)
 #SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
@@ -78,9 +78,7 @@ IF (WORKLOAD_TPCE)
 											 scripts/mysql/dbt5-mysql-create-db
                        scripts/mysql/dbt5-mysql-build-db)
 ELSEIF (WORKLOAD_SEATS)
-	SET(DB_SCRIPTS scripts/mysql/seats-mysql-start-db
-										scripts/mysql/seats-mysql-create-indexes
-										scripts/mysql/seats-mysql-create-tables
+	SET(DB_SCRIPTS scripts/mysql/seats-mysql-create-tables
 										scripts/mysql/seats-mysql-create-db
 										scripts/mysql/seats-mysql-build-db)
 ENDIF (WORKLOAD_TPCE)
@@ -274,8 +272,8 @@ ENDIF (WORKLOAD_TPCE)
 #
 # Install rules.
 #
-
-INSTALL(PROGRAMS ${DBT5_BROKERAGE_HOUSE}
+IF (WORKLOAD_TPCE)
+		INSTALL(PROGRAMS ${DBT5_BROKERAGE_HOUSE}
                  ${DBT5_DRIVER}
                  ${DBT5_MARKET_EXCHANGE}
                  ${DBT5_TEST_TXN}
@@ -287,3 +285,10 @@ INSTALL(PROGRAMS ${DBT5_BROKERAGE_HOUSE}
                  scripts/dbt5-generate-report
                  ${DB_SCRIPTS}
         DESTINATION "/bin")
+ELSEIF (WORKLOAD_SEATS)		
+		INSTALL(PROGRAMS ${DBT5_SEATS}
+                 ${DBT5_DRIVER}
+                 scripts/dbt5-run-workload
+                 ${DB_SCRIPTS}
+        DESTINATION "/bin")
+ENDIF (WORKLOAD_TPCE)

@@ -194,7 +194,6 @@ SeatsRunner::SeatsRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_u
 	m_fLog.open(filename, ios::out);
 	strcpy(outputDir, outputDirectory);
 	logErrorMessage(s, false);
-
 }
 
 int SeatsRunner::RunFindFlight(TFindFlightTxnInput* pTxnInput, CFindFlightDB &findFlight){

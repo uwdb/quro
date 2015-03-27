@@ -8,7 +8,7 @@
 class CFindFlightDB: public CTxnBaseDB
 {
 public:
-		CFindFlightDB(CDBConnection *pDBConn): CTxnBaseDB(pDBConn) {};
+		CFindFlightDB(CDBConnection *pDBConn): CTxnBaseDB(pDBConn) { };
 		~CFindFlightDB() {};
 		void DoFindFlight(TFindFlightTxnInput* pIn, TFindFlightTxnOutput* pOut);
 

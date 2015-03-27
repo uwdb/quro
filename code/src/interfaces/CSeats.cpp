@@ -53,6 +53,9 @@ bool CSEATS::UpdateReservation(TUpdateReservationTxnInput* pTxnInput){
 
 }
 void CSEATS::GenerateFindFlightInput(){
+		ffInput.depart_aid = 1;
+		ffInput.arrive_aid = 2;
+		ffInput.distance = 1.23;
 }
 void CSEATS::GenerateNewReservationInput(){
 }

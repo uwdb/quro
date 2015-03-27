@@ -223,6 +223,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 		entryCustomerWorkerThread(reinterpret_cast<void *>(pThrParam), i);
 
 		// Sleep for between starting terminals
+		/*
 		while (nanosleep(&ts, &rem) == -1) {
 			if (errno == EINTR) {
 				memcpy(&ts, &rem, sizeof(timespec));
@@ -233,7 +234,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 				logErrorMessage(osErr.str());
 				break;
 			}
-		}
+		}*/
 	}
 
 	// mark end of ramp-up
