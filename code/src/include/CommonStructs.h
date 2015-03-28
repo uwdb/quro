@@ -81,7 +81,7 @@ typedef struct TFindFlightTxnInput
 		long unsigned int arrive_aid;
 		TIMESTAMP_STRUCT start_date;
 		TIMESTAMP_STRUCT end_date;
-		long unsigned int distance;
+		double distance;
 };
 
 typedef struct TNewReservationTxnInput

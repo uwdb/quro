@@ -2,7 +2,7 @@
 MYSQL=${HOME}/mysql-bin/bin/mysql
 DB_NAME=seats
 
-SEATS_DATA=/data/sanchez/results/silo/results/SEATS_DATA
+SEATS_DATA=/afs/csail.mit.edu/u/c/congy/SEATS_DATA
 
 ${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Country.txt\" \
 		INTO TABLE COUNTRY FIELDS TERMINATED BY \"|\" ";

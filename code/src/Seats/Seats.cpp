@@ -7,6 +7,10 @@
 //#include "UpdateCustomer.h"
 //#include "UpdateReservation.h"
 
+#define PRINT_OUTPUT
+#include "util.h"
+using namespace std;
+
 #include <signal.h>
 #include <sys/time.h>
 
@@ -76,37 +80,40 @@ try {
 							iRet = pThrParam->pSeats->RunFindFlight(&(pMessage->TxnInput.FindFlightTxnInput), findFlightDB);
 							break;
 					default:
+							pDBConnection->outfile<<"Wrong txn type!"<<endl;
 							iRet = ERR_TYPE_WRONGTXN;
 				}
 				txn_cnt++;
 			}catch (const char *str) {
 			pDBConnection->rollback();
-#ifdef CAL_RESP_TIME
-			gettimeofday(&t2, NULL);
-			exec_time = difftimeval(t2, t1);
-			txn_time += exec_time;
-#ifdef PROFILE_EACH_QUERY
-			pDBConnection->print_profile_query();
-#endif
-			pDBConnection->outfile.flush();
-#endif
+//#ifdef CAL_RESP_TIME
+//			gettimeofday(&t2, NULL);
+//			exec_time = difftimeval(t2, t1);
+//			txn_time += exec_time;
+//#ifdef PROFILE_EACH_QUERY
+//			pDBConnection->print_profile_query();
+//#endif
+//			pDBConnection->outfile.flush();
+//#endif
+				pDBConnection->outfile<<str<<endl;
+
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
 				commit = false;
 				//XXX:debug for trade result
 			}
-#ifdef CAL_RESP_TIME
-			gettimeofday(&t2, NULL);
-			exec_time = difftimeval(t2, t1);
-			txn_time += exec_time;
-
-			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
-#ifdef PROFILE_EACH_QUERY
-			pDBConnection->print_profile_query();
-#endif
+//#ifdef CAL_RESP_TIME
+//			gettimeofday(&t2, NULL);
+//			exec_time = difftimeval(t2, t1);
+//			txn_time += exec_time;
+//
+//			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+//#ifdef PROFILE_EACH_QUERY
+//			pDBConnection->print_profile_query();
+//#endif
 			pDBConnection->outfile.flush();
 
-#endif
+//#endif
 
 			// send status to driver
 			Reply.iStatus = iRet;
@@ -202,6 +209,11 @@ int SeatsRunner::RunFindFlight(TFindFlightTxnInput* pTxnInput, CFindFlightDB &fi
 	TFindFlightTxnOutput ffOutput;
 
 	findFlight.DoFindFlight(pTxnInput, &ffOutput);
+
+#ifdef PRINT_OUTPUT
+	findFlight.pDB->outfile<<"input: depart_aid = "<<pTxnInput->depart_aid<<", arrive_id = "<<pTxnInput->arrive_aid<<", start_date = "<<toStr(pTxnInput->start_date)<<", end_date = "<<toStr(pTxnInput->end_date)<<", dis = "<<pTxnInput->distance<<endl;
+	findFlight.pDB->outfile<<"num_result = "<<ffOutput.num_results<<endl;
+#endif
 
 	return ffOutput.status;
 }

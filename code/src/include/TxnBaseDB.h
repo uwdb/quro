@@ -29,9 +29,10 @@ class CDBConnection;
 
 class CTxnBaseDB
 {
-protected:
+public:
 	CDBConnection *pDB;
 
+protected:
 	void commitTransaction();
 	void reconect();
 

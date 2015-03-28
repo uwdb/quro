@@ -82,14 +82,14 @@ struct TimeStamp{
 		int day;
 		int hour;
 		int minute;
-		float second;
+		int second;
 		TimeStamp(){
 				year = 2014;
 				month = 1;
 				day = 1;
 				hour = 0;
 				minute = 0;
-				second = 0.0;
+				second = 0;
 		}
 		string to_str(){
 			char str[100]={0};
@@ -142,7 +142,7 @@ vector<long unsigned int> ff_set;
 //========end helper functions===========
 
 char filepath[50] = "./seats_data";
-char outfilepath[50] = "/data/sanchez/results/silo/results/SEATS_DATA";
+char outfilepath[50] = "/afs/csail.mit.edu/u/c/congy/SEATS_DATA";
 struct CCountry{
 	string c_name;
 	string c_code2;
@@ -221,6 +221,7 @@ void load_country(){
 		outfile.open(filename);
     char line[1000];
 		int i=0;
+		cout<<"start loading country"<<endl;
     while(infile.getline(line, 1000) && strlen(line)>0){
     		char c_name[128];
         char c_code2[128];
@@ -231,7 +232,7 @@ void load_country(){
 				countries[i].c_code3.assign(c_code3);
 				outfile<<i+1<<"|"<<c_name<<"|"<<c_code2<<"|"<<c_code3<<endl;
 				i++;
-				countryMapping[countries[i-1].c_name] = i;
+				countryMapping[countries[i-1].c_code3] = i;
 		}
 		numCountries = i;
 		infile.close();
@@ -362,7 +363,7 @@ void load_airline(){
 								for(size_t k=0; k<4; k++)
 										outfile2<<GenerateRandomString(32, false)<<"|";
 								for(size_t k=0; k<16; k++){
-										outfile2<<getRandom();
+										outfile2<<getRandom()%65536;
 										if(k<15)outfile2<<"|";
 								}
 								outfile2<<endl;
@@ -394,7 +395,7 @@ void load_customer(){
 				for(size_t k=1; k<20; k++)
 					outfile<<GenerateRandomString(8, true)<<"|";
 				for(size_t k=0; k<20; k++){
-					outfile<<getRandom();
+					outfile<<getRandom()%65536;
 					if(k<19)outfile<<"|";
 				}
 				outfile<<endl;
@@ -439,18 +440,19 @@ void load_flight(){
 			outfile3<<i+1<<"|"<<f_al_id<<"|"<<f_depart_ap_id<<"|"<<ts.to_str()<<"|"<<f_arrive_ap_id<<"|"<<ts2.to_str()<<"|"<<seats_total<<endl;
 			//cout<<f_al_id<<"|"<<f_depart_ap_id<<"|"<<ts.to_str()<<"|"<<f_arrive_ap_id<<"|"<<ts2.to_str()<<"|"<<base_price<<"|"<<seats_total<<"|"<<seats_left<<"|";
 			for(int k=0; k<30; k++){
-					outfile<<getRandom();
+					outfile<<getRandom()%65536;
 					if(k<29)outfile<<"|";
 			}
 			outfile<<endl;
 			//reservation
 			for(int k=0; k<num_reservation; k++){
 					long unsigned int c_id = ff_set[getRandom()%ff_set.size()];
-					float price = base_price + getRandom()%200;
+					float price = base_price + float(getRandom()%200);
 					outfile2<<reservation_id<<"|"<<c_id<<"|"<<i+1<<"|"<<k+1<<"|"<<price<<"|";
+					reservation_id++;
 					for(int j=0; j<9; j++){
-							outfile2<<getRandom();
-							if(j<8)outfile<<"|";
+							outfile2<<getRandom()%65536;
+							if(j<8)outfile2<<"|";
 					}
 					outfile2<<endl;
 			}
@@ -485,7 +487,7 @@ int main(){
 		numFlights = scale_factor * 10 * 10 * 10 * 10 * 10;
 //		numCustomers = scale_factor * 1000;
 //		numFlights = scale_factor * 100;
-		init();
+//		init();
 		cout<<"numCustomers: "<<numCustomers<<", numFlights = "<<numFlights<<endl;
 		load_country();
 		cout<<"finish loading country"<<endl;

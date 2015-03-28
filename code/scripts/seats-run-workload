@@ -223,6 +223,9 @@ echo "Results will be written to: $OUTPUT_DIR"
 
 do_sleep ${DURATION}
 
+echo "Killing Servers..."
+killall SeatsMain 2> /dev/null
+
 echo ">> Test completed."
 echo "Results are in: ${OUTPUT_DIR}"
 echo
