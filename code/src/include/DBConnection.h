@@ -210,6 +210,7 @@ public:
 
 #elif WORKLOAD_SEATS
 	void execute(const TFindFlightTxnInput* pIn, TFindFlightTxnOutput* pOut);
+	void execute(const TNewReservationTxnInput* pIn, TNewReservationTxnOutput* pOut);
 #endif // WORKLOAD_TPCE
 
 #ifdef WORKLOAD_TPCE

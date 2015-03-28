@@ -64,6 +64,12 @@ void CSEATS::GenerateFindFlightInput(){
 		ffInput.end_date = addDay(ffInput.start_date, rand()%28);
 }
 void CSEATS::GenerateNewReservationInput(){
+		nrInput.r_id = get_random(r, 1048576);
+		nrInput.c_id = getCustomerId(r);
+		nrInput.f_id = get_random(r, numFlights)+1;
+		nrInput.seatnum = 50+get_random(r, 100);
+		nrInput.price = r.next_uniform()*500;
+		nrInput.ts = GenerateRandomTimestamp(r);
 }
 void CSEATS::GenerateUpdateCustomerInput(){
 }

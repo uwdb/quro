@@ -91,7 +91,6 @@ typedef struct TNewReservationTxnInput
 		long unsigned int f_id;
 		long unsigned int seatnum;
 		double price;
-		TIMESTAMP_STRUCT ts;
 };
 
 typedef struct TUpdateCustomerTxnInput

@@ -3,7 +3,7 @@
 #include "DBConnection.h"
 
 #include "FindFlightDB.h"
-//#include "NewReservation.h"
+#include "NewReservationDB.h"
 //#include "UpdateCustomer.h"
 //#include "UpdateReservation.h"
 
@@ -48,6 +48,7 @@ try {
 #endif
 
 		CFindFlightDB findFlightDB(pDBConnection);
+		CNewReservationDB newReseravtionDB(pDBConnection);
 
 		int txn_cnt = 0;
 		double txn_time = 0;
@@ -61,7 +62,7 @@ try {
 						sizeof(TMsgDriverSeats));
 				gettimeofday(&tt2, NULL);
 				receiving_time += difftimeval(tt2, tt1);
-				if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
+				//if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
 				pDBConnection->outfile.flush();
 			} catch(CSocketErr *pErr) {
 				sockDrv.dbt5Disconnect();
@@ -78,6 +79,9 @@ try {
 				switch (pMessage->TxnType) {
 					case FIND_FLIGHT:
 							iRet = pThrParam->pSeats->RunFindFlight(&(pMessage->TxnInput.FindFlightTxnInput), findFlightDB);
+							break;
+					case NEW_RESERVATION:
+							iRet = pThrParam->pSeats->RunNewReservation(&(pMessage->TxnInput.NewReservationTxnInput), newReservationDB);
 							break;
 					default:
 							pDBConnection->outfile<<"Wrong txn type!"<<endl;
@@ -216,6 +220,14 @@ int SeatsRunner::RunFindFlight(TFindFlightTxnInput* pTxnInput, CFindFlightDB &fi
 #endif
 
 	return ffOutput.status;
+}
+
+int SeatsRunner::RunNewReservation(TNewReservationTxnInput* pTxnInput, CNewReservationDB &newReservation){
+	TNewReservationTxnOutput nrOutput;
+
+	newReservation.DoNewReservation(pTxnInput, &nrOutput);
+
+	return nrOutput.status;
 }
 
 // Listener

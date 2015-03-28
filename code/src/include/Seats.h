@@ -8,11 +8,13 @@ using namespace std;
 #include "locking.h"
 #include "TxnHarnessStructs.h"
 #include "FindFlightDB.h"
+#include "NewReservationDB.h"
 #include "CommonStructs.h"
 #include "DBT5Consts.h"
 #include "CSocket.h"
 
 class CFindFlightDB;
+class CNewReservationDB;
 
 class SeatsRunner
 {
@@ -35,6 +37,9 @@ private:
 
 	int RunFindFlight(TFindFlightTxnInput* pTxnInput,
 									CFindFlightDB &FindFlight);
+	int RunNewReservation(TNewReservationTxnInput* pTxnInput, 
+									CNewReservationDB &NewReservation);
+
 	friend void *workerThread(void *);
 
 public:
