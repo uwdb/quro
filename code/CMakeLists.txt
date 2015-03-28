@@ -218,6 +218,7 @@ ELSEIF (WORKLOAD_SEATS)
 							 ${EGENSRC}/DateTime.cpp
                ${EGENSRC}/locking.cpp
                ${INTF}/CSocket.cpp
+							 ${INTF}/util.cpp
 							 ${INTF}/CSeats.cpp
                ${TXN_SOURCE}
 							 ${INTF}/BaseInterface.cpp
@@ -230,6 +231,7 @@ ELSEIF (WORKLOAD_SEATS)
 			 							  ${EGENSRC}/DateTime.cpp
 			 							  ${EGENSRC}/locking.cpp
 			 							  ${INTF}/CSocket.cpp
+											${INTF}/util.cpp
 			 						    ${INTF}/CSeats.cpp
 			                ${INTF}/BaseInterface.cpp)
 ENDIF (WORKLOAD_TPCE)

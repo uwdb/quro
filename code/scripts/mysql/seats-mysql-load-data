@@ -12,9 +12,9 @@ ${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Airport.txt\" \
 		INTO TABLE AIRPORT FIELDS TERMINATED BY \"|\" ";
 echo "finish loading airport"
 
-#${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/AirportDistance.txt\" \
-#		INTO TABLE AIRPORT_DISTANCE FIELDS TERMINATED BY \"|\" ";
-#echo "finish loading country"
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/AirportDistance.txt\" \
+		INTO TABLE AIRPORT_DISTANCE FIELDS TERMINATED BY \"|\" ";
+echo "finish loading airport_distance"
 
 ${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Airline.txt\" \
 		INTO TABLE AIRLINE FIELDS TERMINATED BY \"|\" ";

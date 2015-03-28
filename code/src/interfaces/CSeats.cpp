@@ -1,11 +1,11 @@
 #include "CSeats.h"
+#include "Seats_const.h"
 
 CSEATS::CSEATS(char* addr, const int iListenPort, ofstream* pflog,
 		ofstream* pfmix, mutex* pLogLock, mutex* pMixLock)
 : CBaseInterface(addr, iListenPort, pflog, pfmix, pLogLock, pMixLock)
 {
-		cout<<"into CSEATS create..."<<endl;
-		long unsigned int rnd = rand()%6124908536;
+		long unsigned int rnd = (rand()*rand())%6124908536;
 		r.set_seed(rnd);
 }
 
@@ -54,11 +54,14 @@ bool CSEATS::UpdateReservation(TUpdateReservationTxnInput* pTxnInput){
 
 }
 void CSEATS::GenerateFindFlightInput(){
-		ffInput.depart_aid = 1;
-		ffInput.arrive_aid = 2;
-		ffInput.distance = 1.23;
-		TIMESTAMP_STRUCT start_date;
-		TIMESTAMP_STRUCT end_date;
+		ffInput.depart_aid = getRandomAirportId(r);
+		ffInput.arrive_aid = getRandomAirportId(r);
+		if(r.next_uniform()<PROB_GET_NEARBY_AIRPORT)
+				ffInput.distance = getRandomDist(r);
+		else
+				ffInput.distance = -1;
+		ffInput.start_date = GenerateRandomTimestamp(r);
+		ffInput.end_date = addDay(ffInput.start_date, rand()%28);
 }
 void CSEATS::GenerateNewReservationInput(){
 }

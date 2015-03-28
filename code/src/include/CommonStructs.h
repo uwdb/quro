@@ -112,6 +112,15 @@ typedef struct TUpdateReservationTxnInput
 
 typedef struct TFindFlightTxnOutput
 {
+		size_t num_results;
+		long unsigned int depart_ap_code;
+		char depart_ap_city[64];
+		long unsigned int depart_ap_country;
+		char depart_ap_name[128];
+		long unsigned int arrive_ap_code[3];
+		char arrive_ap_city[3][64];
+		long unsigned int arrive_ap_country[3];
+		char arrive_ap_name[3][128];
 		int status;
 };
 

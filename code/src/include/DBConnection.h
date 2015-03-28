@@ -208,6 +208,8 @@ public:
 	void execute(const TTradeUpdateFrame2Input *, TTradeUpdateFrame2Output *);
 	void execute(const TTradeUpdateFrame3Input *, TTradeUpdateFrame3Output *);
 
+#elif WORKLOAD_SEATS
+	void execute(const TFindFlightTxnInput* pIn, TFindFlightTxnOutput* pOut);
 #endif // WORKLOAD_TPCE
 
 #ifdef WORKLOAD_TPCE

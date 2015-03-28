@@ -1,0 +1,1 @@
+#define PROB_GET_NEARBY_AIRPORT 0.25

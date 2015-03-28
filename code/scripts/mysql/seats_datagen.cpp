@@ -98,20 +98,6 @@ struct TimeStamp{
 			return s;
 		}
 };
-long unsigned int getAPid(long unsigned int cust_id){
-		long unsigned int ap_id_1 = ((cust_id & 0xFE000)>>6);
-		long unsigned int ap_id_2 = ((cust_id & 0x3FF)>>3);
-		return (ap_id_1+ap_id_2)%(numAirports+1);
-}
-long unsigned int backcheck(long unsigned int ap_id){
-		long unsigned int cust_id_1 = ap_id & 0x7F;
-		long unsigned int cust_id_2 = ap_id & 0x3F80;
-		long unsigned int rnd = rand()%8;
-		long unsigned int x = rand()%4;
-		long unsigned int cust_id = (cust_id_2<<6) + (x<<10) + (cust_id_1<<3) + (rnd);
-		return cust_id;
-}
-
 int calendar[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 TimeStamp GenerateRandomTimestamp(){
 		TimeStamp ts;
@@ -207,6 +193,21 @@ struct CFlight{
 size_t numFlights;
 
 map<long unsigned int, vector<long unsigned int> > ap_cus_mapping;
+
+long unsigned int getAPid(long unsigned int cust_id){
+		long unsigned int ap_id_1 = ((cust_id & 0xFE000)>>6);
+		long unsigned int ap_id_2 = ((cust_id & 0x3FF)>>3);
+		return (ap_id_1+ap_id_2)%(numAirports+1);
+}
+long unsigned int backcheck(long unsigned int ap_id){
+		long unsigned int cust_id_1 = ap_id & 0x7F;
+		long unsigned int cust_id_2 = ap_id & 0x3F80;
+		long unsigned int rnd = rand()%8;
+		long unsigned int x = rand()%4;
+		long unsigned int cust_id = (cust_id_2<<6) + (x<<10) + (cust_id_1<<3) + (rnd);
+		return cust_id;
+}
+
 //===========start loading functions=============
 
 void load_country(){
@@ -292,19 +293,19 @@ void load_airport(){
   numAirports = i;
 	infile.close();
 	outfile.close();
-/*
+
 	cout<<"start counting distance"<<endl;
 	sprintf(filename, "%s/AirportDistance.txt", outfilepath);
 	outfile.open(filename);
-	for(size_t i=1; i<=numAirports/10; i++){
-			for(size_t j=i+1; j<=numAirports/10; j++){
+	for(size_t i=1; i<=numAirports/5; i++){
+			for(size_t j=i+1; j<=numAirports/5; j++){
 					double dist = distance(airports[i-1].ap_latitude, airports[i-1].ap_longitude, airports[j-1].ap_latitude, airports[j-1].ap_longitude);
 					outfile<<i<<"|"<<j<<"|"<<dist<<endl;
 			}
 	}
 	outfile.close();
 	cout<<"end counting distance"<<endl;
-	*/
+
 }
 
 void load_airline(){
@@ -496,6 +497,6 @@ int main(){
 		cout<<"finish loading airline"<<endl;
 		load_flight();
 		cout<<"finish loading flight"<<endl;
-		dump();
+//		dump();
 		return 0;
 }
