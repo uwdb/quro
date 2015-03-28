@@ -30,11 +30,11 @@ void CDBConnection::execute(const TNewReservationTxnInput* pIn, TNewReservationT
 	int length;
 	char* val;
 	int r = 0;
-	
+
 	int seatnum = pIn->seatnum;
 	int seat_total = 0;
 	int al_id;
-	int seats_left; 
+	int seats_left;
 	int c_base_ap_id;
 	float c_balance;
 
@@ -42,9 +42,9 @@ void CDBConnection::execute(const TNewReservationTxnInput* pIn, TNewReservationT
 	r = dbt5_sql_execute(query, &result, "GET_FLIGHT");
 	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
-	
+
 			al_id = atol(dbt5_sql_getvalue(&result, 0, length));
-			seats_left = atol(dbt5_sql_getvalue(&reuslt, 1, length));
+			seats_left = atol(dbt5_sql_getvalue(&result, 1, length));
 			seat_total = atol(dbt5_sql_getvalue(&result, 2, length));
 
 			if(seatnum > seat_total){
@@ -62,15 +62,15 @@ void CDBConnection::execute(const TNewReservationTxnInput* pIn, TNewReservationT
 			//return ;
 			FAIL_MSG("SEAT occupied");
 	}
-	
-	sprintf(query, CHECKCUSTOMER, pIn->f_id, pIn->c_id);
+
+	sprintf(query, NR_CHECK_CUSTOMER, pIn->f_id, pIn->c_id);
 	r= dbt5_sql_execute(query, &result, "GET_CUSTOMER");
 	if(r==1 && result.result_set){
 			//customer already have a seat
 			//return ;
 			FAIL_MSG("customer already have a seat");
 	}
-	
+
 	sprintf(query, NR_GET_CUSTOMER, pIn->c_id);
 	r= dbt5_sql_execute(query, &result, "GET_CUSTOMER");
 	if(r==1 && result.result_set){

@@ -144,6 +144,7 @@ IF (WORKLOAD_TPCE)
 ELSEIF (WORKLOAD_SEATS)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
+									${TXN}/Seats/NewReservationTxn.cpp
 									${TXN}/Seats/FindFlightTxn.cpp)
 ENDIF (WORKLOAD_TPCE)
 #

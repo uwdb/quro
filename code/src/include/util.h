@@ -10,6 +10,7 @@ using namespace std;
 #define numAirports 9264
 #define numCountries 249
 #define numAirlines 1251
+#define numFlights   100000
 #define numCustomers 1000000
 #define MIN_DIS 100
 #define MAX_DIS 4000

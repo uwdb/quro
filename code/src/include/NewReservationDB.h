@@ -25,7 +25,7 @@ public:
 "  FROM CUSTOMER WHERE C_ID = %d"
 
 #define NR_CHECK_SEAT \
-"SELECT R_ID  FROM RESERVATION \n"
+"SELECT R_ID  FROM RESERVATION \n" \
 " WHERE R_F_ID = %d and R_SEAT = %d"
 
 #define NR_CHECK_CUSTOMER \
@@ -33,7 +33,7 @@ public:
 " WHERE R_F_ID = %d AND R_C_ID = %d"
 
 #define NR_UPDATE_FLIGHT \
-"UPDATE FLIGHT SET F_SEATS_LEFT = F_SEATS_LEFT - 1 \n" \n 
+"UPDATE FLIGHT SET F_SEATS_LEFT = F_SEATS_LEFT - 1 \n" \
 " WHERE F_ID = %d "
 
 #define NR_UPDATE_CUSTOMER \
@@ -49,12 +49,12 @@ public:
 #define NR_UPDATE_FREQUENT_FLYER \
 "UPDATE FREQUENT_FLYER \n" \
 "   SET FF_IATTR10 = FF_IATTR10 + 1, \n" \
-"       FF_IATTR11 = ?, \n" \
-"       FF_IATTR12 = ?, \n" \
-"       FF_IATTR13 = ?, \n" \
-"       FF_IATTR14 = ? \n" \
-" WHERE FF_C_ID = ? \n" \
-"   AND FF_AL_ID = ?"
+"       FF_IATTR11 = %d, \n" \
+"       FF_IATTR12 = %d, \n" \
+"       FF_IATTR13 = %d, \n" \
+"       FF_IATTR14 = %d \n" \
+" WHERE FF_C_ID = %d \n" \
+"   AND FF_AL_ID = %d"
 
 #define NR_INSERT_RESERVATION \
 "INSERT INTO RESERVATION (" \

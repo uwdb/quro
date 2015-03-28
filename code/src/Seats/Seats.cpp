@@ -48,7 +48,7 @@ try {
 #endif
 
 		CFindFlightDB findFlightDB(pDBConnection);
-		CNewReservationDB newReseravtionDB(pDBConnection);
+		CNewReservationDB newReservationDB(pDBConnection);
 
 		int txn_cnt = 0;
 		double txn_time = 0;
