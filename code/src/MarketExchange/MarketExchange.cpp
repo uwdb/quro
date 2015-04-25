@@ -129,7 +129,7 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
 	Users = iUsers;
 	assert(iUsers <= 128);
-	for(int i=0; i<iUsers; i++){
+	for(int i=0; i<Users; i++){
 			m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
 					&m_LogLock, &m_MixLock);
 	}

@@ -54,9 +54,9 @@ else
 fi
 
 if [ ! "x${PORT}" = "x" ]; then
-	dbt5-pgsql-start-db -p "-c port=${PORT}"
+	./dbt5-pgsql-start-db -p "-c port=${PORT}"
 else
-	dbt5-pgsql-start-db
+	./dbt5-pgsql-start-db
 fi
 
 # Give the database a few seconds to get going

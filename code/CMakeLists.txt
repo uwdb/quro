@@ -1,11 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(dbt5 CXX)
-SET(WORKLOAD_SEATS 1)
-#SET(DEF_REORDER 1)
+SET(WORKLOAD_TPCE 1)
+SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
 #
-SET(HOME /afs/csail.mit.edu/u/c/congy)
+
+SET(MYSQL_LIB /usr/lib/x86_64-linux-gnu)
+SET(MYSQL_INCLUDE /usr/include/mysql)
+#SET(HOME /afs/csail.mit.edu/u/c/congy)
 SET(DBT5_SEATS bin/SeatsMain)
 SET(DBT5_BROKERAGE_HOUSE bin/BrokerageHouseMain)
 SET(DBT5_DRIVER bin/DriverMain)
@@ -69,8 +72,8 @@ ENDIF (GETCONF_FOUND)
 #    MESSAGE(FATAL_ERROR "Need to specify -DDBMS=pgsql")
 #
 #ENDIF (DBMS STREQUAL "pgsql")
-SET(DBCFLAGS "-DLIBPQ -I${PG_INCLUDEDIR} -I${HOME}/mysql-bin/include")
-SET(DB_LIBS "-L${HOME}/mysql-bin/lib -lmysqlclient -lz -lm -lrt -ldl")
+SET(DBCFLAGS "-DLIBPQ -I${PG_INCLUDEDIR} -I${MYSQL_INCLUDE} -lpthread -lmysqlclient")
+SET(DB_LIBS "-L${MYSQL_LIB} -lmysqlclient -lz -lm -lrt -ldl -lpthread")
 IF (WORKLOAD_TPCE)
 	SET(DB_SCRIPTS scripts/mysql/dbt5-mysql-start-db
                        scripts/mysql/dbt5-mysql-create-indexes
@@ -243,12 +246,12 @@ ENDIF (WORKLOAD_TPCE)
 #
 IF (WORKLOAD_TPCE)
 	IF (DEF_REORDER)
-			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DREORDER -DWORKLOAD_TPCE")
+			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DREORDER -DWORKLOAD_TPCE -lpthread -lmysqlclient")
 	ELSE (NOT DEFINED DEF_REORDER)
-			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DWORKLOAD_TPCE")
+			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_TPCE -lpthread -lmysqlclient")
 	ENDIF (DEF_REORDER)
 ELSEIF (WORKLOAD_SEATS)
-	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${HOME}/mysql-bin/include -DWORKLOAD_SEATS -std=c++11")
+	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_SEATS -std=c++11")
 ENDIF (WORKLOAD_TPCE)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_FORMAT_MACROS")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_CONSTANT_MACROS")
@@ -261,13 +264,13 @@ SET_SOURCE_FILES_PROPERTIES(${TXN}/pgsql/DBConnection.cpp COMPILE_FLAGS
 #
 IF (WORKLOAD_TPCE)
 		SET_TARGET_PROPERTIES(${DBT5_BROKERAGE_HOUSE} PROPERTIES LINK_FLAGS
-				"-L${HOME}/mysql-bin/lib ${DB_LIBS} -lpthread")
-		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${HOME}/mysql-bin/lib")
-		SET_TARGET_PROPERTIES(${DBT5_MARKET_EXCHANGE} PROPERTIES LINK_FLAGS "-lpthread -L${HOME}/mysql-bin/lib")
+				"-L${MYSQL_LIB} -lmysqlclient ${DB_LIBS} -lpthread")
+		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -lmysqlclient -L${MYSQL_LIB}")
+		SET_TARGET_PROPERTIES(${DBT5_MARKET_EXCHANGE} PROPERTIES LINK_FLAGS "-lpthread -lmysqlclient -L${MYSQL_LIB}")
 ELSEIF (WORKLOAD_SEATS)
 		SET_TARGET_PROPERTIES(${DBT5_SEATS} PROPERTIES LINK_FLAGS
-				"-L${HOME}/mysql-bin/lib ${DB_LIBS} -lpthread")
-		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${HOME}/mysql-bin/lib")
+				"-L${MYSQL_LIB} ${DB_LIBS} -lpthread")
+		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
 ENDIF (WORKLOAD_TPCE)
 #SET_TARGET_PROPERTIES(${DBT5_TEST_TXN} PROPERTIES LINK_FLAGS
 #        "${DB_LIBS} -lpthread")
