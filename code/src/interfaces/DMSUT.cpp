@@ -24,6 +24,7 @@ CDMSUT::~CDMSUT()
 // Data Maintenance
 bool CDMSUT::DataMaintenance(PDataMaintenanceTxnInput pTxnInput)
 {
+#ifndef NO_MEE_FOR_TRADERESULT
 	PMsgDriverBrokerage pRequest = new TMsgDriverBrokerage;
 	memset(pRequest, 0, sizeof(TMsgDriverBrokerage));
 
@@ -32,11 +33,15 @@ bool CDMSUT::DataMaintenance(PDataMaintenanceTxnInput pTxnInput)
 			sizeof(TDataMaintenanceTxnInput));
 	
 	return talkToSUT(pRequest);
+#else
+	return true;
+#endif
 }
 
 // Trade Cleanup
 bool CDMSUT::TradeCleanup(PTradeCleanupTxnInput pTxnInput)
 {
+#ifndef NO_MEE_FOR_TRADERESULT
 	PMsgDriverBrokerage pRequest = new TMsgDriverBrokerage;
 	memset(pRequest, 0, sizeof(TMsgDriverBrokerage));
 
@@ -45,4 +50,7 @@ bool CDMSUT::TradeCleanup(PTradeCleanupTxnInput pTxnInput)
 			sizeof(TTradeCleanupTxnInput));
 	
 	return talkToSUT(pRequest);
+#else
+	return true;
+#endif
 }

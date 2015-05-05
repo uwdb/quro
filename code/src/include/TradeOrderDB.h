@@ -227,7 +227,7 @@ public:
 			RETURN_ERROR("trade order frame1 query 3 fails"); \
 	}
 
-#define TRADEORDER_F2Q1 \  if(strcmp(exec_l_name, cust_l_name) \
+#define TRADEORDER_F2Q1  if(strcmp(exec_l_name, cust_l_name) \
             || strcmp(exec_f_name, cust_f_name) \
             || strcmp(exec_tax_id, tax_id)){ \
 			sprintf(query, SQLTOF2_1, acct_id, exec_f_name, exec_l_name, exec_tax_id); \

@@ -142,7 +142,7 @@ vector<long unsigned int> ff_set;
 //========end helper functions===========
 
 char filepath[50] = "./seats_data";
-char outfilepath[50] = "/afs/csail.mit.edu/u/c/congy/SEATS_DATA";
+char outfilepath[50] = "/home/cong/SEATS_DATA";
 struct CCountry{
 	string c_name;
 	string c_code2;
@@ -298,8 +298,8 @@ void load_airport(){
 	cout<<"start counting distance"<<endl;
 	sprintf(filename, "%s/AirportDistance.txt", outfilepath);
 	outfile.open(filename);
-	for(size_t i=1; i<=numAirports/5; i++){
-			for(size_t j=i+1; j<=numAirports/5; j++){
+	for(size_t i=1; i<=numAirports/10; i++){
+			for(size_t j=i+1; j<=numAirports/10; j++){
 					double dist = distance(airports[i-1].ap_latitude, airports[i-1].ap_longitude, airports[j-1].ap_latitude, airports[j-1].ap_longitude);
 					outfile<<i<<"|"<<j<<"|"<<dist<<endl;
 			}
@@ -423,9 +423,9 @@ void load_flight(){
 			long unsigned int f_al_id = getRandom()%numAirlines+1;
 			long unsigned int f_depart_ap_id = getRandom()%numAirports+1;
 			long unsigned int f_arrive_ap_id = getRandom()%numAirports+1;
-			int seats_total = 50+getRandom()%200;
+			int seats_total = 100+getRandom()%200;
 
-			float reservation_perc = 0.4+float(getRandom()%400)/1000.0;
+			float reservation_perc = 0.1+float(getRandom()%400)/1000.0;
 			int num_reservation = seats_total*reservation_perc;
 
 			int seats_left = seats_total - num_reservation;

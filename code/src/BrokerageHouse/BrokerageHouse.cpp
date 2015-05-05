@@ -105,6 +105,9 @@ void *workerThread(void *data)
 		pDBConnection->setBrokerageHouse(pThrParam->pBrokerageHouse);
 		CSendToMarket sendToMarket = CSendToMarket(
 				&(pThrParam->pBrokerageHouse->m_fLog));
+#ifdef NO_MEE_FOR_TRADERESULT
+		sendToMarket.m_pCMEE = pThrParam->pBrokerageHouse->m_pCMEE[pThrParam->t_id%pThrParam->pBrokerageHouse->iUsers];
+#endif
 		CMarketFeedDB marketFeedDB(pDBConnection);
 		CMarketFeed marketFeed = CMarketFeed(&marketFeedDB, &sendToMarket);
 		CTradeOrderDB tradeOrderDB(pDBConnection);
@@ -139,13 +142,13 @@ void *workerThread(void *data)
 		do {
 			try {
 				timeval tt1, tt2;
-				gettimeofday(&tt1, NULL);
+				//gettimeofday(&tt1, NULL);
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
 						sizeof(TMsgDriverBrokerage));
-				gettimeofday(&tt2, NULL);
+				//gettimeofday(&tt2, NULL);
 				receiving_time += difftimeval(tt2, tt1);
-				if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
-				pDBConnection->outfile.flush();
+				//if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
+				//pDBConnection->outfile.flush();
 			} catch(CSocketErr *pErr) {
 				sockDrv.dbt5Disconnect();
 
@@ -238,11 +241,11 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
-			//pDBConnection->outfile<<"error: "<<str<<endl;
-#ifdef PROFILE_EACH_QUERY
-			pDBConnection->print_profile_query();
-#endif
-			pDBConnection->outfile.flush();
+//			pDBConnection->outfile<<"error: "<<str<<endl;
+//#ifdef PROFILE_EACH_QUERY
+//			pDBConnection->print_profile_query();
+//#endif
+//			pDBConnection->outfile.flush();
 #endif
 				//ostringstream msg;
 				//msg << time(NULL) << " " << (long long) pthread_self() << " " <<
@@ -353,7 +356,11 @@ CBrokerageHouse::CBrokerageHouse(const char *szHost, const char *szDBName,
 	strncpy(m_szDBPort, szDBPort, iMaxPort);
 	m_szDBPort[iMaxPort] = '\0';
 #else
+#ifdef NO_MEE_FOR_TRADERESULT
+CBrokerageHouse::CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *_outputDirectory, char* _szFileLoc, char* _szBHaddr, int _iActiveCustomerCount, int _iConfiguredCustomerCount, int _iUsers)
+#else
 CBrokerageHouse::CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
+#endif
 : m_iListenPort(iListenPort)
 {
 	if (_mysql_dbname != NULL) {
@@ -382,9 +389,44 @@ CBrokerageHouse::CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * 
 			outputDirectory);
 	char s[1000];
 	m_fLog.open(filename, ios::out);
+#ifdef NO_MEE_FOR_TRADERESULT
+	strcpy(outputDir, _outputDirectory);
+#else
 	strcpy(outputDir, outputDirectory);
+#endif
 	logErrorMessage(s, false);
+#ifdef NO_MEE_FOR_TRADERESULT
+	szFileLoc = _szFileLoc;
+	szBHaddr = _szBHaddr;
+	outputDirectory = _outputDirectory;
+	iActiveCustomerCount = _iActiveCustomerCount;
+	iConfiguredCustomerCount = _iConfiguredCustomerCount;
+	iUsers = _iUsers;
+#endif
 }
+
+#ifdef NO_MEE_FOR_TRADERESULT
+void CBrokerageHouse::startFakeMEE(){
+	char filename[iMaxPath + 1];
+
+	snprintf(filename, iMaxPath, "%s/MarketExchange.log", outputDirectory);
+	m_pLog = new CEGenLogger(eDriverEGenLoader, 0, filename, &m_fmt);
+
+	snprintf(filename, iMaxPath, "%s/%s", outputDirectory, "mee_mix.log");
+	ofstream m_fMix;
+	m_fMix.open(filename, ios::out);
+
+	CInputFiles inputFiles;
+	inputFiles.Initialize(eDriverEGenLoader, iConfiguredCustomerCount,
+			iActiveCustomerCount, szFileLoc);
+	for(int i=0; i<iUsers; i++){
+		m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBrokerageHousePort, &m_fLog, &m_fMix,
+					&m_meeLogLock[i], &m_MixLock[i]);
+		m_pCMEE[i] = new CMEE(0, m_pCMEESUT[i], m_pLog, inputFiles, 1);
+		m_pCMEE[i]->SetBaseTime();
+	}
+}
+#endif
 
 // Destructor
 CBrokerageHouse::~CBrokerageHouse()
@@ -897,6 +939,9 @@ void CBrokerageHouse::startListener(void)
 	msg1<<"STARTLISTENER: m_iListenPort = "<<m_iListenPort<<endl;
 	logErrorMessage(msg1.str(), false);
 
+#ifdef NO_MEE_FOR_TRADERESULT
+	startFakeMEE();
+#endif
 	int t_cnt = 0;
 	while (true) {
 		acc_socket = 0;

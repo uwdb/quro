@@ -1,8 +1,8 @@
 #!/bin/bash
-MYSQL=${HOME}/mysql-bin/bin/mysql
+MYSQL=mysql
 DB_NAME=seats
 
-SEATS_DATA=/afs/csail.mit.edu/u/c/congy/SEATS_DATA
+SEATS_DATA=/home/cong/SEATS_DATA
 
 ${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SEATS_DATA}/Country.txt\" \
 		INTO TABLE COUNTRY FIELDS TERMINATED BY \"|\" ";

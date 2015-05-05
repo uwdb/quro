@@ -40,7 +40,7 @@
 ******************************************************************************/
 
 #include "../inc/MEETradingFloor.h"
-
+#include<iostream>
 using namespace TPCE;
 
 RNGSEED CMEETradingFloor::GetRNGSeed( void )
@@ -145,7 +145,6 @@ void CMEETradingFloor::SendTradeResult( PTradeRequest pTradeRequest )
     {
         TxnInput.trade_price = CurrentPrice;
     }
-
     m_pSUT->TradeResult( &TxnInput );
 
     // Populate Ticker Entry information

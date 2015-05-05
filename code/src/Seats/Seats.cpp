@@ -72,6 +72,12 @@ try {
 				// The socket has been closed, break and let this thread die.
 				break;
 			}
+#ifdef CAL_RESP_TIME
+			timeval t1, t2;
+			double exec_time;
+		 	gettimeofday(&t1, NULL);
+#endif
+
 			commit = true;
 			iRet = CBaseTxnErr::SUCCESS;
 			try {
@@ -99,25 +105,26 @@ try {
 //#endif
 //			pDBConnection->outfile.flush();
 //#endif
-				pDBConnection->outfile<<str<<endl;
+				//pDBConnection->outfile<<str<<endl;
 
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
 				commit = false;
 				//XXX:debug for trade result
 			}
-//#ifdef CAL_RESP_TIME
-//			gettimeofday(&t2, NULL);
-//			exec_time = difftimeval(t2, t1);
-//			txn_time += exec_time;
-//
-//			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
-//#ifdef PROFILE_EACH_QUERY
-//			pDBConnection->print_profile_query();
-//#endif
+#ifdef CAL_RESP_TIME
+			gettimeofday(&t2, NULL);
+			exec_time = difftimeval(t2, t1);
+			txn_time += exec_time;
+
+			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+#ifdef PROFILE_EACH_QUERY
+			pDBConnection->print_profile_query();
+#endif
+			//pDBConnection->outfile<<"commit txn "<<txn_cnt<<endl;
 			pDBConnection->outfile.flush();
 
-//#endif
+#endif
 
 			// send status to driver
 			Reply.iStatus = iRet;

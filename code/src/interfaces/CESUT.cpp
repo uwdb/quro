@@ -105,7 +105,6 @@ bool CCESUT::TradeOrder(PTradeOrderTxnInput pTxnInput, INT32 iTradeType,
 	
 	return talkToSUT(&request);
 }
-
 // Trade Update
 bool CCESUT::TradeUpdate(PTradeUpdateTxnInput pTxnInput)
 {

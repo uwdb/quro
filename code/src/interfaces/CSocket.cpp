@@ -31,6 +31,7 @@ CSocket::CSocket(char *address, int port)
 {
 	strncpy(this->address, address, iMaxHostname);
 	this->address[iMaxHostname] = '\0';
+	cout<<"this: port = "<<port<<endl;
 	this->port = port;
 }
 
@@ -70,6 +71,7 @@ void CSocket::dbt5Connect()
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
 	if (sa.sin_port == 0) {
+		cout<<"sa.sin_port: port = "<<port<<endl;
 		throwError(CSocketErr::ERR_SOCKET_SINPORT);
 	}
 
@@ -114,8 +116,10 @@ int CSocket::dbt5Receive(void *data, int length)
 		errno = 0;
 		received = recv(m_sockfd, data, remaining, 0);
 		if (received == -1) {
+			cout<<"receive == -1, errno = "<<errno<<endl;
 			throwError(CSocketErr::ERR_SOCKET_RECV);
 		} else if (received == 0) {
+			cout<<"receive == 0, errno = "<<errno<<endl;
 			throwError(CSocketErr::ERR_SOCKET_CLOSED);
 		}
 
@@ -150,6 +154,7 @@ int CSocket::dbt5Send(void *data, int length)
 		sent = send(m_sockfd, (void*)data, remaining, 0);
 
 		if (sent == -1) {
+			cout<<"dbt5Send, sent == -1, errno = "<<errno<<", m_sockfd = "<<m_sockfd<<endl;
 			throwError(CSocketErr::ERR_SOCKET_SEND);
 		} else if (sent == 0) {
 			throwError(CSocketErr::ERR_SOCKET_CLOSED);

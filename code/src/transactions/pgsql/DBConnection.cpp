@@ -3236,9 +3236,9 @@ void CDBConnection::append_profile_node(timeval _start, timeval _end, eTxnType _
 }
 #endif
 
-double difftimeval(timeval rt1, timeval rt0)
+/*double difftimeval(timeval rt1, timeval rt0)
 {
 	return (rt1.tv_sec - rt0.tv_sec) +
 		(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
-}
+}*/
 

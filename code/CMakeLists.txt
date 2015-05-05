@@ -1,7 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(dbt5 CXX)
 SET(WORKLOAD_TPCE 1)
-SET(DEF_REORDER 1)
+#SET(WORKLOAD_SEATS 1)
+#SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
 #
@@ -14,7 +15,6 @@ SET(DBT5_BROKERAGE_HOUSE bin/BrokerageHouseMain)
 SET(DBT5_DRIVER bin/DriverMain)
 SET(DBT5_MARKET_EXCHANGE bin/MarketExchangeMain)
 #SET(DBT5_TEST_TXN bin/TestTxn)
-
 #
 # Check for large file support by using 'getconf'.
 #
@@ -88,13 +88,13 @@ ENDIF (WORKLOAD_TPCE)
 #
 # Defining commonly used paths.
 #
-IF (DEF_REORDER)
+#IF (DEF_REORDER)
 	SET(EGENINC egen_reorder/inc)
 	SET(EGENSRC egen_reorder/src)
-ELSE (NOT DEFINED DEF_REORDER)
-	SET(EGENINC egen/inc)
-	SET(EGENSRC egen/src)
-ENDIF (DEF_REORDER)
+#ELSE (NOT DEFINED DEF_REORDER)
+#	SET(EGENINC egen/inc)
+#	SET(EGENSRC egen/src)
+#ENDIF (DEF_REORDER)
 SET(TXN src/transactions)
 SET(INTF src/interfaces)
 
@@ -139,8 +139,8 @@ IF (WORKLOAD_TPCE)
                ${TXN}/TradeLookupDB.cpp
                ${TXN}/TradeResultDB.cpp
                ${TXN}/TradeOrderDB.cpp
-							 ${TXN}/frameTradeOrderTxn.cpp
-							 ${TXN}/frameTradeResultTxn.cpp
+							 ${TXN}/TradeOrderTxn.cpp
+							 ${TXN}/TradeResultTxn.cpp
                ${TXN}/TradeStatusDB.cpp
 							 ${TXN}/TradeStatusTxn.cpp)
 	ENDIF (DEF_REORDER)
@@ -159,6 +159,23 @@ IF (WORKLOAD_TPCE)
                ${EGENSRC}/locking.cpp
                ${INTF}/CSocket.cpp
                ${INTF}/TxnHarnessSendToMarket.cpp
+			   ${EGENSRC}/ReadRowFunctions.cpp
+               ${EGENSRC}/BaseLogger.cpp
+               ${EGENSRC}/EGenLogFormatterTab.cpp
+               ${EGENSRC}/EGenVersion.cpp
+               ${EGENSRC}/error.cpp
+               ${EGENSRC}/Random.cpp
+               ${EGENSRC}/DateTime.cpp
+               ${EGENSRC}/WheelTime.cpp
+               ${EGENSRC}/MEESecurity.cpp
+               ${EGENSRC}/MEEPriceBoard.cpp
+               ${EGENSRC}/MEETickerTape.cpp
+               ${EGENSRC}/MEETradingFloor.cpp
+               ${EGENSRC}/MEE.cpp
+               ${EGENSRC}/locking.cpp
+               ${EGENSRC}/InputFlatFilesStructure.cpp
+			   ${INTF}/MEESUT.cpp
+               ${INTF}/BaseInterface.cpp
                ${TXN_SOURCE}
                ${BH}/BrokerageHouseMain.cpp
                ${BH}/BrokerageHouse.cpp)
@@ -240,6 +257,8 @@ ELSEIF (WORKLOAD_SEATS)
 			                ${INTF}/BaseInterface.cpp)
 ENDIF (WORKLOAD_TPCE)
 
+set(GLOBAL_LIBRARIES "mysqlclient.so" "pthread.so")
+target_link_libraries($(GLOBAL_LIBRARIES))
 
 #
 # Set compiler flags.
@@ -248,7 +267,7 @@ IF (WORKLOAD_TPCE)
 	IF (DEF_REORDER)
 			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DREORDER -DWORKLOAD_TPCE -lpthread -lmysqlclient")
 	ELSE (NOT DEFINED DEF_REORDER)
-			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_TPCE -lpthread -lmysqlclient")
+			SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DREORDER -DWORKLOAD_TPCE -lpthread -lmysqlclient")
 	ENDIF (DEF_REORDER)
 ELSEIF (WORKLOAD_SEATS)
 	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_SEATS -std=c++11")

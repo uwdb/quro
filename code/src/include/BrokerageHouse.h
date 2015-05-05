@@ -35,6 +35,13 @@ using namespace std;
 
 #include "DBT5Consts.h"
 #include "CSocket.h"
+
+#ifdef NO_MEE_FOR_TRADERESULT
+#include "MEESUT.h"
+#include "EGenLogFormatterTab.h"
+#include "EGenLogger.h"
+#include "SecurityFile.h"
+#endif
 using namespace TPCE;
 
 class CBrokerageHouse
@@ -60,6 +67,23 @@ private:
 
 #endif
 
+#ifdef NO_MEE_FOR_TRADERESULT
+	CMEE* m_pCMEE[128];
+	CMEESUT* m_pCMEESUT[128];
+	CLogFormatTab m_fmt;
+	CEGenLogger *m_pLog;
+	CMutex m_MixLock[128];
+	CMutex m_meeLogLock[128];
+	char* szFileLoc;
+	char* szBHaddr;
+	int iActiveCustomerCount;
+	int iConfiguredCustomerCount;
+	char* outputDirectory;
+public:
+	void startFakeMEE();
+	int iUsers;
+private:
+#endif
 	friend void entryWorkerThread(void *); // entry point for worker thread
 
 	void dumpInputData(PBrokerVolumeTxnInput);
@@ -107,7 +131,11 @@ public:
 	CBrokerageHouse(const char *, const char *, const char *, const int,
 				char *);
 #else
+#ifdef NO_MEE_FOR_TRADERESULT
+	CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *_outputDirectory, char *_szFileLoc, char *_szBHaddr, int _iActiveCustomerCount, int _iConfiguredCustomerCount, int _iUsers);
+#else
 	CBrokerageHouse(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory);
+#endif
 #endif
 
 	~CBrokerageHouse();

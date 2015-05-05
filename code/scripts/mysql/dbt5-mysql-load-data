@@ -3,6 +3,8 @@
 MYSQL=mysql
 DB_NAME=dbt5
 
+USER_FLAGS="-u root"
+
 EGENFLATOUT=~/results/EGEN_FLATOUT
 
 #  2.2.6.10 SECTOR (SC_)

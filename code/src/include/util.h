@@ -11,6 +11,7 @@ using namespace std;
 #define numCountries 249
 #define numAirlines 1251
 #define numFlights   100000
+#define NUFlightIdRange 5
 #define numCustomers 1000000
 #define MIN_DIS 100
 #define MAX_DIS 4000
@@ -138,9 +139,12 @@ inline long unsigned int getRandomAirportId(fast_random& r){
 }
 
 inline long unsigned int getCustomerId(fast_random& r){
-		return get_nurand(1023, 1, 3000, r);
+		//return get_nurand(1023, 1, 3000, r);
+		return get_random(r, numCustomers/10);
 }
-
+inline long unsigned int getNUFlightId(fast_random& r){
+		return get_random(r, NUFlightIdRange);
+}
 inline double getRandomDist(fast_random& r){
 		return r.next_uniform()*(MAX_DIS-MIN_DIS) + MIN_DIS;
 }
