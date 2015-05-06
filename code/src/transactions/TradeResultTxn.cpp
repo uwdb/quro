@@ -282,8 +282,8 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			TRADE_RESULT_F6Q3;
 			TRADE_RESULT_F6Q4;
 	}
-
 /*
+
 	hs_qty = tmp_hs_qty;
 	long ex_trade_qty = trade_qty;
 	trade_qty = tmp_trade_qty;

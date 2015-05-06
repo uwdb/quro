@@ -271,13 +271,14 @@ typedef struct TTradeRequest
     double              price_quote;
     TTrade              trade_id;
     INT32               trade_qty;
+    eMEETradeRequestAction      eAction;
+    char                symbol[cSYMBOL_len+1];
+    char                trade_type_id[cTT_ID_len+1];
 	TIdent				acct_id;
 	double				charge;
 	INT32				is_lifo;
 	INT32				trade_is_cash;
-    eMEETradeRequestAction      eAction;
-    char                symbol[cSYMBOL_len+1];
-    char                trade_type_id[cTT_ID_len+1];
+
 } *PTradeRequest;
 
 //A single entry on the ticker tape feed.
@@ -695,6 +696,7 @@ typedef struct TTradeOrderIntermediate{
 		TIdent trade_id;
 		INT32 trade_qty;
 		INT32 type_is_market;
+		
 		TIdent acct_id;
 		INT32 is_lifo;
 		INT32 trade_is_cash;
@@ -810,7 +812,7 @@ typedef struct TTradeResultTxnInput
 {
     double      trade_price;
     TTrade      trade_id;
-/*
+
 	TIdent 		acct_id;
 	char 		symbol[cSYMBOL_len+1];
 	char 		type_id[cTT_ID_len+1];
@@ -818,7 +820,7 @@ typedef struct TTradeResultTxnInput
 	INT32 		trade_is_cash;
 	double 		charge;
 	INT32 		trade_qty;
-*/
+
 } *PTradeResultTxnInput;
 
 typedef struct TTradeResultTxnOutput

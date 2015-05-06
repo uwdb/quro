@@ -85,12 +85,12 @@ public:
             {
                 TradeRequestForMEE.eAction = eMEESetLimitOrderTrigger;
             }
-/*
+
             TradeRequestForMEE.acct_id = pInter.acct_id;
 			TradeRequestForMEE.is_lifo = pInter.is_lifo;
 			TradeRequestForMEE.trade_is_cash = pInter.trade_is_cash;
 			TradeRequestForMEE.charge = pInter.charge;
-*/
+
 			m_pSendToMarket->SendToMarketFromHarness(TradeRequestForMEE); // maybe should check the return code here
         }
     }
