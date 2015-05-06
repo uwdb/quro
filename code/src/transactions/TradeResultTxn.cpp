@@ -70,6 +70,16 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 //--------------------Frame 1-----------------
 	TRADE_RESULT_F1Q1;
 
+	/*{
+		acct_id = pIn->acct_id;
+		strcpy(type_id, pIn->type_id);
+		strcpy(symbol, pIn->symbol);
+		trade_qty = pIn->trade_qty;
+		is_lifo = pIn->is_lifo;
+		trade_is_cash = pIn->trade_is_cash;
+		charge = pIn->charge;
+	}*/
+
 	TRADE_RESULT_F1Q2;
 
 	TRADE_RESULT_F1Q3;

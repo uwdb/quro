@@ -469,12 +469,13 @@ echo "Results can be found in: ${OUTPUT_DIR}"
 #
 echo
 echo "1. Starting Brokerage House server"
-BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
+#BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
 #gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
 #				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
 #pwd
 #run
+#backtrace
 #quit
 #GDB_INPUT
 #
@@ -541,13 +542,13 @@ DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"
 
 #DEBUG in script!
-#gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-#				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
-#pwd
-#run
-#backtrace
-#quit
-#GDB_INPUT
+gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+pwd
+run
+backtrace
+quit
+GDB_INPUT
 
 
 #gdb --args ${HOME}/dbt5/bin/MarketExchangeMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
