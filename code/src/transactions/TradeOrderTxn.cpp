@@ -220,9 +220,9 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 	pInter->trade_id = trade_id;
 	pInter->trade_qty = trade_qty;
 	pInter->type_is_market = type_is_market;
-/*
-	strcpy(pInter->trade_type_id, trade_type_id);
+
 	strcpy(pInter->symbol, symbol);
+/*
 	pInter->is_lifo = is_lifo;
 	pInter->trade_is_cash = is_cash;
 	pInter->charge = charge_amount;
