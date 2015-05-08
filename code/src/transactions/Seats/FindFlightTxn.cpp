@@ -49,7 +49,7 @@ void CDBConnection::execute(const TFindFlightTxnInput* pIn, TFindFlightTxnOutput
 	}
 
 	sprintf(query, GET_AIRPORT_INFO, pIn->depart_aid);
-	outfile<<"query GET_AIRPORT_INFO = "<<query<<endl;
+	//outfile<<"query GET_AIRPORT_INFO = "<<query<<endl;
 	r = dbt5_sql_execute(query, &result, "GET_AIRPORT_INFO");
 	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
@@ -74,7 +74,7 @@ void CDBConnection::execute(const TFindFlightTxnInput* pIn, TFindFlightTxnOutput
 	else if(ap_ids.size()==3) sprintf(sub_query, "(%d, %d, %d)", ap_ids[0], ap_ids[1], ap_ids[2]);
 
 	sprintf(query, GET_FLIGHT, pIn->depart_aid, toStr(pIn->start_date).c_str(), toStr(pIn->end_date).c_str(), sub_query);
-
+	outfile<<"query: "<<query<<endl;
 	r = dbt5_sql_execute(query, &result, "GET_FLIGHT");
 
 	pOut->num_results = result.num_rows;

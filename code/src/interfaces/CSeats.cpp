@@ -61,7 +61,7 @@ void CSEATS::GenerateFindFlightInput(){
 		else
 				ffInput.distance = -1;
 		ffInput.start_date = GenerateRandomTimestamp(r);
-		ffInput.end_date = addDay(ffInput.start_date, rand()%28);
+		ffInput.end_date = addDay(ffInput.start_date, r.next()%28+20);
 }
 void CSEATS::GenerateNewReservationInput(){
 		nrInput.r_id = get_random(r, 1048576);

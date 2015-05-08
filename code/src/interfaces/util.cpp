@@ -37,18 +37,18 @@ string toStr(const TIMESTAMP_STRUCT& ts){
 TIMESTAMP_STRUCT addDay(const TimeStamp& t, size_t day){
 		TIMESTAMP_STRUCT ts;
 		ts.year = t.year;
-		ts.day = t.day;
+		ts.day = t.day + day;
 		ts.hour = t.hour;
 		ts.minute = t.minute;
 		ts.second = t.second;
 		//FIXME: assume the end date is less tha 28 days of start date
 		if(ts.day >= calendar[t.month-1]){
-				ts.day = 1;
-				ts.month = t.month + 1;
+				ts.day = ts.day % calendar[t.month-1];
+				ts.month = t.month + (t.day+day)/calendar[t.month-1];
 		}else{
 				ts.month = t.month;
 		}
-		if(ts.month == 13){
+		if(ts.month >= 13){
 				ts.year = 2015;
 				ts.month = 1;
 		}
