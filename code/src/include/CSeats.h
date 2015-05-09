@@ -10,6 +10,7 @@ class CSEATS : public CBaseInterface
 public:
 		TMsgDriverSeats request;
 		fast_random r;
+		int NUFlightIdArray[NUFlightIdRange];
 		TFindFlightTxnInput ffInput;
 		TNewReservationTxnInput nrInput;
 		TUpdateCustomerTxnInput ucInput;

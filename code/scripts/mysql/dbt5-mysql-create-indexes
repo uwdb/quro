@@ -8,7 +8,7 @@
 #               2006 Rilson Nascimento
 #
 
-MYSQL=${HOME}/mysql-bin/bin/mysql
+MYSQL="mysql -u root"
 DB_NAME=dbt5
 
 USE_TABLESPACES=0

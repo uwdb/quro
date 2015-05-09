@@ -16,6 +16,9 @@
 #include "DBT5Consts.h"
 #include "CSocket.h"
 
+#ifdef NO_MEE_FOR_TRADERESULT
+#include "MEESUT.h"
+#endif
 class CSendToMarket : public CSendToMarketInterface
 {
 	ofstream *m_pfLog;
@@ -24,6 +27,9 @@ class CSendToMarket : public CSendToMarketInterface
 	CMutex m_LogLock;
 
 public:
+#ifdef NO_MEE_FOR_TRADERESULT
+	CMEE* m_pCMEE;
+#endif
 	void LogErrorMessage(const string);
 
 	CSendToMarket(ofstream* pfile, int MEport = iMarketExchangePort);

@@ -41,8 +41,9 @@
 
 #include "../inc/EGenTables_stdafx.h"
 
+#include <iostream>
 using namespace TPCE;
-
+#define CUSBASE 40
 /*
 *   Default constructor.
 */
@@ -55,6 +56,7 @@ CCustomerSelection::CCustomerSelection()
 , m_iMyStartFromCustomer( 0 + iTIdentShift)
 , m_iMyCustomerCount( 0 )
 {
+	cusBase = CUSBASE;
 }
 
 /*
@@ -71,6 +73,7 @@ CCustomerSelection::CCustomerSelection( CRandom*    pRND,
 , m_iMyStartFromCustomer( 0 + iTIdentShift)
 , m_iMyCustomerCount( 0 )
 {
+	cusBase = CUSBASE;
 }
 
 /*
@@ -97,6 +100,7 @@ CCustomerSelection::CCustomerSelection( CRandom*    pRND,
         // not really partitioning.
         m_bPartitionByCID = false;
     }
+	cusBase = CUSBASE;
 }
 
 /*
@@ -190,7 +194,9 @@ void CCustomerSelection::GenerateRandomCustomer(TIdent &C_ID, eCustomerTier &C_T
         return;
     }
 
-    double fCW = m_pRND->RndDoubleIncrRange(0.0001, 2000, 0.000000001);
+    //double fCW = m_pRND->RndDoubleIncrRange(0.0001, 2000, 0.000000001);
+	double fCW = cusBase + m_pRND->RndDoubleIncrRange(0.0001, 5, 0.000000001);
+
 
     // Uniformly select the higher portion of the C_ID.
     // Use "short-circuit" logic to avoid unnecessary call to RNG.

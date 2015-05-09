@@ -98,9 +98,7 @@ bool CMEESUT::TradeResult(PTradeResultTxnInput pTxnInput)
 			&(pThrParam->TxnInput.m_TradeResultTxnInput),
 			sizeof(request.TxnInput.TradeResultTxnInput));
 
-	//printf("Sending TradeResult input\n");
 	return talkToSUT(&request);
-	//return talkToSUT(&request);
 
 }
 

@@ -5,8 +5,13 @@ CSEATS::CSEATS(char* addr, const int iListenPort, ofstream* pflog,
 		ofstream* pfmix, mutex* pLogLock, mutex* pMixLock)
 : CBaseInterface(addr, iListenPort, pflog, pfmix, pLogLock, pMixLock)
 {
+		srand (time(NULL));
 		long unsigned int rnd = (rand()*rand())%6124908536;
 		r.set_seed(rnd);
+
+		for(int i=0; i<NUFlightIdRange; i++){
+			NUFlightIdArray[i] = rand()%numFlights;
+		}
 }
 
 
@@ -66,7 +71,7 @@ void CSEATS::GenerateFindFlightInput(){
 void CSEATS::GenerateNewReservationInput(){
 		nrInput.r_id = get_random(r, 1048576);
 		nrInput.c_id = getCustomerId(r);
-		nrInput.f_id = get_random(r, numFlights)+1;
+		nrInput.f_id = /*get_random(r, numFlights)+1*/NUFlightIdArray[getNUFlightId(r)];
 		nrInput.seatnum = 50+get_random(r, 200);
 		nrInput.price = r.next_uniform()*500;
 }

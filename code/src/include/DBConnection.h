@@ -241,6 +241,11 @@ char * dbt5_sql_getvalue(sql_result_t * sql_result, int field, int& length);
 extern CDBConnection* pDBClist[1024];
 extern int connectionCnt;
 
-double difftimeval(timeval rt1, timeval rt0);
-
+inline
+double difftimeval(timeval rt1, timeval rt0)
+{
+	return (rt1.tv_sec - rt0.tv_sec) +
+	(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
+}
+		
 #endif //DB_CONNECTION_H

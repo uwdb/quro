@@ -21,11 +21,11 @@
 #LDFLAGS=
 #AR=
 #ARFLAGS=
-CCFLAGS=-g -ggdb -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS
+CCFLAGS=-g -ggdb -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS -lpthread
 LDFLAGS=-lpthread
 
 # Application specific defines
-APPDEFINES=-DCOMPILE_FLAT_FILE_LOAD
+APPDEFINES=-DCOMPILE_FLAT_FILE_LOAD -lpthread
 
 # Directory for source files
 SRC = ../src
@@ -43,7 +43,7 @@ EXE = ../bin
 VPATH=$(SRC):$(OBJ)
 .SUFFIXES: .cpp
 .cpp.o:
-	$(CXX) $(CCFLAGS) $(APPDEFINES) -c $< -o $(OBJ)/$@
+	$(CXX) $(CCFLAGS) $(APPDEFINES) -c $< -o $(OBJ)/$@ 
 
 # Specify each library as a single target
 # with source and include files separates into different variables.
@@ -148,7 +148,7 @@ EGenLoader:			EGenUtilities \
 				$(EGenGenerateAndLoad_obj) \
 				$(EGenLoader_obj) \
 				$(LIBS) \
-				-o $(EXE)/$@; \
+				-o $(EXE)/$@ -lpthread; \
 	cd $(PRJ); \
 	ls -l $(EXE)
 
@@ -159,7 +159,7 @@ EGenValidate:			EGenDriverLib \
 				$(EGenValidate_obj) \
 				$(LIB)/$(EGenDriverLib_lib) \
 				$(LIBS) \
-				-o $(EXE)/$@; \
+				-o $(EXE)/$@ -lpthread; \
 	cd $(PRJ); \
 	ls -al $(EXE)
 

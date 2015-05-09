@@ -8,3 +8,5 @@ SendToMarket connect to socket and send request: src/interface/TxnHarnessSendToM
 MarketExchange digest the request: MarketExchange.cpp submit request
 
 in SubmitTradeRequest function, create a thread and submit TradeResult request
+
+call TradeResult(), talkToSUT(

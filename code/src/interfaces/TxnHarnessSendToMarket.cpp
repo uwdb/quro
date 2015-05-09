@@ -16,8 +16,10 @@ CSendToMarket::CSendToMarket(ofstream* pfile, int MEport)
 	// FIXME: This addr needs to be configurable.
 	char addr[iMaxHostname + 1];
 	strncpy(addr, "localhost", iMaxHostname);
+#ifndef NO_MEE_FOR_TRADERESULT
 	m_Socket = new CSocket(addr, m_MEport);
 	m_Socket->dbt5Connect();
+#endif
 }
 
 CSendToMarket::~CSendToMarket()
@@ -30,8 +32,13 @@ bool CSendToMarket::SendToMarket(TTradeRequest &trade_mes)
 {
 	try {
 		// send Trade Request to MEE
+#ifdef NO_MEE_FOR_TRADERESULT
+		m_pCMEE->SubmitTradeRequest(&trade_mes);
+//		cout<<"CSendToMarket: send request successfully"<<endl;
+#else
 		m_Socket->dbt5Send(reinterpret_cast<void *>(&trade_mes),
 				sizeof(TTradeRequest));
+#endif
 	} catch (CSocketErr *pErr) {
 		m_Socket->dbt5Disconnect();	// close connection
 		timeval t1;

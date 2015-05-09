@@ -9,6 +9,7 @@
  */
 
 #include "MarketExchange.h"
+#include "DBConnection.h"
 #include <sys/time.h>
 // worker thread
 void *MarketWorkerThread(void* data)
@@ -26,15 +27,20 @@ void *MarketWorkerThread(void* data)
 	msg<<"MarketWorkerThread start iSockfd = "<<pThrParam->iSockfd<<std::endl;
 	pThrParam->pMarketExchange->logErrorMessage(msg.str());
 #endif
+	timeval t1, t2;
 	do {
 		try {
+			gettimeofday(&t1, NULL);
 			sockDrv.dbt5Receive(reinterpret_cast<void*>(pMessage),
 					sizeof(TTradeRequest));
 
 			// submit trade request
 			pThrParam->pMarketExchange->m_pCMEE[pThrParam->t_id]->SubmitTradeRequest(pMessage);
 //			timeval t1;
-//			gettimeofday(&t1, NULL);
+			ostringstream msg2;
+			gettimeofday(&t2, NULL);
+			msg2<<"msg transfer: socketfd = "<<pThrParam->iSockfd<<", range = "<<difftimeval(t2, t1)<<endl;
+			pThrParam->pMarketExchange->logErrorMessage(msg2.str());
 //			ostringstream msg1;
 //			msg1<<"send request, socketfd = "<<pThrParam->iSockfd<<", time = "<<t1.tv_sec<<","<<t1.tv_usec<<endl;
 //			pThrParam->pMarketExchange->logErrorMessage(msg1.str());
@@ -127,9 +133,9 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 #endif
 	// Initialize MEESUT
 	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
-	Users = iUsers;
+	Users = iUsers/4;
 	assert(iUsers <= 128);
-	for(int i=0; i<iUsers; i++){
+	for(int i=0; i<Users; i++){
 			m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,
 					&m_LogLock, &m_MixLock);
 	}

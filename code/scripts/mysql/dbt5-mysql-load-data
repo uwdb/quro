@@ -1,183 +1,185 @@
 #!/bin/bash
 
-MYSQL=${HOME}/mysql-bin/bin/mysql
+MYSQL=mysql
 DB_NAME=dbt5
 
-EGENFLATOUT=/data/sanchez/results/silo/results/EGEN_FLATOUT
+USER_FLAGS="-u root"
+
+EGENFLATOUT=~/results/EGEN_FLATOUT
 
 #  2.2.6.10 SECTOR (SC_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Sector.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Sector.txt\" \
 		 INTO TABLE sector FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Sector" 
 
 # 2.2.x.x NEW_ITEM 
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/NewsItem.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/NewsItem.txt\" \
      INTO TABLE news_item FIELDS TERMINATED BY \"|\" ";
 echo "finish loading NewItem"
 
 
 #  2.2.7.2 STATUS_TYPE (ST_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/StatusType.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/StatusType.txt\" \
      INTO TABLE status_type FIELDS TERMINATED BY \"|\" ";
 echo "finish loading StatusType"
 
 #  2.2.5.9 TRADE_TYPE (TT_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeType.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeType.txt\" \
      INTO TABLE trade_type FIELDS TERMINATED BY \"|\" ";
 echo "finish loading TradeType"
 
 #  2.2.7.3 TAXRATE (TX_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Taxrate.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Taxrate.txt\" \
      INTO TABLE taxrate FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Taxrate"
 
 #  2.2.7.4 ZIP_CODE (ZC_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/ZipCode.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/ZipCode.txt\" \
      INTO TABLE zip_code FIELDS TERMINATED BY \"|\" ";
 echo "finish loading ZipCode"
 
 # == L2 ==
 #  2.2.7.1 ADDRESS (AD_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Address.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Address.txt\" \
      INTO TABLE address FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Address"
 
 #  2.2.5.3 CHARGE (CH_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Charge.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Charge.txt\" \
      INTO TABLE charge FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Charge"
 
 #  2.2.6.6 INDUSTRY (IN_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Industry.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Industry.txt\" \
      INTO TABLE industry FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Industry"
 
 # == L3 ==
 #  2.2.5.1 BROKER (B_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Broker.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Broker.txt\" \
      INTO TABLE broker FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Broker"
 
 #  2.2.4.2 CUSTOMER (C_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Customer.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Customer.txt\" \
      INTO TABLE customer FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Customer"
 
 #  2.2.6.1 COMPANY (CO_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Company.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Company.txt\" \
      INTO TABLE company FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Company"
 
 #  2.2.6.4 EXCHANGE (EX_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Exchange.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Exchange.txt\" \
      INTO TABLE exchange FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Exchange"
 
 #  2.2.6.9 NEWS_XREF (NX_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/NewsXRef.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/NewsXRef.txt\" \
      INTO TABLE news_xref FIELDS TERMINATED BY \"|\" ";
 echo "finish loading NewsXRef"
 
 # == L4 ==
 #  2.2.4.3 CUSTOMER_ACCOUNT (CA_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CustomerAccount.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CustomerAccount.txt\" \
      INTO TABLE customer_account FIELDS TERMINATED BY \"|\" ";
 echo "finish loading CustomerAccount"
 
 #  2.2.6.2 COMPANY_COMPETITOR (CP_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CompanyCompetitor.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CompanyCompetitor.txt\" \
      INTO TABLE company_competitor FIELDS TERMINATED BY \"|\" ";
 echo "finish loading CompanyCompetitor"
 
 #  2.2.5.4 COMMISSION_RATE (CR_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CommissionRate.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CommissionRate.txt\" \
      INTO TABLE commission_rate FIELDS TERMINATED BY \"|\" ";
 echo "finish loading CommissionRage"
 
 #  2.2.4.4 CUSTOMER_TAXRATE (CX_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CustomerTaxrate.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CustomerTaxrate.txt\" \
      INTO TABLE customer_taxrate FIELDS TERMINATED BY \"|\" ";
 echo "finish loading CustomerTaxrate"
 
 #  2.2.6.5 FINANCIAL (FI_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Financial.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Financial.txt\" \
      INTO TABLE financial FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Financial"
 
 #  2.2.6.11 SECURITY (S_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Security.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Security.txt\" \
      INTO TABLE security FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Security"
 
 #  2.2.4.9 WATCH_LIST (WL_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/WatchList.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/WatchList.txt\" \
      INTO TABLE watch_list FIELDS TERMINATED BY \"|\" ";
 echo "finish loading WatchList"
 
 # == L5 ==
 #  2.2.4.1 ACCOUNT_PERMISSION (AP_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/AccountPermission.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/AccountPermission.txt\" \
      INTO TABLE account_permission FIELDS TERMINATED BY \"|\" ";
 echo "finish loading AccountPermission"
 
 #  2.2.6.3 DAILY_MARKET (DM_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/DailyMarket.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/DailyMarket.txt\" \
      INTO TABLE daily_market FIELDS TERMINATED BY \"|\" ";
 echo "finish loading DailyMarket"
 
 #  2.2.4.7 HOLDING_SUMMARY (HS_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/HoldingSummary.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/HoldingSummary.txt\" \
      INTO TABLE holding_summary FIELDS TERMINATED BY \"|\" ";
 echo "finish loading HoldingSummary"
 
 #  2.2.6.7 LAST_TRADE (LT_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/LastTrade.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/LastTrade.txt\" \
      INTO TABLE last_trade FIELDS TERMINATED BY \"|\" ";
 echo "finish loading LastTrade"
 
 #  2.2.5.6 TRADE (T_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Trade.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Trade.txt\" \
      INTO TABLE trade FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Trade"
 
 #  2.2.4.8 WATCH_ITEM (WI_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/WatchItem.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/WatchItem.txt\" \
      INTO TABLE watch_item FIELDS TERMINATED BY \"|\" ";
 echo "finish loading WatchItem"
 
 # == L6 ==
 #  2.2.5.2 CASH_TRANSACTION (CT_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CashTransaction.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/CashTransaction.txt\" \
      INTO TABLE cash_transaction FIELDS TERMINATED BY \"|\" ";
 echo "finish loading CashTransaction"
 
 #  2.2.4.5 HOLDING (H_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Holding.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Holding.txt\" \
      INTO TABLE holding FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Holding"
 
 #  2.2.4.6 HOLDING_HISTORY (HH_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/HoldingHistory.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/HoldingHistory.txt\" \
      INTO TABLE holding_history FIELDS TERMINATED BY \"|\" ";
 echo "finish loading HoldingHistory"
 
 #  2.2.5.5 SETTLEMENT (SE_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Settlement.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Settlement.txt\" \
      INTO TABLE settlement FIELDS TERMINATED BY \"|\" ";
 echo "finish loading Settlement"
 
 #  2.2.5.7 TRADE_HISTORY (TH_)
-${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeHistory.txt\" \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeHistory.txt\" \
      INTO TABLE trade_history FIELDS TERMINATED BY \"|\" ";
 echo "finish loading TradeHistory"
 
 #  2.2.5.8 TRADE_REQUEST (TR_)
- ${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeRequest.txt\" \
+ ${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/TradeRequest.txt\" \
       INTO TABLE trade_request FIELDS TERMINATED BY \"|\" ";
  echo "finish loading TradeRequest"
 
 #set value of seq_trade_id
-${MYSQL} ${DB_NAME} -e "SET @max_id=(SELECT MAX(t_id) FROM trade); \
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "SET @max_id=(SELECT MAX(t_id) FROM trade); \
 				SET @s = CONCAT(\"alter table seq_trade_id auto_increment=\",@max_id); \
 				PREPARE stmt FROM @s; \
 				EXECUTE stmt; \

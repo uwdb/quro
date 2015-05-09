@@ -7,7 +7,8 @@
 # Copyright (C) 2002-2010 Mark Wong & Open Source Development Labs, Inc.
 #               2006 Rilson Nascimento
 #
-MYSQL=${HOME}/mysql-bin/bin/mysql
+MYSQL=mysql
+USER_FLAGS="-u root"
 DB_NAME=dbt5
 USE_TABLESPACES=0
 while getopts "d:p:t" OPT; do
@@ -151,124 +152,124 @@ if [ ${USE_TABLESPACES} -eq 1 ]; then
 	#
 	# Don't need to ' ' in case the tablespaces do not already exist.
 	#
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_SEQ_TRADE_ID};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_SEQ_TRADE_ID} LOCATION '${TS_SEQ_TRADE_ID_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_ACCOUNT_PERMISSION};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_SEQ_TRADE_ID};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_SEQ_TRADE_ID} LOCATION '${TS_SEQ_TRADE_ID_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_ACCOUNT_PERMISSION};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_ACCOUNT_PERMISSION} LOCATION '${TS_ACCOUNT_PERMISSION_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_CUSTOMER};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_CUSTOMER};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_CUSTOMER} LOCATION '${TS_CUSTOMER_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_CUSTOMER_ACCOUNT};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_CUSTOMER_ACCOUNT};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_CUSTOMER_ACCOUNT} LOCATION '${TS_CUSTOMER_ACCOUNT_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_CUSTOMER_TAXRATE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_CUSTOMER_TAXRATE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_CUSTOMER_TAXRATE} LOCATION '${TS_CUSTOMER_TAXRATE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_HOLDING};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_HOLDING} LOCATION '${TS_HOLDING_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_HOLDING_HISTORY};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_HOLDING};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_HOLDING} LOCATION '${TS_HOLDING_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_HOLDING_HISTORY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_HOLDING_HISTORY} LOCATION '${TS_HOLDING_HISTORY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_HOLDING_SUMMARY};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_HOLDING_SUMMARY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_HOLDING_SUMMARY} LOCATION '${TS_HOLDING_SUMMARY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_WATCH_ITEM};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_WATCH_ITEM};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_WATCH_ITEM} LOCATION '${TS_WATCH_ITEM_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_WATCH_LIST};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_WATCH_LIST};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_WATCH_LIST} LOCATION '${TS_WATCH_LIST_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_BROKER};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_BROKER} LOCATION '${TS_BROKER_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_CASH_TRANSACTION};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_BROKER};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_BROKER} LOCATION '${TS_BROKER_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_CASH_TRANSACTION};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_CASH_TRANSACTION} LOCATION '${TS_CASH_TRANSACTION_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_CHARGE};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_CHARGE} LOCATION '${TS_CHARGE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_COMMISSION_RATE};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_COMMISSION_RATE} LOCATION '${TS_COMMISSION_RATE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_SETTLEMENT};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_SETTLEMENT} LOCATION '${TS_SETTLEMENT_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_TRADE};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_TRADE} LOCATION '${TS_TRADE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_TRADE_HISTORY};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_CHARGE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_CHARGE} LOCATION '${TS_CHARGE_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_COMMISSION_RATE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_COMMISSION_RATE} LOCATION '${TS_COMMISSION_RATE_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_SETTLEMENT};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_SETTLEMENT} LOCATION '${TS_SETTLEMENT_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_TRADE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_TRADE} LOCATION '${TS_TRADE_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_TRADE_HISTORY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_TRADE_HISTORY} LOCATION '${TS_TRADE_HISTORY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_TRADE_REQUEST};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_TRADE_REQUEST};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_TRADE_REQUEST} LOCATION '${TS_TRADE_REQUEST_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_BIGINTYPE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_BIGINTYPE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_BIGINTYPE} LOCATION '${TS_TRADE_TYPE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_COMPANY};"
-	${MYSQL} ${DB_NAME} -e "CREATE ${TS_COMPANY} LOCATION '${TS_COMPANY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_COMPANY_COMPETITOR};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_COMPANY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "CREATE ${TS_COMPANY} LOCATION '${TS_COMPANY_DIR}';"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_COMPANY_COMPETITOR};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_COMPANY_COMPETITOR} LOCATION '${TS_COMPANY_COMPETITOR_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_DAILY_MARKET};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_DAILY_MARKET};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_DAILY_MARKET} LOCATION '${TS_DAILY_MARKET_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_EXCHANGE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_EXCHANGE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_EXCHANGE} LOCATION '${TS_EXCHANGE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_FINANCIAL};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_FINANCIAL};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_FINANCIAL} LOCATION '${TS_FINANCIAL_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_INDUSTRY};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_INDUSTRY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_INDUSTRY} LOCATION '${TS_INDUSTRY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_LAST_TRADE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_LAST_TRADE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_LAST_TRADE} LOCATION '${TS_LAST_TRADE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_NEWS_ITEM};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_NEWS_ITEM};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_NEWS_ITEM} LOCATION '${TS_NEWS_ITEM_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_NEWS_XREF};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_NEWS_XREF};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_NEWS_XREF} LOCATION '${TS_NEWS_XREF_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_SECTOR};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_SECTOR};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_SECTOR} LOCATION '${TS_SECTOR_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_SECURITY};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_SECURITY};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_SECURITY} LOCATION '${TS_SECURITY_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_ADDRESS};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_ADDRESS};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_ADDRESS} LOCATION '${TS_ADDRESS_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_STATUS_TYPE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_STATUS_TYPE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_STATUS_TYPE} LOCATION '${TS_STATUS_TYPE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_TAXRATE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_TAXRATE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_TAXRATE} LOCATION '${TS_TAXRATE_DIR}';"
-	${MYSQL} ${DB_NAME} -e "DROP ${TS_ZIP_CODE};"
-	${MYSQL} ${DB_NAME} -e \
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "DROP ${TS_ZIP_CODE};"
+	${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 			"CREATE ${TS_ZIP_CODE} LOCATION '${TS_ZIP_CODE_DIR}';"
 fi
 
 # Creating sequence for Trade tables, t_id field
 
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE SEQUENCE seq_trade_id;"  
 #
 ## Creating domains to meta-type definitions (clause 2.2.3)
 #
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN BIGINT AS BIGINT;"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN BIGINT AS BIGINT NULL;"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN BIGINT AS BIGINT NULL;"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN NUMERIC(12,2) AS NUMERIC(12,2);"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN NUMERIC(12, 2) AS NUMERIC(8,2);"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN INTEGER AS INTEGER NULL;"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN NUMERIC(10,2) AS NUMERIC(10,2) NULL;"  
-#${MYSQL} ${DB_NAME} -e \
+#${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \
 #		"CREATE DOMAIN NUMERIC(15,2) AS NUMERIC(15,2) NOT NULL;"  
 
 # Note: when the specification states CHAR(n), the implementer can choose 
@@ -279,13 +280,13 @@ fi
 
 # Clause 2.2.5.1
 # create incrementing table
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE seq_trade_id (
 	id BIGINT AUTO_INCREMENT PRIMARY KEY)
 	${TS_SEQ_TRADE_ID};
 "
 
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE account_permission (
     ap_ca_id BIGINT NOT NULL,
     ap_acl VARCHAR(4) NOT NULL,
@@ -296,7 +297,7 @@ CREATE TABLE account_permission (
 "  	
 
 # Clause 2.2.5.2
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE customer (
     c_id BIGINT NOT NULL,
     c_tax_id VARCHAR(20) NOT NULL,
@@ -326,7 +327,7 @@ CREATE TABLE customer (
 "  
 
 # Clause 2.2.5.3
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE customer_account (
     ca_id BIGINT NOT NULL,
     ca_b_id BIGINT NOT NULL,
@@ -338,7 +339,7 @@ CREATE TABLE customer_account (
 "  
 
 # Clause 2.2.5.4
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE customer_taxrate (
     cx_tx_id VARCHAR(4) NOT NULL,
     cx_c_id BIGINT NOT NULL)
@@ -346,7 +347,7 @@ CREATE TABLE customer_taxrate (
 "  
 
 # Clause 2.2.5.5
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE holding (
     h_t_id BIGINT NOT NULL,
     h_ca_id BIGINT NOT NULL,
@@ -358,7 +359,7 @@ CREATE TABLE holding (
 "  
 
 # Clause 2.2.5.6
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE holding_history (
     hh_h_t_id BIGINT NOT NULL,
     hh_t_id BIGINT NOT NULL,
@@ -368,7 +369,7 @@ CREATE TABLE holding_history (
 "  
 
 # Clause 2.2.5.7
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE holding_summary (
     hs_ca_id BIGINT NOT NULL,
     hs_s_symb VARCHAR(15) NOT NULL,
@@ -377,7 +378,7 @@ CREATE TABLE holding_summary (
 "  
 
 # Clause 2.2.5.8
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE watch_item (
     wi_wl_id BIGINT NOT NULL,
     wi_s_symb VARCHAR(15) NOT NULL)
@@ -385,7 +386,7 @@ CREATE TABLE watch_item (
 "  
 
 # Clause 2.2.5.9
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE watch_list (
     wl_id BIGINT NOT NULL,
     wl_c_id BIGINT NOT NULL)
@@ -395,7 +396,7 @@ CREATE TABLE watch_list (
 # Broker Tables
 
 # Clause 2.2.6.1
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE broker (
     b_id BIGINT NOT NULL,
     b_st_id VARCHAR(4) NOT NULL,
@@ -406,7 +407,7 @@ CREATE TABLE broker (
 "  
 
 # Clause 2.2.6.2
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE cash_transaction (
     ct_t_id BIGINT NOT NULL,
     ct_dts TIMESTAMP NOT NULL,
@@ -416,7 +417,7 @@ CREATE TABLE cash_transaction (
 "  
 
 # Clause 2.2.6.3
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE charge (
     ch_tt_id VARCHAR(3) NOT NULL,
     ch_c_tier SMALLINT,
@@ -425,7 +426,7 @@ CREATE TABLE charge (
 "  
 
 # Clause 2.2.6.4
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE commission_rate (
     cr_c_tier SMALLINT NOT NULL,
     cr_tt_id VARCHAR(3) NOT NULL,
@@ -437,7 +438,7 @@ CREATE TABLE commission_rate (
 "  
 
 # Clause 2.2.6.5
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE settlement (
     se_t_id BIGINT NOT NULL,
     se_cash_type VARCHAR(40) NOT NULL,
@@ -447,7 +448,7 @@ CREATE TABLE settlement (
 "  
 
 # Clause 2.2.6.6
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE trade (
     t_id BIGINT NOT NULL,
     t_dts TIMESTAMP NOT NULL,
@@ -468,7 +469,7 @@ CREATE TABLE trade (
 "  
 
 # Clause 2.2.6.7
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE trade_history (
     th_t_id BIGINT NOT NULL,
     th_dts TIMESTAMP NOT NULL,
@@ -477,7 +478,7 @@ CREATE TABLE trade_history (
 "  
 
 # Clause 2.2.6.8
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE trade_request (
     tr_t_id BIGINT NOT NULL,
     tr_tt_id VARCHAR(3) NOT NULL,
@@ -489,7 +490,7 @@ CREATE TABLE trade_request (
 "  
 
 # Clause 2.2.6.9
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE trade_type (
     tt_id VARCHAR(3) NOT NULL,
     tt_name VARCHAR(12) NOT NULL,
@@ -501,7 +502,7 @@ CREATE TABLE trade_type (
 # Market Tables
 
 # Clause 2.2.7.1
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE company (
     co_id BIGINT NOT NULL,
     co_st_id VARCHAR(4) NOT NULL,
@@ -516,7 +517,7 @@ CREATE TABLE company (
 "  
 
 # Clause 2.2.7.2
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE company_competitor (
     cp_co_id BIGINT NOT NULL,
     cp_comp_co_id BIGINT NOT NULL,
@@ -525,7 +526,7 @@ CREATE TABLE company_competitor (
 "  
 
 # Clause 2.2.7.3
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE daily_market (
     dm_date DATE NOT NULL,
     dm_s_symb VARCHAR(15) NOT NULL,
@@ -537,7 +538,7 @@ CREATE TABLE daily_market (
 "  
 
 # Clause 2.2.7.4
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE exchange (
     ex_id VARCHAR(6) NOT NULL,
     ex_name VARCHAR(100) NOT NULL,
@@ -550,7 +551,7 @@ CREATE TABLE exchange (
 "  
 
 # Clause 2.2.7.5
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE financial (
     fi_co_id BIGINT NOT NULL,
     fi_year INTEGER NOT NULL,
@@ -570,7 +571,7 @@ CREATE TABLE financial (
 "  
 
 # Clause 2.2.7.6
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE industry (
     in_id VARCHAR(2) NOT NULL,
     in_name VARCHAR(50) NOT NULL,
@@ -579,7 +580,7 @@ CREATE TABLE industry (
 "  
 
 # Clause 2.2.7.7
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE last_trade (
     lt_s_symb VARCHAR(15) NOT NULL,
     lt_dts TIMESTAMP NOT NULL,
@@ -595,7 +596,7 @@ CREATE TABLE last_trade (
 #	stored outside the table. 
 #	TEXT seems to be simpler to handle
 
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE news_item (
     ni_id BIGINT NOT NULL,
     ni_headline VARCHAR(80) NOT NULL,
@@ -608,7 +609,7 @@ CREATE TABLE news_item (
 "  
 
 # Clause 2.2.7.9
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE news_xref (
     nx_ni_id BIGINT NOT NULL,
     nx_co_id BIGINT NOT NULL)
@@ -616,7 +617,7 @@ CREATE TABLE news_xref (
 "  
 
 # Clause 2.2.7.10
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE sector (
     sc_id VARCHAR(2) NOT NULL,
     sc_name VARCHAR(30) NOT NULL)
@@ -624,7 +625,7 @@ CREATE TABLE sector (
 "  
 
 # Clause 2.2.7.11
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE security (
     s_symb VARCHAR(15) NOT NULL,
     s_issue VARCHAR(6) NOT NULL,
@@ -648,7 +649,7 @@ CREATE TABLE security (
 # Dimension Tables
 
 # Clause 2.2.8.1
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE address (
     ad_id BIGINT NOT NULL,
     ad_line1 VARCHAR(80),
@@ -659,7 +660,7 @@ CREATE TABLE address (
 "  
 
 # Clause 2.2.8.2
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE status_type (
     st_id VARCHAR(4) NOT NULL,
     st_name VARCHAR(10) NOT NULL)
@@ -667,7 +668,7 @@ CREATE TABLE status_type (
 "  
 
 # Clause 2.2.8.3
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE taxrate (
     tx_id VARCHAR(4) NOT NULL,
     tx_name VARCHAR(50) NOT NULL,
@@ -676,7 +677,7 @@ CREATE TABLE taxrate (
 "  
 
 # Clause 2.2.8.4
-${MYSQL} ${DB_NAME} -e "
+${MYSQL} ${USER_FLAGS} ${DB_NAME} -e "
 CREATE TABLE zip_code (
     zc_code VARCHAR(12) NOT NULL,
     zc_town VARCHAR(80) NOT NULL,

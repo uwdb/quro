@@ -28,7 +28,7 @@ CBaseInterface::CBaseInterface(char *addr, const int iListenPort,
 {
 	cout<<"CBaseInterface: "<<m_szBHAddress<<", "<<m_iBHlistenPort<<endl;
 	sock = new CSocket(m_szBHAddress, m_iBHlistenPort);
-	cout<<"new socket successfully"<<endl;
+	cout<<"new socket successfully, port = "<<m_iBHlistenPort<<endl;
 	biConnect();
 	cout<<"biConnection"<<endl;
 }
@@ -88,6 +88,7 @@ bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 		length = sock->dbt5Send(reinterpret_cast<void *>(pRequest),
 				sizeof(*pRequest));
 	} catch(CSocketErr *pErr) {
+		cout<<"talkToSUT send error: "<<szTransactionName[pRequest->TxnType]<<", "<<pErr->ErrorText()<<endl;
 		sock->dbt5Reconnect();
 		logResponseTime(-1, 0, -1);
 
@@ -100,17 +101,23 @@ bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 		length = -1;
 		delete pErr;
 	}
+
+#ifndef NO_MEE_FOR_TRADERESULT
 	try {
 		length = sock->dbt5Receive(reinterpret_cast<void *>(&Reply),
 				sizeof(Reply));
+		if (Reply.iStatus == CBaseTxnErr::EXPECTED_ROLLBACK){
+			sock->dbt5Send(reinterpret_cast<void *>(pRequest),
+				sizeof(*pRequest));
+		}
 	} catch(CSocketErr *pErr) {
 		logResponseTime(-1, 0, -2);
-
+		cout<<"talkToSUT receive error"<<endl;
 		ostringstream msg;
 		msg << time(NULL) << " " << (long long) pthread_self() << " " <<
 				szTransactionName[pRequest->TxnType] << ": " << endl <<
 				"Error receiving " << length << " bytes of data" << endl <<
-				pErr->ErrorText() << endl;
+				pErr->ErrorText() << " ** end of error msg" << endl;
 		logErrorMessage(msg.str());
 		length = -1;
 		if (pErr->getAction() == CSocketErr::ERR_SOCKET_CLOSED)
@@ -127,7 +134,7 @@ bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 
 	//log response time
 	logResponseTime(Reply.iStatus, pRequest->TxnType, TxnTime.MSec() / 1000.0);
-
+#endif
 	if (Reply.iStatus == CBaseTxnErr::SUCCESS)
 		return true;
 	return false;
@@ -174,7 +181,6 @@ bool CBaseInterface::talkToSUT(PMsgDriverSeats pRequest)
 			sock->dbt5Reconnect();
 		delete pErr;
 	}
-
 	if (Reply.iStatus == CBaseTxnErr::SUCCESS)
 		return true;
 	return false;

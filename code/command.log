@@ -1,4 +1,14 @@
+./dbt5-mysql-build-db -c 5000 -t 5000 -s 500 -w 5
+./dbt5-mysql-build-db -c 1000 -t 1000 -s 500 -w 20
+
 dbt5-run-workload -c 1000 -t 1000 -d 20 -u 1 -f 500 -w 1 -n dbt5 -o /tmp/results
 ./dbt5-run-workload -c 5000 -t 5000 -d 20 -u 1 -f 500 -w 20 -n dbt5 -o /tmp/results
 
 vi egen/inc/DriverParamSettings.h
+
+./seats-run-workload -d 20 -u 1 -n seats -o /tmp/results
+
+must set CMakeFiles/bin/BrokerageHouseMain.dir/link.txt at the end of the line before "-o BrokerageHouseMain.o": -lpthread -lmysqlclient
+=> "-lpthread -lmysqlclient -o BrokerageHouseMain.o"
+
+Same for DriverMain.dir and MarketExchange.dir

@@ -77,6 +77,7 @@ class CCustomerSelection
     TIdent      m_iMyStartFromCustomer;
     TIdent      m_iMyCustomerCount;
 
+	TIdent cusBase;
     /*
     *   Forward permutation (used to convert ordinal C_ID into real C_ID).
     */

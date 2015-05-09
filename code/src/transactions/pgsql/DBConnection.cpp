@@ -186,7 +186,7 @@ void CDBConnection::connect()
     if (!mysql_real_connect(dbc, mysql_host, mysql_user, mysql_pass, mysql_dbname, atoi(mysql_port_t), mysql_socket_t, 0))
     {
 
-			LOG_ERROR_MESSAGE("FAILED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
+			printf("FAILED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
       if (mysql_errno(dbc))
       {
         LOG_ERROR_MESSAGE("Connection to database '%s' failed.", mysql_dbname);
@@ -3236,9 +3236,9 @@ void CDBConnection::append_profile_node(timeval _start, timeval _end, eTxnType _
 }
 #endif
 
-double difftimeval(timeval rt1, timeval rt0)
+/*double difftimeval(timeval rt1, timeval rt0)
 {
 	return (rt1.tv_sec - rt0.tv_sec) +
 		(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
-}
+}*/
 

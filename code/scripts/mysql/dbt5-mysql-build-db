@@ -108,7 +108,7 @@ else
 	fi
 fi
 
-EGENFLATOUT=/data/sanchez/results/silo/results/EGEN_FLATOUT
+EGENFLATOUT=~/results/EGEN_FLATOUT
 
 if [ ! "x${DBT5DBNAME}" = "x" ]; then
 	DBNAMEARG="-d ${DBT5DBNAME}"
