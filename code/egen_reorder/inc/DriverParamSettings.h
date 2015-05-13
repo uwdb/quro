@@ -595,6 +595,7 @@ public:
         dft.do_frame2 = 30;
         dft.do_frame3 = 30;
         dft.do_frame4 = 10;
+
         dft.MaxRowsFrame1 = 20;
         dft.BackOffFromEndTimeFrame2 = 4 * 8 * 3600;    // four 8-hour days or 32 hours
         dft.MaxRowsFrame2 = 20;
@@ -729,9 +730,15 @@ public:
 
     void InitializeDefaults(void)
     {
+	/*
         dft.do_frame1 = 33;
         dft.do_frame2 = 33;
         dft.do_frame3 = 34;
+	*/
+		dft.do_frame1 = 100;
+		dft.do_frame2 = 0;
+		dft.do_frame3 = 0;
+
         dft.MaxRowsFrame1 = 20;
         dft.MaxRowsToUpdateFrame1 = 20;
         dft.MaxRowsFrame2 = 20;
@@ -807,14 +814,14 @@ public:
         dft.TradeStatusMixLevel         =  190;
         dft.TradeUpdateMixLevel         =   20;
 				*/
-				dft.BrokerVolumeMixLevel        =   0;
+		dft.BrokerVolumeMixLevel        =   0;
         dft.CustomerPositionMixLevel    =   0;
         dft.MarketWatchMixLevel         =   0;
         dft.SecurityDetailMixLevel      =   0;
         dft.TradeLookupMixLevel         =   0;
-        dft.TradeOrderMixLevel          =   100;
+        dft.TradeOrderMixLevel          =   0;
         dft.TradeStatusMixLevel         =   0;
-        dft.TradeUpdateMixLevel         =   0;
+        dft.TradeUpdateMixLevel         =   100;
 
     }
 

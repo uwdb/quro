@@ -123,6 +123,7 @@ IF (WORKLOAD_TPCE)
                ${TXN}/TradeOrderDB.cpp
 							 ${TXN}/TradeOrderReorderTxn.cpp
 							 ${TXN}/TradeResultReorderTxn.cpp
+							 ${TXN}/TradeUpdateTxn.cpp
                ${TXN}/TradeStatusDB.cpp
 							 ${TXN}/TradeStatusTxn.cpp)
 	ELSE (NOT_DEFINED_REORDER)
@@ -141,6 +142,7 @@ IF (WORKLOAD_TPCE)
                ${TXN}/TradeOrderDB.cpp
 							 ${TXN}/TradeOrderTxn.cpp
 							 ${TXN}/TradeResultTxn.cpp
+							 ${TXN}/TradeUpdateTxn.cpp
                ${TXN}/TradeStatusDB.cpp
 							 ${TXN}/TradeStatusTxn.cpp)
 	ENDIF (DEF_REORDER)

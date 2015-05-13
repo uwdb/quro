@@ -140,7 +140,7 @@ public:
 	void append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit);
 #endif
 #ifdef PROFILE_EACH_QUERY
-	p_query queries[40];
+	p_query queries[200];
 	size_t q_cnt;
 
 	double exec_time;

@@ -42,7 +42,7 @@
 #define TXN_HARNESS_TRADE_UPDATE_H
 
 #include "TxnHarnessDBInterface.h"
-
+#include <sys/time.h>
 namespace TPCE
 {
 
@@ -59,7 +59,6 @@ public:
     void DoTxn( PTradeUpdateTxnInput pTxnInput, PTradeUpdateTxnOutput pTxnOutput )
     {
         TXN_HARNESS_SET_STATUS_SUCCESS;
-
         switch( pTxnInput->frame_to_execute )
         {
         case 1:
@@ -75,14 +74,16 @@ public:
             memcpy( Frame1Input.trade_id, pTxnInput->trade_id, sizeof( Frame1Input.trade_id ));
 
             // Execute Frame 1
-            m_db->DoTradeUpdateFrame1( &Frame1Input, &Frame1Output );
 
+            m_db->DoTradeUpdateFrame1( &Frame1Input, &Frame1Output );
+/*
             // Validate Frame 1 Output
             if (   Frame1Output.num_found >= pTxnInput->max_trades
                 || Frame1Output.num_updated >= pTxnInput->max_updates)
             {
                 TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TUF1_ERROR1);
             }
+*/
 
             // Copy Frame 1 Output
             pTxnOutput->frame_executed = 1;
@@ -203,6 +204,7 @@ public:
             break;
         }
     }
+
 };
 
 }   // namespace TPCE

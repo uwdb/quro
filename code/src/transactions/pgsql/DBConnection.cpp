@@ -2265,6 +2265,7 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 }
 #endif
 
+#ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		TTradeUpdateFrame1Output *pOut)
 {
@@ -2284,7 +2285,6 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int i_trade_history_dts;
 	int i_trade_history_status_id;
 	int i_trade_price;
-#ifdef DB_PGSQL
 	ostringstream osTrades;
 
 	int i = 0;
@@ -2493,14 +2493,11 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 		TTradeUpdateFrame2Output *pOut)
 {
-#ifdef DB_PGSQL
 	int i_bid_price;
 	int i_cash_transaction_amount;
 	int i_cash_transaction_dts;
@@ -2732,8 +2729,6 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
@@ -2759,7 +2754,6 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	int i_trade_list;
 	int i_type_name;
 	int i_trade_type;
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeUpdateFrame3('" <<
 			pIn->end_trade_dts.year << "-" <<
@@ -3015,9 +3009,21 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
+#else
+//void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
+//		TTradeUpdateFrame1Output *pOut)
+//{}
+
+void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
+		TTradeUpdateFrame2Output *pOut)
+{}
+
+void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
+		TTradeUpdateFrame3Output *pOut)
+{}
+
+#endif //TRADE_UPDATE
 #endif //WORKLOAD_TPCE
 
 void CDBConnection::reconnect()

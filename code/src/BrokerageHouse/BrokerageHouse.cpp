@@ -209,16 +209,16 @@ loop:
 					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
 							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
-				/*case TRADE_STATUS:
-					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
-							&(pMessage->TxnInput.TradeStatusTxnInput),
-							tradeStatus);
-					break;
+				//case TRADE_STATUS:
+				//	iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
+				//			&(pMessage->TxnInput.TradeStatusTxnInput),
+				//			tradeStatus);
+				//	break;
 				case TRADE_UPDATE:
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
 					break;
-				case DATA_MAINTENANCE:
+				/*case DATA_MAINTENANCE:
 					iRet = pThrParam->pBrokerageHouse->RunDataMaintenance(
 							&(pMessage->TxnInput.DataMaintenanceTxnInput),
 							dataMaintenance);
@@ -241,11 +241,11 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
-//			pDBConnection->outfile<<"error: "<<str<<endl;
+			pDBConnection->outfile<<"error: "<<str<<endl;
 //#ifdef PROFILE_EACH_QUERY
 //			pDBConnection->print_profile_query();
 //#endif
-//			pDBConnection->outfile.flush();
+			pDBConnection->outfile.flush();
 #endif
 				//ostringstream msg;
 				//msg << time(NULL) << " " << (long long) pthread_self() << " " <<

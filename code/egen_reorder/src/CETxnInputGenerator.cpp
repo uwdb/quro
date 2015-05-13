@@ -936,7 +936,8 @@ void CCETxnInputGenerator::GenerateTradeOrderInput(TTradeOrderTxnInput &TxnReq, 
     TxnReq.requested_price = m_rnd.RndDoubleIncrRange(fMinSecPrice, fMaxSecPrice, 0.01);
 
     // Determine whether Market or Limit order
-    bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
+    //bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
+	bMarket = true;
 
     //Determine whether Buy or Sell trade
     if (m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.buy_orders))

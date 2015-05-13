@@ -12,3 +12,7 @@ must set CMakeFiles/bin/BrokerageHouseMain.dir/link.txt at the end of the line b
 => "-lpthread -lmysqlclient -o BrokerageHouseMain.o"
 
 Same for DriverMain.dir and MarketExchange.dir
+
+parameter set: DriverParameterSetting.h
+
+TradeUpdate params set: src/MiscConsts.h

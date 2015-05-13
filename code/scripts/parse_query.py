@@ -4,7 +4,7 @@ import random
 args = sys.argv
 fileid = sys.argv[1]
 bhcnt = int(sys.argv[2], 10)
-mecnt = bhcnt/4
+mecnt = bhcnt
 #file [0, bhcnt/4-1], [bhcnt/4, bhcnt+bhcnt/4-1]
 def cal_time(start_s, start_u):
 		return float(start_s) + float(start_u)/1000000.0
@@ -87,12 +87,12 @@ TO_txn_avg = float(commit_exec_time_total + abort_exec_time_total)/float(abort_c
 TO_exec_total = total_exec_time
 
 def readSingleFile(fp):
-	_bin = [[0 for x in range(23)] for x in range(6)]
-	_cnt = [[0 for x in range(23)] for x in range(6)]
-	_max = [[0 for x in range(23)] for x in range(6)]
-	_var = [[0 for x in range(23)] for x in range(6)]
+	_bin = [[0 for x in range(24)] for x in range(6)]
+	_cnt = [[0 for x in range(24)] for x in range(6)]
+	_max = [[0 for x in range(24)] for x in range(6)]
+	_var = [[0 for x in range(24)] for x in range(6)]
 	for i in range(6):
-			for j in range(23):
+			for j in range(24):
 					_bin[i][j] = 0.0
 					_cnt[i][j] = 0
 					_max[i][j] = 0.0
@@ -155,25 +155,25 @@ def readSingleFile(fp):
 	
 	for i in range(6):
 			print "frame %d: "%(i+1),
-			for j in range(23):
+			for j in range(24):
 					if(_bin[i][j]>0):
 							print "query %d(%f)"%(j+1, _bin[i][j]/float(_cnt[i][j])),
 			print ""
 	
 	print "------add-----"
 	print "%f"%(_add/float(commit_cnt + abort_cnt))
-	print "-----------variance------"
-	for i in range(6):
-			print "frame %d: "%(i+1),
-			for j in range(23):
-					if(_bin[i][j]>0):
-							print "query %d(%f)"%(j+1, _var[i][j]/float(_cnt[i][j])),
-			print ""
+	#print "-----------variance------"
+	#for i in range(6):
+	#		print "frame %d: "%(i+1),
+	#		for j in range(24):
+	#				if(_bin[i][j]>0):
+	#						print "query %d(%f)"%(j+1, _var[i][j]/float(_cnt[i][j])),
+	#		print ""
 	
 	#print "-----------max------"
 	#for i in range(6):
 	#		print "frame %d: "%(i+1),
-	#		for j in range(23):
+	#		for j in range(24):
 	#				if(_bin[i][j]>0):
 	#						print "query %d(%f)"%(j+1, _max[i][j]),
 	#		print ""
@@ -181,7 +181,7 @@ def readSingleFile(fp):
 	print "-----------cnt------"
 	for i in range(6):
 			print "frame %d: "%(i+1),
-			for j in range(23):
+			for j in range(24):
 					if(_bin[i][j]>0):
 							print "query %d(%d)"%(j+1, _cnt[i][j]),
 			print ""
