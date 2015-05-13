@@ -1,15 +1,20 @@
 #!/bin/bash
 
-MYSQL=mysql
+#MYSQL=mysql
+MYSQL=$HOME/mysql-bin/bin/mysql
 DB_NAME=dbt5
 
-USER_FLAGS="-u root"
+#USER_FLAGS="-u root"
+USER_FLAGS=""
 
-EGENFLATOUT=~/results/EGEN_FLATOUT
+EGENFLATOUT=~/results_link/DBT5_EGEN
+#EGENFLATOUT=~/results/EGEN_FLATOUT
 
 #  2.2.6.10 SECTOR (SC_)
 ${MYSQL} ${USER_FLAGS} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Sector.txt\" \
 		 INTO TABLE sector FIELDS TERMINATED BY \"|\" ";
+echo "${MYSQL} ${USER_FLAGS} ${DB_NAME} -e \" LOAD DATA LOCAL INFILE \"${EGENFLATOUT}/Sector.txt\" \
+		 INTO TABLE sector FIELDS TERMINATED BY \"|\" \""
 echo "finish loading Sector" 
 
 # 2.2.x.x NEW_ITEM 

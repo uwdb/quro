@@ -76,7 +76,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 //-------------FRAME 2--------------
 	TRADE_RESULT_F2Q0;
 
-	TRADE_RESULT_F2Q1;
+//	TRADE_RESULT_F2Q1;
 
 	sscanf(now_dts, "%hd-%hd-%hd %hd:%hd:%hd.%*d",
 			&trade_dts.year,
@@ -120,18 +120,18 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 							hold_price = atof(dbt5_sql_getvalue(&result_t, 2, length));
 
 							if(hold_qty > needed_qty){
-									
+
 									TRADE_RESULT_F2Q6;
 									TRADE_RESULT_F2Q7;
-									
+
 									buy_value = buy_value + (needed_qty * hold_price);
 									sell_value = sell_value + (needed_qty * trade_price);
 									needed_qty = 0;
 							}else{
-									
+
 									TRADE_RESULT_F2Q8;
 									TRADE_RESULT_F2Q9;
-									
+
 									buy_value = buy_value + (hold_qty * hold_price);
 									sell_value = sell_value + (hold_qty * trade_price);
 									needed_qty = needed_qty - hold_qty;
@@ -174,7 +174,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 							if(hold_qty > needed_qty){
 									TRADE_RESULT_F2Q17;
 									TRADE_RESULT_F2Q18;
-									
+
 									buy_value = buy_value + (needed_qty * hold_price);
 									sell_value = sell_value + (needed_qty * trade_price);
 									needed_qty = 0;
@@ -214,9 +214,9 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 
 	TRADE_RESULT_F4Q1;
 
-	TRADE_RESULT_F4Q2; 
+//	TRADE_RESULT_F4Q2;
 
-	TRADE_RESULT_F4Q3; 
+//	TRADE_RESULT_F4Q3;
 //--------------------Frame 5--------------------
 	comm_amount = ( comm_rate / 100.00 ) * ( trade_qty * trade_price );
   // round up for correct precision (cents only)
@@ -228,7 +228,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 
 	TRADE_RESULT_F5Q2;
 
-	TRADE_RESULT_F5Q3;
+//	TRADE_RESULT_F5Q3;
 //-----------------Frame 6--------------------
 	if (type_is_sell)
   {
@@ -268,7 +268,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 //	sprintf(now_dts, "%d-%d-%d %d:%d:%d", trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second);
 
 	if(trade_is_cash){
-			TRADE_RESULT_F6Q2; 
+//			TRADE_RESULT_F6Q2;
 			TRADE_RESULT_F6Q3;
 			TRADE_RESULT_F6Q4;
 	}
@@ -284,13 +284,17 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 		TRADE_RESULT_F2Q14;
 	}
 	trade_qty = ex_trade_qty;
-	
-	TRADE_RESULT_F2Q1;
-	TRADE_RESULT_F4Q2; 
-
-	TRADE_RESULT_F4Q3; 
-	TRADE_RESULT_F5Q3;
 */
+	TRADE_RESULT_F2Q1;
+	TRADE_RESULT_F4Q2;
+
+	TRADE_RESULT_F4Q3;
+	TRADE_RESULT_F5Q3;
+
+	if(trade_is_cash){
+		TRADE_RESULT_F6Q2;
+	}
+
 
 //---------------set output-------------
 	pOut->acct_id = acct_id;

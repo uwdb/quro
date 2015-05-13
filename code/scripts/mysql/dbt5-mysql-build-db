@@ -108,7 +108,8 @@ else
 	fi
 fi
 
-EGENFLATOUT=~/results/EGEN_FLATOUT
+#EGENFLATOUT=~/results/EGEN_FLATOUT
+EGENFLATOUT=~/results_link/DBT5_EGEN
 
 if [ ! "x${DBT5DBNAME}" = "x" ]; then
 	DBNAMEARG="-d ${DBT5DBNAME}"

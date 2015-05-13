@@ -76,14 +76,14 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 	double comm_amount;
 	double comm_rate;
 
-	TRADEORDER_F1Q1;
-
-	TRADEORDER_F1Q2;
-
-	TRADEORDER_F1Q3;
-
-//--------------------Frame 2------------------
-	TRADEORDER_F2Q1;
+//	TRADEORDER_F1Q1;
+//
+//	TRADEORDER_F1Q2;
+//
+//	TRADEORDER_F1Q3;
+//
+////--------------------Frame 2------------------
+//	TRADEORDER_F2Q1;
 //--------------------Frame 3-----------------------
 	if(strlen(symbol)==0){
 
@@ -166,6 +166,29 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			}
 	}
 
+	sprintf(query, "SET SESSION profiling = 1");
+	dbt5_sql_execute(query, &result, "PROFILE");
+	TRADEORDER_F1Q1;
+
+	sprintf(query, "show profile");
+	if(dbt5_sql_execute(query, &result, "PROF") && result.result_set){
+			num_rows = result.num_rows;
+			outfile<<"profile: ";
+			float add = 0;
+			for(int k=0; k<num_rows; k++){
+				dbt5_sql_fetchrow(&result);
+				val = dbt5_sql_getvalue(&result, 0, length);
+				outfile<<val<<"(";
+				val = dbt5_sql_getvalue(&result, 1, length);
+				outfile<<val<<") ";
+				add = add + atof(val);
+			}
+			outfile<<" ----total "<<add<<endl;
+	}
+	TRADEORDER_F1Q2;
+	TRADEORDER_F1Q3;
+	TRADEORDER_F2Q1;
+
 	if(sell_value > buy_value && ((tax_status == 1 ) || ( tax_status == 2))){
 			TRADEORDER_F3Q12;
 			tax_amount = (sell_value - buy_value) * tax_rates;
@@ -186,12 +209,15 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			strcpy(status_id, st_pending_id);
 	}
 
+
+
+
 //------------------Frame 4-----------------------
 	comm_amount = comm_rate / 100
                                           * trade_qty
                                           * requested_price;
 	comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
-
+/*
 	//FIXME: now_dts and trade_id
 	TRADEORDER_F4Q1;
 	TRADEORDER_F4Q2;
@@ -203,13 +229,14 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 	}
 
 	TRADEORDER_F4Q5;
-
+*/
 	trade_id = next_t_id;
 
-	if(pIn->roll_it_back){
-			string msg("force roll back");
-			throw msg.c_str();
-	}
+//	if(pIn->roll_it_back){
+//			string msg("force roll back");
+//			throw msg.c_str();
+//	}
+
 
 	pOut->buy_value = buy_value;
 	pOut->sell_value = sell_value;

@@ -190,12 +190,12 @@ public:
 		gettimeofday(&t1, NULL); \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_1")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
+			ADD_QUERY_NODE(1, 1, 1); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			strncpy(acct_name, val, length); \
 		 	broker_id = atol(dbt5_sql_getvalue(&result, 1, length)); \
 			cust_id = atol(dbt5_sql_getvalue(&result, 2, length)); \
 			tax_status = atoi(dbt5_sql_getvalue(&result, 3, length)); \
-			ADD_QUERY_NODE(1, 1, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame1 query 1 fails"); \
 	}
@@ -204,6 +204,7 @@ public:
 		gettimeofday(&t1, NULL); \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_2")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
+			ADD_QUERY_NODE(1, 2, 1); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			strncpy(cust_f_name, val, length); \
 			val = dbt5_sql_getvalue(&result, 1, length); \
@@ -211,7 +212,6 @@ public:
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 2, length)); \
 			val = dbt5_sql_getvalue(&result, 2, length); \
 			strncpy(tax_id, val, length); \
-			ADD_QUERY_NODE(1, 2, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame1 query 2 fails"); \
 	}

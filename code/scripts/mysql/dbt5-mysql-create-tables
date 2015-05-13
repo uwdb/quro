@@ -7,7 +7,8 @@
 # Copyright (C) 2002-2010 Mark Wong & Open Source Development Labs, Inc.
 #               2006 Rilson Nascimento
 #
-MYSQL=mysql
+MYSQL=$HOME/mysql-bin/bin/mysql
+#MYSQL=mysql
 USER_FLAGS="-u root"
 DB_NAME=dbt5
 USE_TABLESPACES=0

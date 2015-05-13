@@ -12,3 +12,5 @@ must set CMakeFiles/bin/BrokerageHouseMain.dir/link.txt at the end of the line b
 => "-lpthread -lmysqlclient -o BrokerageHouseMain.o"
 
 Same for DriverMain.dir and MarketExchange.dir
+
+SELECT * FROM INFORMATION_SCHEMA.INNODB_BUFFER_POOL_STATS \G

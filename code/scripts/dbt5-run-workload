@@ -171,13 +171,6 @@ oprofile_init()
 	${COMMAND} sudo opcontrol --start
 }
 
-echo "3. Starting Customer driver: ${USERS} user(s)"
-echo "   1 user starting every ${SLEEPY} milliseconds..."
-DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
-		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
-		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
-		-i ${EGENDIR}/flat_in \
-		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
 DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"
 
@@ -475,6 +468,7 @@ BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
 #				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
 #pwd
 #run
+#backtrace
 #quit
 #GDB_INPUT
 #

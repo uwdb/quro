@@ -187,6 +187,7 @@ bool ValidateParameters()
 	// Completed trades in 8 hours must be a non-zero integral multiple of 100
 	// so that exactly 1% extra trade ids can be assigned to simulate aborts.
 	//
+	cout<<"iScaleFactor = "<<iScaleFactor<<endl;
 	if ((INT64) (HoursPerWorkDay * SecondsPerHour * iDefaultLoadUnitSize /
 			iScaleFactor) % 100 != 0) {
 		cerr << "Incompatible value for Scale Factor (-f) specified." << endl;

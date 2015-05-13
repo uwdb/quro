@@ -190,7 +190,7 @@ void CDBConnection::connect()
       if (mysql_errno(dbc))
       {
         LOG_ERROR_MESSAGE("Connection to database '%s' failed.", mysql_dbname);
-	LOG_ERROR_MESSAGE("mysql reports: %d %s",
+				printf("mysql reports: %d %s",
                            mysql_errno(dbc), mysql_error(dbc));
 				assert(false);
       }

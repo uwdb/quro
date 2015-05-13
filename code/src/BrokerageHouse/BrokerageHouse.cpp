@@ -206,8 +206,8 @@ loop:
 							&(pMessage->TxnInput.TradeOrderTxnInput), tradeOrder);
 					break;
 				case TRADE_RESULT:
-					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
-							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
+//					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
+//							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
 				/*case TRADE_STATUS:
 					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
