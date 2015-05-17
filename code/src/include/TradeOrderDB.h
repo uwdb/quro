@@ -178,8 +178,10 @@ public:
 #define ADD_QUERY_NODE(f, q, commit) \
 				gettimeofday(&t2, NULL); \
 				add_profile_node(f, q, difftimeval(t2, t1), commit);
+#define GETTIME gettimeofday(&t1, NULL);
 #else
 #define ADD_QUERY_NODE(f, q, commit)
+#define GETTIME
 #endif
 
 #define RETURN_ERROR(msg) \
@@ -187,7 +189,7 @@ public:
 				throw fail_msg.c_str();
 
 #define TRADEORDER_F1Q1  sprintf(query, SQLTOF1_1, acct_id);\
-		gettimeofday(&t1, NULL); \
+	GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_1")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			ADD_QUERY_NODE(1, 1, 1); \
@@ -201,7 +203,7 @@ public:
 	}
 
 #define TRADEORDER_F1Q2 sprintf(query, SQLTOF1_2, cust_id); \
-		gettimeofday(&t1, NULL); \
+	GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_2")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			ADD_QUERY_NODE(1, 2, 1); \
@@ -217,7 +219,7 @@ public:
 	}
 
 #define TRADEORDER_F1Q3 sprintf(query, SQLTOF1_3, broker_id); \
-	gettimeofday(&t1, NULL); \
+	GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_3")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
@@ -231,7 +233,7 @@ public:
             || strcmp(exec_f_name, cust_f_name) \
             || strcmp(exec_tax_id, tax_id)){ \
 			sprintf(query, SQLTOF2_1, acct_id, exec_f_name, exec_l_name, exec_tax_id); \
-				gettimeofday(&t1, NULL); \
+				GETTIME; \
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					val = dbt5_sql_getvalue(&result, 0, length); \
@@ -243,7 +245,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q1 sprintf(query, SQLTOF3_1a, co_name); \
-			gettimeofday(&t1, NULL); \
+			GETTIME; \
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){ \
 				dbt5_sql_fetchrow(&result); \
 				co_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
@@ -253,7 +255,7 @@ public:
 		}
 
 #define TRADEORDER_F3Q2 sprintf(query, SQLTOF3_2a, co_id, issue); \
-			gettimeofday(&t1, NULL); \
+			GETTIME; \
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_5")==1 && result.result_set){ \
 				dbt5_sql_fetchrow(&result); \
 				val = dbt5_sql_getvalue(&result, 0, length); \
@@ -268,7 +270,7 @@ public:
 		}
 
 #define TRADEORDER_F3Q3 sprintf(query, SQLTOF3_1b, symbol); \
-			gettimeofday(&t1, NULL); \
+			GETTIME; \
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4b")==1 && result.result_set){ \
 				dbt5_sql_fetchrow(&result); \
 				co_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
@@ -282,7 +284,7 @@ public:
 		}
 
 #define TRADEORDER_F3Q4 sprintf(query, SQLTOF3_2b, co_id); \
-			gettimeofday(&t1, NULL); \
+			GETTIME; \
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_5b")==1 && result.result_set){ \
 				dbt5_sql_fetchrow(&result); \
 				val = dbt5_sql_getvalue(&result, 0, length); \
@@ -293,7 +295,7 @@ public:
 		}
 
 #define TRADEORDER_F3Q5 sprintf(query, SQLTOF3_3, symbol); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_6")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			market_price = atol(dbt5_sql_getvalue(&result, 0, length)); \
@@ -303,7 +305,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q6 sprintf(query, SQLTOF3_4, trade_type_id); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_7")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length)); \
@@ -314,7 +316,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q7 sprintf(query, SQLTOF3_5, acct_id, symbol); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_8")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			hs_qty = atol(dbt5_sql_getvalue(&result, 0, length)); \
@@ -324,7 +326,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q8 sprintf(query, SQLTOF3_6a, acct_id, symbol); \
-								gettimeofday(&t1, NULL); \
+								GETTIME; \
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_9") && result.result_set){ \
 									num_rows = result.num_rows; \
 									ADD_QUERY_NODE(3, 8, 1); \
@@ -333,7 +335,7 @@ public:
 							}
 
 #define TRADEORDER_F3Q9 sprintf(query, SQLTOF3_6b, acct_id, symbol); \
-								gettimeofday(&t1, NULL); \
+								GETTIME; \
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_10") && result.result_set){ \
 									num_rows = result.num_rows; \
 									ADD_QUERY_NODE(3, 9, 1); \
@@ -342,7 +344,7 @@ public:
 							}
 
 #define TRADEORDER_F3Q10 sprintf(query, SQLTOF3_6a, acct_id, symbol); \
-								gettimeofday(&t1, NULL); \
+								GETTIME; \
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_9") && result.result_set){ \
 									num_rows = result.num_rows; \
 									ADD_QUERY_NODE(3, 10, 1); \
@@ -351,7 +353,7 @@ public:
 							}
 
 #define TRADEORDER_F3Q11 sprintf(query, SQLTOF3_6b, acct_id, symbol); \
-								gettimeofday(&t1, NULL); \
+								GETTIME; \
 							if(dbt5_sql_execute(query, &result, "TRADE_ORDER_10") && result.result_set){ \
 									num_rows = result.num_rows; \
 									ADD_QUERY_NODE(3, 11, 1); \
@@ -360,7 +362,7 @@ public:
 							}
 
 #define TRADEORDER_F3Q12 sprintf(query, SQLTOF3_7, cust_id); \
-				gettimeofday(&t1, NULL); \
+				GETTIME; \
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_11")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					tax_rates = atof(dbt5_sql_getvalue(&result, 0, length)); \
@@ -370,7 +372,7 @@ public:
 			}
 
 #define TRADEORDER_F3Q13 sprintf(query, SQLTOF3_8, cust_tier,  trade_type_id, exch_id, trade_qty, trade_qty); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_12")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length)); \
@@ -380,7 +382,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q14 sprintf(query, SQLTOF3_9, cust_tier,  trade_type_id); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_13")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			charge_amount = atof(dbt5_sql_getvalue(&result, 0, length)); \
@@ -390,7 +392,7 @@ public:
 	}
 
 #define TRADEORDER_F3Q15  sprintf(query, SQLTOF3_10, acct_id); \
-				gettimeofday(&t1, NULL); \
+				GETTIME; \
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_14")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length)); \
@@ -400,7 +402,7 @@ public:
 			}
 
 #define TRADEORDER_F3Q16 sprintf(query, SQLTOF3_11, acct_id); \
-				gettimeofday(&t1, NULL); \
+				GETTIME; \
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_15")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					acct_assets = acct_bal + atof(dbt5_sql_getvalue(&result, 0, length)); \
@@ -412,7 +414,7 @@ public:
 			}
 
 #define TRADEORDER_F4Q1 sprintf(query, SQLTOF4_0); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_16")){ \
 			string fail_msg("trade order frame 4 query 1 fails"); \
 			throw fail_msg.c_str(); \
@@ -420,7 +422,7 @@ public:
 	ADD_QUERY_NODE(4, 1, 1);
 
 #define TRADEORDER_F4Q2 sprintf(query, SQLTOF4_00); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_17")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
@@ -431,21 +433,21 @@ public:
 	}
 
 #define TRADEORDER_F4Q3 sprintf(query, SQLTOF4_1, next_t_id, status_id,  trade_type_id, is_cash, symbol, trade_qty, requested_price, acct_id, exec_name, charge_amount, comm_amount, is_lifo); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_18")){ \
 			RETURN_ERROR("trade order frame4 query 3 fails"); \
 	} \
 	ADD_QUERY_NODE(4, 3, 1);
 
 #define TRADEORDER_F4Q4 sprintf(query, SQLTOF4_2, next_t_id, trade_type_id, symbol, trade_qty, requested_price, broker_id); \
-			gettimeofday(&t1, NULL); \
+			GETTIME; \
 			if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_19")){ \
 					RETURN_ERROR("trade order frame4 query 4 fails"); \
 			} \
 			ADD_QUERY_NODE(4, 4, 1);
 
 #define TRADEORDER_F4Q5 sprintf(query, SQLTOF4_3, next_t_id, status_id); \
-		gettimeofday(&t1, NULL); \
+		GETTIME; \
 	if(!dbt5_sql_execute(query, &result, "TRADE_ORDER_20")){ \
 			RETURN_ERROR("trade order frame4 query 5 fails"); \
 	} \

@@ -123,6 +123,9 @@ public:
 #endif
 #endif
 
+	int txn_cnt;
+	timeval t1, t2;
+
 	~CDBConnection();
 
 	void begin();
@@ -140,11 +143,10 @@ public:
 	void append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit);
 #endif
 #ifdef PROFILE_EACH_QUERY
-	p_query queries[40];
+	p_query queries[200];
 	size_t q_cnt;
 
 	double exec_time;
-	timeval t1, t2;
 
 	inline void add_profile_node(size_t _frame, size_t _query, double _exec_time, bool _commit){
 			queries[q_cnt].set(_frame, _query, _exec_time, _commit);
@@ -239,6 +241,7 @@ char * dbt5_sql_getvalue(sql_result_t * sql_result, int field, int& length);
 };
 
 extern CDBConnection* pDBClist[1024];
+extern timeval t_start_values[1024];
 extern int connectionCnt;
 
 inline
@@ -247,5 +250,5 @@ double difftimeval(timeval rt1, timeval rt0)
 	return (rt1.tv_sec - rt0.tv_sec) +
 	(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
 }
-		
+
 #endif //DB_CONNECTION_H

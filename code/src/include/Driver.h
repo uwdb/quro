@@ -22,6 +22,7 @@
 #include "locking.h"
 #include <thread>
 #include <mutex>
+#include "util.h"
 using namespace std;
 #define TIdent int64_t
 #define INT32 int32_t
@@ -86,6 +87,7 @@ public:
 typedef struct TCustomerThreadParam
 {
 	CDriver *pDriver;
+	uint64_t* flight_ids;
 } *PCustomerThreadParam;
 
 

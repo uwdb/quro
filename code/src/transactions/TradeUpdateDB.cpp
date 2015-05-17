@@ -29,8 +29,12 @@ void CTradeUpdateDB::DoTradeUpdateFrame1(const TTradeUpdateFrame1Input *pIn,
 	startTransaction();
 	setRepeatableRead();
 #endif
+
 	execute(pIn, pOut);
-	commitTransaction();
+
+
+//	commitTransaction();
+
 
 #ifdef DEBUG
 	cout << pid << " - Trade Update Frame 1 (output)" << endl <<

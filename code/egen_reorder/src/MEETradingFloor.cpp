@@ -145,7 +145,15 @@ void CMEETradingFloor::SendTradeResult( PTradeRequest pTradeRequest )
     {
         TxnInput.trade_price = CurrentPrice;
     }
-    m_pSUT->TradeResult( &TxnInput );
+	strcpy(TxnInput.symbol, pTradeRequest->symbol);
+	strcpy(TxnInput.type_id, pTradeRequest->trade_type_id);
+	TxnInput.is_lifo = pTradeRequest->is_lifo;
+	TxnInput.trade_is_cash = pTradeRequest->trade_is_cash;
+	TxnInput.trade_qty = pTradeRequest->trade_qty;
+	TxnInput.charge = pTradeRequest->charge;
+	TxnInput.acct_id = pTradeRequest->acct_id;
+   
+   	m_pSUT->TradeResult( &TxnInput );
 
     // Populate Ticker Entry information
     strncpy( TickerEntry.symbol, pTradeRequest->symbol, sizeof( TickerEntry.symbol ));

@@ -105,7 +105,7 @@ try {
 //#endif
 //			pDBConnection->outfile.flush();
 //#endif
-				//pDBConnection->outfile<<str<<endl;
+//				pDBConnection->outfile<<str<<endl;
 
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 

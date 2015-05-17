@@ -17,7 +17,7 @@ public:
 		TUpdateReservationTxnInput urInput;
 
 		CSEATS(char* addr, const int iListenPort, ofstream* pflog, ofstream* pfmix,
-			mutex* pLogLock, mutex* pMixLock);
+			mutex* pLogLock, mutex* pMixLock, uint64_t* flight_ids);
 
 
 		void GenerateFindFlightInput();

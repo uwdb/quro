@@ -18,6 +18,7 @@
 
 //global variables
 CDBConnection* pDBClist[1024];
+timeval t_start_values[1024];
 int connectionCnt;
 
 bool inline check_count(int should, int is, const char *file, int line) {
@@ -113,7 +114,6 @@ CDBConnection::CDBConnection(const char *szHost, const char *szDBName,
 		strcat(szConnectStr, szDBPort);
 	}
 
-	sprintf(name, "%d", (int) pthread_self());
 	m_Conn = PQconnectdb(szConnectStr);
 }
 #else
@@ -163,13 +163,14 @@ void CDBConnection::begin()
 	PGresult *res = PQexec(m_Conn, "BEGIN;");
 	PQclear(res);
 #else
+	/*
 	if (mysql_real_query(dbc, "START TRANSACTION", 17))
   {
     	LOG_ERROR_MESSAGE("START TRANSACTION failed. mysql reports: %d %s",
                            mysql_errno(dbc), mysql_error(dbc));
 			assert(false);
   }
-
+	*/
 #endif
 }
 
@@ -186,7 +187,7 @@ void CDBConnection::connect()
     if (!mysql_real_connect(dbc, mysql_host, mysql_user, mysql_pass, mysql_dbname, atoi(mysql_port_t), mysql_socket_t, 0))
     {
 
-			printf("FAILED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
+			//LOG_ERROR_MESSAGE("FAILED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
       if (mysql_errno(dbc))
       {
         LOG_ERROR_MESSAGE("Connection to database '%s' failed.", mysql_dbname);
@@ -195,15 +196,16 @@ void CDBConnection::connect()
 				assert(false);
       }
     }
-		LOG_ERROR_MESSAGE("SUCCEDED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
+		//LOG_ERROR_MESSAGE("SUCCEDED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
 
     /* Disable AUTOCOMMIT mode for connection */
-    if (mysql_real_query(dbc, "SET AUTOCOMMIT=0", 16))
+    /*
+		if (mysql_real_query(dbc, "SET AUTOCOMMIT=0", 16))
     {
       LOG_ERROR_MESSAGE("mysql reports: %d %s", mysql_errno(dbc) ,
                          mysql_error(dbc));
 			assert(false);
-    }
+    }*/
 #endif
 
 }
@@ -2265,6 +2267,7 @@ void CDBConnection::execute(const TTradeStatusFrame1Input *pIn,
 }
 #endif
 
+#ifdef DB_PGSQL
 void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		TTradeUpdateFrame1Output *pOut)
 {
@@ -2284,7 +2287,6 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int i_trade_history_dts;
 	int i_trade_history_status_id;
 	int i_trade_price;
-#ifdef DB_PGSQL
 	ostringstream osTrades;
 
 	int i = 0;
@@ -2493,14 +2495,11 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 		TTradeUpdateFrame2Output *pOut)
 {
-#ifdef DB_PGSQL
 	int i_bid_price;
 	int i_cash_transaction_amount;
 	int i_cash_transaction_dts;
@@ -2732,8 +2731,6 @@ void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
 
 void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
@@ -2759,7 +2756,6 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	int i_trade_list;
 	int i_type_name;
 	int i_trade_type;
-#ifdef DB_PGSQL
 	ostringstream osSQL;
 	osSQL << "SELECT * FROM TradeUpdateFrame3('" <<
 			pIn->end_trade_dts.year << "-" <<
@@ -3015,9 +3011,21 @@ void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
 	check_count(pOut->num_found, vAux.size(), __FILE__, __LINE__);
 	vAux.clear();
 	PQclear(res);
-#else
-#endif
 }
+#else
+//void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
+//		TTradeUpdateFrame1Output *pOut)
+//{}
+
+void CDBConnection::execute(const TTradeUpdateFrame2Input *pIn,
+		TTradeUpdateFrame2Output *pOut)
+{}
+
+void CDBConnection::execute(const TTradeUpdateFrame3Input *pIn,
+		TTradeUpdateFrame3Output *pOut)
+{}
+
+#endif //TRADE_UPDATE
 #endif //WORKLOAD_TPCE
 
 void CDBConnection::reconnect()
@@ -3149,8 +3157,8 @@ int CDBConnection::dbt5_sql_execute(char * query, sql_result_t * sql_result,
 
   if (mysql_query(dbc, query))
   {
-    LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
-                            mysql_errno(dbc), mysql_error(dbc));
+    //LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
+    //                        mysql_errno(dbc), mysql_error(dbc));
     return 0;
   }
   else
@@ -3172,8 +3180,8 @@ int CDBConnection::dbt5_sql_execute(char * query, sql_result_t * sql_result,
       }
       else
       {
-         LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
-                            mysql_errno(dbc), mysql_error(dbc));
+        //LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
+        //                    mysql_errno(dbc), mysql_error(dbc));
          return 0;
       }
     }

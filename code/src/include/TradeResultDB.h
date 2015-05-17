@@ -64,16 +64,16 @@ using namespace TPCE;
 		"FROM holding\n" \
 		"WHERE h_ca_id = %ld\n" \
 		"  AND h_s_symb = '%s'\n" \
-		"ORDER BY h_dts DESC\n" 
-//		"FOR UPDATE"
+		"ORDER BY h_dts DESC\n" \
+		"FOR UPDATE"
 
 #define TRADE_RESULT2_3b \
 		"SELECT h_t_id, h_qty, h_price\n" \
 		"FROM holding\n" \
 		"WHERE h_ca_id = %ld\n" \
 		"  AND h_s_symb = '%s'\n" \
-		"ORDER BY h_dts ASC\n" 
-//		"FOR UPDATE"
+		"ORDER BY h_dts ASC\n" \
+		"FOR UPDATE"
 
 #define TRADE_RESULT2_4a \
 		"INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty,\n" \
@@ -222,6 +222,7 @@ public:
 
 #define RETURN_ERROR(msg) \
 				string fail_msg(msg); \
+				fail_msg.append(query); \
 				throw fail_msg.c_str();
 
 
@@ -330,6 +331,14 @@ public:
 											ADD_FAIL_QUERY_NODE(2, 5, 0); \
 									FAIL_MSG("trade result frame2 query 5 fails"); \
 							}
+#define TRADE_RESULT_F2Q4a sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, before_qty, after_qty); \
+									GETTIME; \
+									if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a")){ \
+											ADD_FAIL_QUERY_NODE(2, 24, 0); \
+											FAIL_MSG("trade result frame2 query 24 fails"); \
+									} \
+									ADD_QUERY_NODE(2, 24, 1);
+
 
 #define TRADE_RESULT_F2Q6 sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty-needed_qty); \
 									GETTIME; \

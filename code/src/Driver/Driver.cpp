@@ -86,6 +86,7 @@ void *customerWorkerThread(void *data)
 			1000000;
 	cout<<"--------before creating Customer"<<endl;
 
+
 	customer = new CCustomer(pThrParam->pDriver->szInDir,
 			pThrParam->pDriver->iConfiguredCustomerCount,
 			pThrParam->pDriver->iActiveCustomerCount,
@@ -216,12 +217,21 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 	// parameter for the new thread
 	PCustomerThreadParam pThrParam;
 
+#ifdef WORKLOAD_SEATS
+	uint64_t* new_flight_ids = new uint64_t[NUFlightIdRange];
+	for(int i=0; i<NUFlightIdRange; i++){
+			new_flight_ids[i] = rand()%numFlights;
+			cout<<"flight id ["<<i<<"] = "<<new_flight_ids[i]<<endl;
+	}
+#endif
 	for (int i = 1; i <= iUsers; i++) {
 		pThrParam = new TCustomerThreadParam;
 		// zero the structure
 		memset(pThrParam, 0, sizeof(TCustomerThreadParam));
 		pThrParam->pDriver = this;
-
+#ifdef WOAKLOAD_SEATS
+		pThrParam->flight_ids = new_flight_ids;
+#endif
 		entryCustomerWorkerThread(reinterpret_cast<void *>(pThrParam), i);
 		cout<<"successfully created customer "<<i<<endl;
 		// Sleep for between starting terminals

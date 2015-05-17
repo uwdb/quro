@@ -67,7 +67,7 @@ public:
 			TIdent iActiveCustomerCount, INT32 iScaleFactor,
 			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
-			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock);
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock, uint64_t* flight_ids);
 #endif
 	~CCustomer();
 

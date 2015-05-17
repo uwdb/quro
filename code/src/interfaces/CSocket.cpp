@@ -31,7 +31,6 @@ CSocket::CSocket(char *address, int port)
 {
 	strncpy(this->address, address, iMaxHostname);
 	this->address[iMaxHostname] = '\0';
-	cout<<"this: port = "<<port<<endl;
 	this->port = port;
 }
 

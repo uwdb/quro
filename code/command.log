@@ -13,4 +13,10 @@ must set CMakeFiles/bin/BrokerageHouseMain.dir/link.txt at the end of the line b
 
 Same for DriverMain.dir and MarketExchange.dir
 
+<<<<<<< HEAD
 SELECT * FROM INFORMATION_SCHEMA.INNODB_BUFFER_POOL_STATS \G
+=======
+parameter set: DriverParameterSetting.h
+
+TradeUpdate params set: src/MiscConsts.h
+>>>>>>> d91193fc96a3270ed5b9c0b554ee140c7028f1e1

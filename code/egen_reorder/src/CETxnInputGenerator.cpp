@@ -35,6 +35,7 @@
  */
 
 #include "../inc/CETxnInputGenerator.h"
+#define TBASE 128
 
 using namespace TPCE;
 
@@ -252,7 +253,7 @@ void CCETxnInputGenerator::Initialize()
     m_iSectorCount = m_pSectors->GetSize();
     m_iStartFromCompany = m_pCompanies->GetCompanyId(0);    // from the first company
 
-    m_iMaxActivePrePopulatedTradeID = 
+    m_iMaxActivePrePopulatedTradeID =
         (INT64)(( (INT64)m_iHoursOfInitialTrades * SecondsPerHour * ( m_iActiveCustomerCount / m_iScaleFactor )) * iAbortTrade / INT64_CONST(100) );  // 1.01 to account for rollbacks
 
     //  Set the start time (time 0) to the base time
@@ -311,30 +312,30 @@ void CCETxnInputGenerator::UpdateTunables( void )
 {
     INT64 secondsOfInitialTrades = (INT64)m_iHoursOfInitialTrades * SecondsPerHour;
 
-    m_iTradeLookupFrame2MaxTimeInMilliSeconds = 
-        (INT64)(secondsOfInitialTrades - 
+    m_iTradeLookupFrame2MaxTimeInMilliSeconds =
+        (INT64)(secondsOfInitialTrades -
                 ((INT64)m_pDriverCETxnSettings->TL_settings.cur.BackOffFromEndTimeFrame2 )) * MsPerSecond;
 
-    m_iTradeLookupFrame3MaxTimeInMilliSeconds = 
-        (INT64)(secondsOfInitialTrades - 
+    m_iTradeLookupFrame3MaxTimeInMilliSeconds =
+        (INT64)(secondsOfInitialTrades -
                 ((INT64)m_pDriverCETxnSettings->TL_settings.cur.BackOffFromEndTimeFrame3 )) * MsPerSecond;
 
-    m_iTradeLookupFrame4MaxTimeInMilliSeconds = 
-        (INT64)(secondsOfInitialTrades - 
+    m_iTradeLookupFrame4MaxTimeInMilliSeconds =
+        (INT64)(secondsOfInitialTrades -
                 ((INT64)m_pDriverCETxnSettings->TL_settings.cur.BackOffFromEndTimeFrame4 )) * MsPerSecond;
 
-    m_iTradeUpdateFrame2MaxTimeInMilliSeconds = 
-        (INT64)(secondsOfInitialTrades - 
+    m_iTradeUpdateFrame2MaxTimeInMilliSeconds =
+        (INT64)(secondsOfInitialTrades -
                 ((INT64)m_pDriverCETxnSettings->TU_settings.cur.BackOffFromEndTimeFrame2 )) * MsPerSecond;
 
-    m_iTradeUpdateFrame3MaxTimeInMilliSeconds = 
-        (INT64)(secondsOfInitialTrades - 
+    m_iTradeUpdateFrame3MaxTimeInMilliSeconds =
+        (INT64)(secondsOfInitialTrades -
                 ((INT64)m_pDriverCETxnSettings->TU_settings.cur.BackOffFromEndTimeFrame3 )) * MsPerSecond;
 
     // Set the completion time of the last initial trade.
     // 15 minutes are added at the end of hours of initial trades for pending trades.
     m_EndTime = m_StartTime;
-    m_EndTime.AddWorkMs( (INT64)(secondsOfInitialTrades + 
+    m_EndTime.AddWorkMs( (INT64)(secondsOfInitialTrades +
                           15 * SecondsPerMinute) * MsPerSecond );
 
     // Based on 10 * Trade-Order transaction mix percentage.
@@ -402,7 +403,9 @@ TTrade CCETxnInputGenerator::GenerateNonUniformTradeID( INT32 AValue, INT32 SVal
 {
     TTrade TradeId;
 
-    TradeId = m_rnd.NURnd( 1, m_iMaxActivePrePopulatedTradeID, AValue, SValue );
+    //TradeId = m_rnd.NURnd( 1, m_iMaxActivePrePopulatedTradeID, AValue, SValue );
+		TradeId = m_rnd.NURnd( TBASE, TBASE+8192, AValue, SValue );
+
 
     // Skip over trade id's that were skipped over during load time.
     if ( m_Holdings.IsAbortedTrade(TradeId) )
@@ -936,7 +939,8 @@ void CCETxnInputGenerator::GenerateTradeOrderInput(TTradeOrderTxnInput &TxnReq, 
     TxnReq.requested_price = m_rnd.RndDoubleIncrRange(fMinSecPrice, fMaxSecPrice, 0.01);
 
     // Determine whether Market or Limit order
-    bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
+    //bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
+	bMarket = true;
 
     //Determine whether Buy or Sell trade
     if (m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.buy_orders))
@@ -1062,6 +1066,7 @@ void CCETxnInputGenerator::GenerateTradeUpdateInput(TTradeUpdateTxnInput &TxnReq
             {
                 TID = GenerateNonUniformTradeID(TradeUpdateAValueForTradeIDGenFrame1,
                                                 TradeUpdateSValueForTradeIDGenFrame1);
+								//printf("Gen: TID = %ld\n", TID);
                 jj = 0;
                 while( jj < ii && TxnReq.trade_id[jj] != TID )
                 {

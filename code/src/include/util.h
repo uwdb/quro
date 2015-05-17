@@ -4,17 +4,8 @@
 #include <string>
 #include <DateTime.h>
 #include <CommonStructs.h>
+#include "Seats_const.h"
 using namespace std;
-
-#define TimeStamp TIMESTAMP_STRUCT
-#define numAirports 9264
-#define numCountries 249
-#define numAirlines 1251
-#define numFlights   100000
-#define NUFlightIdRange 5
-#define numCustomers 1000000
-#define MIN_DIS 100
-#define MAX_DIS 4000
 
 class fast_random {
 public:

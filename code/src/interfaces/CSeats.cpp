@@ -2,7 +2,7 @@
 #include "Seats_const.h"
 
 CSEATS::CSEATS(char* addr, const int iListenPort, ofstream* pflog,
-		ofstream* pfmix, mutex* pLogLock, mutex* pMixLock)
+		ofstream* pfmix, mutex* pLogLock, mutex* pMixLock, uint64_t* flight_ids)
 : CBaseInterface(addr, iListenPort, pflog, pfmix, pLogLock, pMixLock)
 {
 		srand (time(NULL));
@@ -10,7 +10,7 @@ CSEATS::CSEATS(char* addr, const int iListenPort, ofstream* pflog,
 		r.set_seed(rnd);
 
 		for(int i=0; i<NUFlightIdRange; i++){
-			NUFlightIdArray[i] = rand()%numFlights;
+			NUFlightIdArray[i] = flight_ids[i];
 		}
 }
 
@@ -69,7 +69,7 @@ void CSEATS::GenerateFindFlightInput(){
 		ffInput.end_date = addDay(ffInput.start_date, r.next()%28+20);
 }
 void CSEATS::GenerateNewReservationInput(){
-		nrInput.r_id = get_random(r, 1048576);
+		nrInput.r_id = 6068940 + get_random(r, 104857238916);
 		nrInput.c_id = getCustomerId(r);
 		nrInput.f_id = /*get_random(r, numFlights)+1*/NUFlightIdArray[getNUFlightId(r)];
 		nrInput.seatnum = 50+get_random(r, 200);

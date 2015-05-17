@@ -67,8 +67,23 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 	double se_amount;
 	TIMESTAMP_STRUCT due_date;
 
+	unsigned int before_qty;
+	unsigned int after_qty;
+	bool insert_holding_his = false;
+	bool delete_holding_summary = false;
+
 //--------------------Frame 1-----------------
-	TRADE_RESULT_F1Q1;
+//	TRADE_RESULT_F1Q1;
+
+	{
+		acct_id = pIn->acct_id;
+		strcpy(type_id, pIn->type_id);
+		strcpy(symbol, pIn->symbol);
+		trade_qty = pIn->trade_qty;
+		is_lifo = pIn->is_lifo;
+		trade_is_cash = pIn->trade_is_cash;
+		charge = pIn->charge;
+	}
 
 	TRADE_RESULT_F1Q2;
 
@@ -97,7 +112,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 				update_holding_summary_3 = true;
 				tmp_hs_qty = hs_qty;
 				tmp_trade_qty = trade_qty;
-				TRADE_RESULT_F2Q3;
+//				TRADE_RESULT_F2Q3;
 			}
 
 			needed_qty = trade_qty;
@@ -122,6 +137,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 							if(hold_qty > needed_qty){
 
 									TRADE_RESULT_F2Q6;
+
 									TRADE_RESULT_F2Q7;
 
 									buy_value = buy_value + (needed_qty * hold_price);
@@ -130,7 +146,9 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 							}else{
 
 									TRADE_RESULT_F2Q8;
+
 									TRADE_RESULT_F2Q9;
+									delete_holding_summary = true;
 
 									buy_value = buy_value + (hold_qty * hold_price);
 									sell_value = sell_value + (hold_qty * trade_price);
@@ -140,10 +158,12 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			}
 			if(needed_qty > 0){
 				TRADE_RESULT_F2Q10;
+
 				TRADE_RESULT_F2Q11;
 
 			}else if(hs_qty == trade_qty){
-				TRADE_RESULT_F2Q12
+				TRADE_RESULT_F2Q12;
+				delete_holding_summary = true;
 			}
 	}
 	//type_is_market
@@ -154,7 +174,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 				update_holding_summary_14 = true;
 				tmp_hs_qty = hs_qty;
 				tmp_trade_qty = trade_qty;
-				TRADE_RESULT_F2Q14;
+//				TRADE_RESULT_F2Q14;
 			}
 			size_t num_rows = 0;
 			size_t cnt = 0;
@@ -173,6 +193,7 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 							hold_price = atof(dbt5_sql_getvalue(&result_t, 2, length));
 							if(hold_qty > needed_qty){
 									TRADE_RESULT_F2Q17;
+
 									TRADE_RESULT_F2Q18;
 
 									buy_value = buy_value + (needed_qty * hold_price);
@@ -180,7 +201,9 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 									needed_qty = 0;
 							}else{
 									TRADE_RESULT_F2Q19;
+
 									TRADE_RESULT_F2Q20;
+									delete_holding_summary = true;
 
 									hold_qty = (-1)*hold_qty;
 									buy_value = buy_value + (hold_qty * hold_price);
@@ -191,10 +214,12 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			}
 			if(needed_qty > 0){
 					TRADE_RESULT_F2Q21;
+
 					TRADE_RESULT_F2Q22;
 
 			}else if((-1)*hs_qty == trade_qty){
 					TRADE_RESULT_F2Q23;
+					delete_holding_summary = true;
 			}
 	}
 
@@ -272,20 +297,27 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 			TRADE_RESULT_F6Q3;
 			TRADE_RESULT_F6Q4;
 	}
+//=================
+	//if(insert_holding_his){
+	//	TRADE_RESULT_F2Q4a;
+	//}
+//=================
 
-/*
+
+	TRADE_RESULT_F2Q1;
 	hs_qty = tmp_hs_qty;
 	long ex_trade_qty = trade_qty;
 	trade_qty = tmp_trade_qty;
-	if(update_holding_summary_3){
+	if(update_holding_summary_3 && delete_holding_summary == false){
 		TRADE_RESULT_F2Q3;
 	}
-	else if(update_holding_summary_14){
+	else if(update_holding_summary_14 && delete_holding_summary == false){
 		TRADE_RESULT_F2Q14;
 	}
 	trade_qty = ex_trade_qty;
-*/
-	TRADE_RESULT_F2Q1;
+
+//	TRADE_RESULT_F5Q1;
+
 	TRADE_RESULT_F4Q2;
 
 	TRADE_RESULT_F4Q3;

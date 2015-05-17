@@ -29,9 +29,9 @@
 #include <sys/time.h>
 
 extern CDBConnection* pDBClist[1024];
+extern timeval t_start_values[1024];
 extern int connectionCnt;
 
-#ifdef CAL_RESP_TIME
 void signal_kill_handler(int signum){
 /*	for(int i=0; i<connectionCnt; i++){
 			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
@@ -47,22 +47,20 @@ void signal_kill_handler(int signum){
 			ptr->outfile<<"total exec: "<<total_exec<<endl;
 			ptr->outfile.flush();
 	}*/
+	timeval t2;
+	gettimeofday(&t2, NULL);
 	for(int i=0; i<connectionCnt; i++){
 			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
-			timeval t1;
-			gettimeofday(&t1, NULL);
-			ptr->outfile<<"end time:"<<t1.tv_sec<<","<<t1.tv_usec<<endl;
-		 	ptr->outfile.flush();
+			double timerange = difftimeval(t2, t_start_values[i]);
+			cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<", timerange = "<<timerange<<endl;
+//				cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<endl;
 	}
 	exit(signum);
 }
-#endif
 
 void *workerThread(void *data)
 {
-#ifdef CAL_RESP_TIME
 	signal(SIGTERM, signal_kill_handler);
-#endif
 	try {
 		PThreadParameter pThrParam = reinterpret_cast<PThreadParameter>(data);
 
@@ -95,8 +93,8 @@ void *workerThread(void *data)
 			pThrParam->pBrokerageHouse->mysql_pass,
 			pThrParam->pBrokerageHouse->mysql_port_t,
 			pThrParam->pBrokerageHouse->mysql_socket_t);
-#ifdef CAL_RESP_TIME
 			pDBClist[pThrParam->t_id] = pDBConnection;
+#ifdef CAL_RESP_TIME
 			pDBConnection->init_profile_node(pThrParam->t_id, pThrParam->outputDir);
 #endif
 #endif
@@ -139,14 +137,13 @@ void *workerThread(void *data)
 		double txn_time = 0;
 		bool commit = true;
 		double receiving_time = 0;
+//		gettimeofday(&(pDBConnection->t1), NULL);
 		do {
 			try {
-				timeval tt1, tt2;
 				//gettimeofday(&tt1, NULL);
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
 						sizeof(TMsgDriverBrokerage));
 				//gettimeofday(&tt2, NULL);
-				receiving_time += difftimeval(tt2, tt1);
 				//if(txn_cnt > 0 && difftimeval(tt2, tt1)>1)pDBConnection->outfile<<"END"<<endl;
 				//pDBConnection->outfile.flush();
 			} catch(CSocketErr *pErr) {
@@ -209,16 +206,16 @@ loop:
 //					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
 //							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
-				/*case TRADE_STATUS:
-					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
-							&(pMessage->TxnInput.TradeStatusTxnInput),
-							tradeStatus);
-					break;
+				//case TRADE_STATUS:
+				//	iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
+				//			&(pMessage->TxnInput.TradeStatusTxnInput),
+				//			tradeStatus);
+				//	break;
 				case TRADE_UPDATE:
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
 					break;
-				case DATA_MAINTENANCE:
+				/*case DATA_MAINTENANCE:
 					iRet = pThrParam->pBrokerageHouse->RunDataMaintenance(
 							&(pMessage->TxnInput.DataMaintenanceTxnInput),
 							dataMaintenance);
@@ -233,6 +230,8 @@ loop:
 					iRet = ERR_TYPE_WRONGTXN;
 				}
 					txn_cnt++;
+					pDBConnection->txn_cnt = txn_cnt;
+					if(txn_cnt==1)gettimeofday(&(t_start_values[pThrParam->t_id]), NULL);
 			} catch (const char *str) {
 
 			pDBConnection->rollback();
@@ -241,11 +240,11 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
-//			pDBConnection->outfile<<"error: "<<str<<endl;
+			pDBConnection->outfile<<"error: "<<str<<endl;
 //#ifdef PROFILE_EACH_QUERY
 //			pDBConnection->print_profile_query();
 //#endif
-//			pDBConnection->outfile.flush();
+			pDBConnection->outfile.flush();
 #endif
 				//ostringstream msg;
 				//msg << time(NULL) << " " << (long long) pthread_self() << " " <<
@@ -287,7 +286,7 @@ loop:
 			}
 		} while (true);
 
-		delete pDBConnection; // close connection with the database
+//		delete pDBConnection; // close connection with the database
 		close(pThrParam->iSockfd); // close socket connection with the driver
 		delete pThrParam;
 		delete pMessage;

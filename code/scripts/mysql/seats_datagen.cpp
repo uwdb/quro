@@ -142,7 +142,7 @@ vector<long unsigned int> ff_set;
 //========end helper functions===========
 
 char filepath[50] = "./seats_data";
-char outfilepath[50] = "/home/cong/SEATS_DATA";
+char outfilepath[50] = "/data/sanchez/results/silo/results/SEATS_DATA";
 struct CCountry{
 	string c_name;
 	string c_code2;
