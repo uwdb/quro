@@ -82,7 +82,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 //		dbt5_sql_execute(query, &result, "PROFILE");
 
 		//getTradeType
-//		TRADEUPDATE_F1Q3;
+		TRADEUPDATE_F1Q3;
 
 /*		if(difftimeval(t2, t1)>0.003){
 			sprintf(query, "show profile");
@@ -103,7 +103,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 
 		}
 */
-/*
+
 		//getSettlement
 		TRADEUPDATE_F1Q4;
 
@@ -112,7 +112,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		}
 		//getTradeHistory
 		TRADEUPDATE_F1Q6;
-*/
+
 		pOut->trade_info[i].bid_price = bid_price;
 		pOut->trade_info[i].cash_transaction_amount = cash_amount;
 		pOut->trade_info[i].settlement_amount = settlement_amount;
