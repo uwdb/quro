@@ -163,14 +163,14 @@ void CDBConnection::begin()
 	PGresult *res = PQexec(m_Conn, "BEGIN;");
 	PQclear(res);
 #else
-	/*
+
 	if (mysql_real_query(dbc, "START TRANSACTION", 17))
   {
     	LOG_ERROR_MESSAGE("START TRANSACTION failed. mysql reports: %d %s",
                            mysql_errno(dbc), mysql_error(dbc));
 			assert(false);
   }
-	*/
+
 #endif
 }
 
@@ -199,13 +199,14 @@ void CDBConnection::connect()
 		//LOG_ERROR_MESSAGE("SUCCEDED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
 
     /* Disable AUTOCOMMIT mode for connection */
-    /*
+
 		if (mysql_real_query(dbc, "SET AUTOCOMMIT=0", 16))
     {
       LOG_ERROR_MESSAGE("mysql reports: %d %s", mysql_errno(dbc) ,
                          mysql_error(dbc));
 			assert(false);
-    }*/
+    }
+
 #endif
 
 }

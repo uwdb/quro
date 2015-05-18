@@ -28,14 +28,14 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int num_found = pIn->max_trades;
 	int max_updates = pIn->max_updates;
 	int num_updated = 0;
-	uint64_t t_id;
-	string exec_name;
-	size_t is_cash;
-	size_t is_market;
-	double bid_price;
-	double trade_price;
+	uint64_t t_id = 0;
+	string exec_name = 0;
+	size_t is_cash = 0;
+	size_t is_market = 0;
+	double bid_price = 0;
+	double trade_price = 0;
 	size_t set_year, set_month, set_day, set_hour, set_min;
-	double set_sec;
+	double set_sec = 0;
 	char set_cash_type[40] = {0};
 	double settlement_amount;
 	double cash_amount;
@@ -57,7 +57,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 
 		if(num_updated < max_updates){
 			TRADEUPDATE_F1Q1;
-
+/*
 			bool findX = false;
 			for(int j=0; j<exec_name.length(); j++){
 				if(exec_name[j] == 'X'){
@@ -73,18 +73,18 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 					}
 				}
 			}
-
+*/
 //			TRADEUPDATE_F1Q2;
 			num_updated++;
 		}
 
-		sprintf(query, "SET SESSION profiling = 1");
-		dbt5_sql_execute(query, &result, "PROFILE");
+//		sprintf(query, "SET SESSION profiling = 1");
+//		dbt5_sql_execute(query, &result, "PROFILE");
 
 		//getTradeType
-		TRADEUPDATE_F1Q3;
+//		TRADEUPDATE_F1Q3;
 
-//		if(difftimeval(t2, t1)>0.003){
+/*		if(difftimeval(t2, t1)>0.003){
 			sprintf(query, "show profile");
 			if(dbt5_sql_execute(query, &result, "PROF") && result.result_set){
 			num_rows = result.num_rows;
@@ -102,7 +102,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 //	}
 
 		}
-
+*/
+/*
 		//getSettlement
 		TRADEUPDATE_F1Q4;
 
@@ -111,7 +112,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		}
 		//getTradeHistory
 		TRADEUPDATE_F1Q6;
-
+*/
 		pOut->trade_info[i].bid_price = bid_price;
 		pOut->trade_info[i].cash_transaction_amount = cash_amount;
 		pOut->trade_info[i].settlement_amount = settlement_amount;
