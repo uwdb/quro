@@ -10,22 +10,27 @@
 
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
-#ifdef WORKLOAD_TPCE
-#include "EGenLogger.h"
-#include "InputFlatFilesStructure.h"
-#include "locking.h"
 
-#include "CESUT.h"
-using namespace TPCE;
-#elif WORKLOAD_SEATS
 #include <iostream>
 #include <fstream>
 using namespace std;
 #include "locking.h"
+
+#ifdef WORKLOAD_TPCE
+#include "EGenLogger.h"
+#include "InputFlatFilesStructure.h"
+#include "locking.h"
+#include "CESUT.h"
+using namespace TPCE;
+#elif WORKLOAD_SEATS /* WORKLOAD_TPCE */
+#include "CSeats.h"
 #include <thread>
 #include <mutex>
-#include "CSeats.h"
-#endif
+#elif WORKLOAD_BID
+#include "CBid.h"
+#include <thread>
+#include <mutex>
+#endif /* WORKLOAF_TPCE */
 
 class CCustomer
 {
@@ -43,6 +48,10 @@ class CCustomer
 #elif WORKLOAD_SEATS
 	CSEATS *m_pSEATS;
 	ofstream m_fLog; // error log file
+	mutex m_LogLock;
+#elif WORKLOAD_BID
+	CBID *m_pBID;
+	ofstream m_fLog;
 	mutex m_LogLock;
 #endif
 
@@ -68,6 +77,12 @@ public:
 			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
 			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock, uint64_t* flight_ids);
+#elif WORKLOAD_BID
+	CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
+			TIdent iActiveCustomerCount, INT32 iScaleFactor,
+			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
+			int iBHlistenPort, int iUsers, int iPacingDelay,
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock);
 #endif
 	~CCustomer();
 

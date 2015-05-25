@@ -521,8 +521,7 @@ fi
 #
 # Start the Customer Driver.
 #
-#do_sleep ${SLEEP_RAMPUP}
-do_sleep ${USERS/4}
+do_sleep ${SLEEP_RAMPUP}
 
 echo
 echo "3. Starting Customer driver: ${USERS} user(s)"

@@ -15,8 +15,8 @@
 #include <fstream>
 using namespace std;
 
-//#define CAL_RESP_TIME
-//#define PROFILE_EACH_QUERY
+#define CAL_RESP_TIME
+#define PROFILE_EACH_QUERY
 
 #include "locking.h"
 #include "TxnHarnessStructs.h"

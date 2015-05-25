@@ -84,6 +84,7 @@ public:
 			al_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
 			seats_left = atol(dbt5_sql_getvalue(&result, 1, length)); \
 			seat_total = atol(dbt5_sql_getvalue(&result, 2, length)); \
+			dbt5_sql_close_cursor(&result); \
 					seatnum = seat_total-seats_left+1; \
 	}else{ \
 			FAIL_MSG("NR GET_FLIGHT fails..."); \
@@ -95,6 +96,7 @@ public:
 	if(r==1 && result.result_set){ \
 			return ; \
 	} \
+	dbt5_sql_close_cursor(&result); \
 	ADD_QUERY_NODE(1, 2, 1); \
 
 #define NR_CHECKCUSTOMER sprintf(query, NR_CHECK_CUSTOMER, pIn->f_id, pIn->c_id); \
@@ -103,6 +105,7 @@ public:
 	if(r==1 && result.result_set){ \
 			return ; \
 	} \
+  dbt5_sql_close_cursor(&result); \
 	ADD_QUERY_NODE(1, 3, 1);
 
 #define NR_GETCUSTOMER sprintf(query, NR_GET_CUSTOMER, pIn->c_id); \
@@ -112,6 +115,7 @@ public:
 			dbt5_sql_fetchrow(&result); \
 			c_base_ap_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
 			c_balance = atof(dbt5_sql_getvalue(&result, 1, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 4, 1); \
 	}else{ \
 			FAIL_MSG("NR_GET_CUSTOMER fails..."); \

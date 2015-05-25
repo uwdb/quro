@@ -112,18 +112,18 @@ using namespace TPCE;
 		"FROM charge\n" \
 		"WHERE ch_c_tier = %d\n" \
 		"  AND ch_tt_id = '%s'\n"
-
+    
 #define SQLTOF3_10 \
 		"SELECT ca_bal\n" \
 		"FROM customer_account\n" \
 		"WHERE ca_id = %ld"
-
+    
 #define SQLTOF3_11 \
 		"SELECT sum(hs_qty * lt_price)\n" \
 		"FROM holding_summary, last_trade\n" \
 		"WHERE hs_ca_id = %ld\n" \
 		"  AND lt_s_symb = hs_s_symb"
-
+    
 #define SQLTOF4_0 \
 		"INSERT INTO seq_trade_id VALUE()"
 
@@ -189,24 +189,24 @@ public:
 				throw fail_msg.c_str();
 
 #define TRADEORDER_F1Q1  sprintf(query, SQLTOF1_1, acct_id);\
-	GETTIME; \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_1")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
-			ADD_QUERY_NODE(1, 1, 1); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			strncpy(acct_name, val, length); \
 		 	broker_id = atol(dbt5_sql_getvalue(&result, 1, length)); \
 			cust_id = atol(dbt5_sql_getvalue(&result, 2, length)); \
 			tax_status = atoi(dbt5_sql_getvalue(&result, 3, length)); \
+			dbt5_sql_close_cursor(&result); \
+			ADD_QUERY_NODE(1, 1, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame1 query 1 fails"); \
 	}
 
 #define TRADEORDER_F1Q2 sprintf(query, SQLTOF1_2, cust_id); \
-	GETTIME; \
+		GETTIME; \
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_2")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
-			ADD_QUERY_NODE(1, 2, 1); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			strncpy(cust_f_name, val, length); \
 			val = dbt5_sql_getvalue(&result, 1, length); \
@@ -214,6 +214,8 @@ public:
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 2, length)); \
 			val = dbt5_sql_getvalue(&result, 2, length); \
 			strncpy(tax_id, val, length); \
+			dbt5_sql_close_cursor(&result); \
+			ADD_QUERY_NODE(1, 2, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame1 query 2 fails"); \
 	}
@@ -224,6 +226,7 @@ public:
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			strncpy(broker_name, val, length); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 3, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame1 query 3 fails"); \
@@ -238,6 +241,7 @@ public:
 					dbt5_sql_fetchrow(&result); \
 					val = dbt5_sql_getvalue(&result, 0, length); \
 					strncpy(ap_acl, val, length); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(2, 1, 1); \
 			}else{ \
 					RETURN_ERROR("trade order frame2 query 1 fails"); \
@@ -249,6 +253,7 @@ public:
 		if(dbt5_sql_execute(query, &result, "TRADE_ORDER_4")==1 && result.result_set){ \
 				dbt5_sql_fetchrow(&result); \
 				co_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
+				dbt5_sql_close_cursor(&result); \
 				ADD_QUERY_NODE(3, 1, 1); \
 		}else{ \
 				RETURN_ERROR("trade order frame3 query 1 fails"); \
@@ -264,6 +269,7 @@ public:
 				strncpy(s_name, val, length); \
 				val = dbt5_sql_getvalue(&result, 2, length); \
 				strncpy(symbol, val, length); \
+				dbt5_sql_close_cursor(&result); \
 				ADD_QUERY_NODE(3, 2, 1); \
 		}else{ \
 				RETURN_ERROR("trade order frame3 query 2 fails"); \
@@ -278,6 +284,7 @@ public:
 				strncpy(exch_id, val, 6); \
 				val = dbt5_sql_getvalue(&result, 2, length); \
 				strncpy(s_name, val, length); \
+				dbt5_sql_close_cursor(&result); \
 				ADD_QUERY_NODE(3, 3, 1); \
 		}else{ \
 				RETURN_ERROR("trade order frame3 query 3 fails"); \
@@ -289,6 +296,7 @@ public:
 				dbt5_sql_fetchrow(&result); \
 				val = dbt5_sql_getvalue(&result, 0, length); \
 				strncpy(co_name, val, length); \
+				dbt5_sql_close_cursor(&result); \
 				ADD_QUERY_NODE(3, 4, 1); \
 		}else{ \
 				RETURN_ERROR("trade order frame3 query 4 fails"); \
@@ -299,6 +307,7 @@ public:
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_6")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			market_price = atol(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(3, 5, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame3 query 5 fails"); \
@@ -310,6 +319,7 @@ public:
 			dbt5_sql_fetchrow(&result); \
 			type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length)); \
 			type_is_market = atoi(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(3, 6, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame3 query 6 fails"); \
@@ -320,6 +330,7 @@ public:
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_8")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			hs_qty = atol(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(3, 7, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame3 query 7 fails"); \
@@ -366,6 +377,7 @@ public:
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_11")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					tax_rates = atof(dbt5_sql_getvalue(&result, 0, length)); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(3, 12, 1); \
 			}else{ \
 					RETURN_ERROR("trade order frame3 query 12 fails"); \
@@ -376,6 +388,7 @@ public:
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_12")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(3, 13, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame3 query 13 fails"); \
@@ -386,6 +399,7 @@ public:
 	if(dbt5_sql_execute(query, &result, "TRADE_ORDER_13")==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			charge_amount = atof(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(3, 14, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame3 query 14 fails"); \
@@ -396,6 +410,7 @@ public:
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_14")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length)); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(3, 15, 1); \
 			}else{ \
 					RETURN_ERROR("trade order frame3 query 15 fails"); \
@@ -406,6 +421,7 @@ public:
 			if(dbt5_sql_execute(query, &result, "TRADE_ORDER_15")==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					acct_assets = acct_bal + atof(dbt5_sql_getvalue(&result, 0, length)); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(3, 16, 1); \
 			}else{ \
 					if(result.num_rows==0){ \
@@ -427,6 +443,7 @@ public:
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			next_t_id = atol(val); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(4, 2, 1); \
 	}else{ \
 			RETURN_ERROR("trade order frame4 query 2 fails"); \

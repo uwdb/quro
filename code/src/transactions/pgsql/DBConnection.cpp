@@ -117,14 +117,16 @@ CDBConnection::CDBConnection(const char *szHost, const char *szDBName,
 	m_Conn = PQconnectdb(szConnectStr);
 }
 #else
+
 #ifdef WORKLOAD_TPCE
 CDBConnection::CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
-	/* Copy values only if it's not NULL. */
 	setBrokerageHouse(bh);
 #elif WORKLOAD_SEATS
 CDBConnection::CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
-	/* Copy values only if it's not NULL. */
 	setSeatsRunner(_seats);
+#elif WORKLOAD_BID
+CDBConnection::CDBConnection(BidRunner *_bid, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
+	setBidRunner(_bid);
 #endif
 	if (_mysql_dbname != NULL) {
 		strcpy(mysql_dbname, _mysql_dbname);
@@ -199,14 +201,14 @@ void CDBConnection::connect()
 		//LOG_ERROR_MESSAGE("SUCCEDED, host = %s, usr = %s, socket = %s, port = %s", mysql_host, mysql_user, mysql_socket_t, mysql_port_t);
 
     /* Disable AUTOCOMMIT mode for connection */
-
+/*
 		if (mysql_real_query(dbc, "SET AUTOCOMMIT=0", 16))
     {
       LOG_ERROR_MESSAGE("mysql reports: %d %s", mysql_errno(dbc) ,
                          mysql_error(dbc));
 			assert(false);
     }
-
+*/
 #endif
 
 }
@@ -3063,6 +3065,11 @@ void CDBConnection::setSeatsRunner(SeatsRunner *_seats)
 {
 	this->seats = seats;
 }
+#elif WORKLOAD_BID
+void CDBConnection::setBidRunner(BidRunner *_bid)
+{
+	this->bid = _bid;
+}
 #endif
 #ifdef DB_PGSQL
 void CDBConnection::setReadCommitted()
@@ -3225,6 +3232,8 @@ void CDBConnection::logErrorMessage(const char *c, ...){
 			bh->logErrorMessage(s, false);
 #elif WORKLOAD_SEATS
 			seats->logErrorMessage(s, false);
+#elif WORKLOAD_BID
+			bid->logErrorMessage(s, false);
 #endif
 }
 #ifdef CAL_RESP_TIME

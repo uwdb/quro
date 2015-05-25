@@ -26,6 +26,8 @@
 #include "BrokerageHouse.h"
 #elif WORKLOAD_SEATS
 #include "Seats.h"
+#elif WORKLOAD_BID
+#include "Bid.h"
 #endif
 #include "DBT5Consts.h"
 #include "CommonStructs.h"
@@ -33,6 +35,8 @@
 using namespace TPCE;
 #ifdef WORKLOAD_SEATS
 class SeatsRunner;
+#elif WORKLOAD_BID
+class BidRunner;
 #endif
 
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
@@ -107,6 +111,8 @@ private:
 	CBrokerageHouse *bh;
 #elif WORKLOAD_SEATS
 	SeatsRunner *seats;
+#elif WORKLOAD_BID
+	BidRunner *bid;
 #endif
 
 	TTradeRequest m_TriggeredLimitOrders;
@@ -118,12 +124,16 @@ public:
 #else
 #ifdef WORKLOAD_TPCE
 	CDBConnection(CBrokerageHouse *bh, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
-#else
+#elif WORKLOAD_SETAS
 	CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+#elif WORKLOAD_BID
+	CDBConnection(BidRunner *_bid, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 #endif
 #endif
 
 	int txn_cnt;
+	double txn_time;
+	int abort_cnt;
 	timeval t1, t2;
 
 	~CDBConnection();
@@ -213,12 +223,16 @@ public:
 #elif WORKLOAD_SEATS
 	void execute(const TFindFlightTxnInput* pIn, TFindFlightTxnOutput* pOut);
 	void execute(const TNewReservationTxnInput* pIn, TNewReservationTxnOutput* pOut);
+#elif WORKLOAD_BID
+	void execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut);
 #endif // WORKLOAD_TPCE
 
 #ifdef WORKLOAD_TPCE
 	void setBrokerageHouse(CBrokerageHouse *);
 #elif WORKLOAD_SEATS
 	void setSeatsRunner(SeatsRunner *);
+#elif WORKLOAD_BID
+	void setBidRunner(BidRunner *);
 #endif
 	void logErrorMessage(const char* c, ...);
 	void reconnect();

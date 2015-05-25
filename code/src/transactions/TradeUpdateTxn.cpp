@@ -29,7 +29,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int max_updates = pIn->max_updates;
 	int num_updated = 0;
 	uint64_t t_id = 0;
-	string exec_name = 0;
+	string exec_name;
 	size_t is_cash = 0;
 	size_t is_market = 0;
 	double bid_price = 0;
@@ -51,13 +51,15 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	char trade_history_status_id[3][10] = {0};
 	int num_rows = 0;
 
+
 	for(int i=0; i<pIn->max_trades; i++){
 
 		t_id = pIn->trade_id[i];
 
-		if(num_updated < max_updates){
+		if(num_updated < max_updates)
+		{
 			TRADEUPDATE_F1Q1;
-/*
+
 			bool findX = false;
 			for(int j=0; j<exec_name.length(); j++){
 				if(exec_name[j] == 'X'){
@@ -73,8 +75,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 					}
 				}
 			}
-*/
-//			TRADEUPDATE_F1Q2;
+
+			TRADEUPDATE_F1Q2;
 			num_updated++;
 		}
 
@@ -82,28 +84,9 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 //		dbt5_sql_execute(query, &result, "PROFILE");
 
 		//getTradeType
-//		TRADEUPDATE_F1Q3;
+		TRADEUPDATE_F1Q3;
 
-/*		if(difftimeval(t2, t1)>0.003){
-			sprintf(query, "show profile");
-			if(dbt5_sql_execute(query, &result, "PROF") && result.result_set){
-			num_rows = result.num_rows;
-			outfile<<"profile: ";
-			float add = 0;
-			for(int k=0; k<num_rows; k++){
-				dbt5_sql_fetchrow(&result);
-				val = dbt5_sql_getvalue(&result, 0, length);
-				outfile<<val<<"(";
-				val = dbt5_sql_getvalue(&result, 1, length);
-				outfile<<val<<") ";
-				add = add + atof(val);
-			}
-			outfile<<" ----total "<<add<<endl;
-//	}
 
-		}
-*/
-/*
 		//getSettlement
 		TRADEUPDATE_F1Q4;
 
@@ -112,7 +95,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		}
 		//getTradeHistory
 		TRADEUPDATE_F1Q6;
-*/
+
+
 		pOut->trade_info[i].bid_price = bid_price;
 		pOut->trade_info[i].cash_transaction_amount = cash_amount;
 		pOut->trade_info[i].settlement_amount = settlement_amount;
@@ -163,6 +147,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		strcpy(pOut->trade_info[i].trade_history_status_id[2], trade_history_status_id[2]);
 
 	}
+
 /*
 	for(int i=0; i<pIn->max_trades; i++){
 
@@ -192,8 +177,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		strcpy(pOut->trade_info[i].exec_name, exec_name.c_str());
 
 	}
-
 */
+
 	pOut->num_found = num_found;
 	pOut->num_updated = num_updated;
 

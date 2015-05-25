@@ -1,13 +1,11 @@
-#include "Seats.h"
+#include "Bid.h"
 #include "CommonStructs.h"
 #include "DBConnection.h"
 
-#include "FindFlightDB.h"
-#include "NewReservationDB.h"
+#include "BiddingDB.h"
 //#include "UpdateCustomer.h"
 //#include "UpdateReservation.h"
 
-#define PRINT_OUTPUT
 #include "util.h"
 using namespace std;
 
@@ -38,21 +36,21 @@ try {
 		CSocket sockDrv;
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
 
-		PMsgDriverSeats pMessage = new TMsgDriverSeats;
-		memset(pMessage, 0, sizeof(TMsgDriverSeats)); // zero the structure
+		PMsgDriverBid pMessage = new TMsgDriverBid;
+		memset(pMessage, 0, sizeof(TMsgDriverBid)); // zero the structure
 
-		TMsgSeatsDriver Reply; // return message
+		TMsgBidDriver Reply; // return message
 		INT32 iRet = 0; // transaction return code
 		CDBConnection *pDBConnection = NULL;
 
 		pDBConnection = new CDBConnection(
-			pThrParam->pSeats,
-			pThrParam->pSeats->mysql_dbname,
-			pThrParam->pSeats->mysql_host,
-			pThrParam->pSeats->mysql_user,
-			pThrParam->pSeats->mysql_pass,
-			pThrParam->pSeats->mysql_port_t,
-			pThrParam->pSeats->mysql_socket_t);
+			pThrParam->pBid,
+			pThrParam->pBid->mysql_dbname,
+			pThrParam->pBid->mysql_host,
+			pThrParam->pBid->mysql_user,
+			pThrParam->pBid->mysql_pass,
+			pThrParam->pBid->mysql_port_t,
+			pThrParam->pBid->mysql_socket_t);
 #ifdef CAL_RESP_TIME
 			timeval t1, t2;
 			double exec_time;
@@ -60,8 +58,7 @@ try {
 			pDBConnection->init_profile_node(pThrParam->t_id, pThrParam->outputDir);
 #endif
 
-		CFindFlightDB findFlightDB(pDBConnection);
-		CNewReservationDB newReservationDB(pDBConnection);
+		CBiddingDB biddingDB(pDBConnection);
 
 		int txn_cnt = 0;
 		int abort_cnt = 0;
@@ -71,7 +68,7 @@ try {
 		do {
 			try {
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
-						sizeof(TMsgDriverSeats));
+						sizeof(TMsgDriverBid));
 				pDBConnection->outfile.flush();
 			} catch(CSocketErr *pErr) {
 				sockDrv.dbt5Disconnect();
@@ -89,17 +86,7 @@ try {
 			iRet = CBaseTxnErr::SUCCESS;
 			try {
 				//  Parse Txn type
-				switch (pMessage->TxnType) {
-					case FIND_FLIGHT:
-							iRet = pThrParam->pSeats->RunFindFlight(&(pMessage->TxnInput.FindFlightTxnInput), findFlightDB);
-							break;
-					case NEW_RESERVATION:
-							iRet = pThrParam->pSeats->RunNewReservation(&(pMessage->TxnInput.NewReservationTxnInput), newReservationDB);
-							break;
-					default:
-							pDBConnection->outfile<<"Wrong txn type!"<<endl;
-							iRet = ERR_TYPE_WRONGTXN;
-				}
+					iRet = pThrParam->pBid->RunBidding(&pMessage->TxnInput, biddingDB);
 				txn_cnt++;
 				pDBConnection->txn_cnt = txn_cnt;
 			}catch (const char *str) {
@@ -113,7 +100,7 @@ try {
 //#endif
 //			pDBConnection->outfile.flush();
 //#endif
-//				pDBConnection->outfile<<str<<endl;
+//				pDBConnection->outfile<<"error: "<<str<<endl;
 
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
@@ -196,7 +183,7 @@ void entryWorkerThread(void *data)
 	}
 }
 
-SeatsRunner::SeatsRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
+BidRunner::BidRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
 : m_iListenPort(iListenPort)
 {
 	if (_mysql_dbname != NULL) {
@@ -218,7 +205,7 @@ SeatsRunner::SeatsRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_u
 		strcpy(mysql_socket_t, _mysql_socket);
 	}
 	char filename[iMaxPath + 1];
-	snprintf(filename, iMaxPath, "%s/SeatsError.log",
+	snprintf(filename, iMaxPath, "%s/BidError.log",
 			outputDirectory);
 	char s[1000];
 	m_fLog.open(filename, ios::out);
@@ -226,37 +213,23 @@ SeatsRunner::SeatsRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_u
 	logErrorMessage(s, false);
 }
 
-int SeatsRunner::RunFindFlight(TFindFlightTxnInput* pTxnInput, CFindFlightDB &findFlight){
-	TFindFlightTxnOutput ffOutput;
 
-	findFlight.DoFindFlight(pTxnInput, &ffOutput);
+int BidRunner::RunBidding(TBiddingTxnInput* pTxnInput, CBiddingDB &bidding){
+	TBiddingTxnOutput bidOutput;
 
-#ifdef PRINT_OUTPUT
-	findFlight.pDB->outfile<<"input: depart_aid = "<<pTxnInput->depart_aid<<", arrive_id = "<<pTxnInput->arrive_aid<<", start_date = "<<toStr(pTxnInput->start_date)<<", end_date = "<<toStr(pTxnInput->end_date)<<", dis = "<<pTxnInput->distance<<endl;
-	findFlight.pDB->outfile<<"num_result = "<<ffOutput.num_results<<endl;
-#endif
+	bidding.DoBidding(pTxnInput, &bidOutput);
 
-	return ffOutput.status;
-}
-
-int SeatsRunner::RunNewReservation(TNewReservationTxnInput* pTxnInput, CNewReservationDB &newReservation){
-	TNewReservationTxnOutput nrOutput;
-
-	newReservation.DoNewReservation(pTxnInput, &nrOutput);
-
-	return nrOutput.status;
+	return bidOutput.status;
 }
 
 // Listener
-void SeatsRunner::startListener(void)
+void BidRunner::startListener(void)
 {
 	int acc_socket;
 	PThreadParameter pThrParam = NULL;
 
-	cout<<"BEFORE STARTLISTENER"<<endl;
 	m_Socket.dbt5Listen(m_iListenPort);
 	ostringstream msg1;
-	cout<<"STARTLISTENER: m_iListenPort = "<<m_iListenPort<<endl;
 	logErrorMessage(msg1.str(), false);
 
 	int t_cnt = 0;
@@ -270,7 +243,7 @@ void SeatsRunner::startListener(void)
 			memset(pThrParam, 0, sizeof(TThreadParameter));
 
 			pThrParam->iSockfd = acc_socket;
-			pThrParam->pSeats = this;
+			pThrParam->pBid = this;
 			pThrParam->t_id = t_cnt;
 			strcpy(pThrParam->outputDir, outputDir);
 			t_cnt++;
@@ -291,7 +264,7 @@ void SeatsRunner::startListener(void)
 }
 
 // logErrorMessage
-void SeatsRunner::logErrorMessage(const string sErr, bool bScreen)
+void BidRunner::logErrorMessage(const string sErr, bool bScreen)
 {
 	m_LogLock.lock();
 	if (bScreen) cout << sErr;

@@ -60,7 +60,6 @@ void CDBConnection::execute(const TNewReservationTxnInput* pIn, TNewReservationT
 
 	NR_GETCUSTOMER;
 
-	cout<<"f_id = "<<pIn->f_id<<endl;
 	sprintf(query, NR_UPDATE_FLIGHT, pIn->f_id);
 	GETTIME;
 	if(!dbt5_sql_execute(query, &result, "UPDATE_FLIGHT")){

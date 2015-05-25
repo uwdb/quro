@@ -65,6 +65,21 @@ CCustomer::CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
 			(long long) pthread_self());
 	m_fLog.open(filename, ios::out);
 }
+#elif WORKLOAD_BID
+CCustomer::CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
+			TIdent iActiveCustomerCount, INT32 iScaleFactor,
+			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
+			int iBHlistenPort, int iUsers, int iPacingDelay,
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock)
+{
+	char filename[iMaxPath + 1];
+	m_pBID = new CBID(szBHaddr, iBHlistenPort, &m_fLog, m_fMix,
+			&m_LogLock, m_MixLock);
+	snprintf(filename, iMaxPath, "%s/Customer_Error_%lld.log", outputDirectory,
+			(long long) pthread_self());
+	m_fLog.open(filename, ios::out);
+}
+
 #endif
 
 // Destructor
@@ -79,6 +94,8 @@ CCustomer::~CCustomer()
 	delete m_pLog;
 #elif WORKLOAD_SEATS
 	delete m_pSEATS;
+#elif WORKLOAD_BID
+	delete m_pBID;
 #endif
 	m_fLog.close();
 }
@@ -92,6 +109,8 @@ void CCustomer::DoTxn()
 	//generate txn type
 	//generate input
 	m_pSEATS->DoTxn();
+#elif WORKLOAD_BID
+	m_pBID->DoTxn();
 #endif
 }
 

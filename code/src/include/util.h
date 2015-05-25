@@ -131,7 +131,7 @@ inline long unsigned int getRandomAirportId(fast_random& r){
 
 inline long unsigned int getCustomerId(fast_random& r){
 		//return get_nurand(1023, 1, 3000, r);
-		return get_random(r, numCustomers/10);
+		return get_random(r, numCustomers);
 }
 inline long unsigned int getNUFlightId(fast_random& r){
 		return get_random(r, NUFlightIdRange);

@@ -34,6 +34,12 @@ public:
 	// back into the database class
 	void Cleanup(void* pException) {};
 };
+
+#define SBTEST_TEST \
+	"SELECT k, pad\n" \
+	"FROM sbtest\n" \
+	"WHERE id = %d"
+
 #define TRADE_UPDATE_Q1 \
 		"SELECT t_exec_name\n" \
 		"FROM trade\n" \
@@ -86,6 +92,7 @@ public:
 
 #define RETURN_ERROR(msg) \
 				string fail_msg(msg); \
+				fail_msg.append(query); \
 				throw fail_msg.c_str();
 
 #define TRADEUPDATE_F1Q1  sprintf(query, TRADE_UPDATE_Q1, t_id); \
@@ -94,6 +101,7 @@ public:
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
 			exec_name.assign(val); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 1, 1); \
 		} else { \
 			RETURN_ERROR("trade update frame 1 query 1 fails");  \
@@ -115,6 +123,7 @@ public:
 			is_cash = atoi(dbt5_sql_getvalue(&result, 2, length)); \
 			is_market = atoi(dbt5_sql_getvalue(&result, 3, length)); \
 			trade_price = atof(dbt5_sql_getvalue(&result, 4, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 3, 1); \
 		}else { \
 			RETURN_ERROR("trade update frame 1 query 3 fails"); \
@@ -129,6 +138,7 @@ public:
 			sscanf(val, "%d-%d-%d %d:%d:%f", &set_year, &set_month, &set_day, &set_hour, &set_min, &set_sec); \
 			val = dbt5_sql_getvalue(&result, 2, length); \
 			strncpy(set_cash_type, val, length); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 4, 1); \
 		}else{ \
 			RETURN_ERROR("trade update frame 1 query 4 fails"); \
@@ -143,6 +153,7 @@ public:
 			sscanf(val, "%d-%d-%d %d:%d:%f", &cash_year, &cash_month, &cash_day, &cash_hour, &cash_min, &cash_sec); \
 			val = dbt5_sql_getvalue(&result, 2, length); \
 			strncpy(cash_name, val, length); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 5, 1); \
 		}else { \
 			RETURN_ERROR("trade update frame 1 query 5 fails"); \
@@ -166,6 +177,7 @@ public:
 				strncpy(trade_history_status_id[j], val, length); \
 				ADD_QUERY_NODE(1, 6, 1); \
 			} \
+			dbt5_sql_close_cursor(&result_t); \
 		}else { \
 			RETURN_ERROR("trade update frame 1 query 6 fails"); \
 		}

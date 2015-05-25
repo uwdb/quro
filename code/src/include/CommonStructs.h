@@ -154,7 +154,39 @@ typedef struct TMsgSeatsDriver
 {
 	int			iStatus;
 } *PMsgSeatsDriver;
+#elif WORKLOAD_BID
+#include <fstream>
+#include <iostream>
+#include <sstream>
+using namespace std;
+enum eTxnType
+{
+		NULL_TXN = -1,
+		BIDDING,
+};
 
-#endif
+typedef struct TBiddingTxnInput
+{
+		uint64_t user_id;
+		uint64_t item_id;
+		double price;
+};
+typedef struct TBiddingTxnOutput
+{
+		int status;
+};
+
+typedef struct TMsgDriverBid
+{
+		eTxnType TxnType;
+		TBiddingTxnInput TxnInput;
+} *PMsgDriverBid;
+
+typedef struct TMsgBidDriver
+{
+	int			iStatus;
+} *PMsgBidDriver;
+
+#endif /* WORKLOAD */
 
 #endif	//COMMON_STRUCTS_H

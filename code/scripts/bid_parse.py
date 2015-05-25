@@ -18,7 +18,7 @@ total_exec_time = 0
 
 
 for i in range(cnt):
-		fname = "%s/bh/connection_%d.log"%(fileid, i)
+		fname = "%s/bid/connection_%d.log"%(fileid, i)
 		fp = open(fname, "r")
 		startt = 0
 		expan = 0
@@ -58,7 +58,7 @@ def readSingleFile(fp):
 	_cnt = [0 for x in range(24)]
 	_max = [0 for x in range(24)]
 	_var = [0 for x in range(24)]
-	for i in range(8):
+	for i in range(6):
 		_bin[i] = 0.0
 		_cnt[i] = 0
 		_max[i] = 0.0
@@ -91,7 +91,7 @@ def readSingleFile(fp):
 							waiting_time = waiting_time + cur_time-last_time;
 					last_time = cal_time(int(chs[6], 10), int(chs[7], 10))
 	
-			elif len(chs)>2 and ('_' in chs[0]):
+			elif len(chs)>5 and ('_' in chs[0]):
 					for i in range(len(chs)):
 							if '_' in chs[i]:
 									q_id = chs[i].split('_')
@@ -119,7 +119,7 @@ def readSingleFile(fp):
 									avg = _bin[query-1]/float(_cnt[query-1])
 									_var[query-1] = _var[query-1] + (_time-avg)*(_time-avg)
 	
-	for i in range(8):
+	for i in range(6):
 		if(_bin[i]>0):
 			print "query %d(%f)"%(i+1, _bin[i]/float(_cnt[i])),
 	print ""
@@ -127,7 +127,7 @@ def readSingleFile(fp):
 	print "------add-----"
 	print "%f"%(_add/float(commit_cnt + abort_cnt))
 	print "-----------variance------"
-	for i in range(8):
+	for i in range(9):
 		if(_bin[i]>0):
 			print "query %d(%f)"%(i+1, _var[i]/float(_cnt[i])),
 	print ""
@@ -141,7 +141,7 @@ def readSingleFile(fp):
 	#		print ""
 	
 	print "-----------cnt------"
-	for i in range(8):
+	for i in range(9):
 		if(_bin[i]>0):
 				print "query %d(%d)"%(i+1, _cnt[i]),
 	print ""
@@ -155,9 +155,10 @@ def readSingleFile(fp):
         return commit_exec_time/float(commit_cnt)
 
 
-print "==================TradeUpdate======================"
+
+print "==================BIDDING======================"
 id1 = int(cnt/2+1)
-filename = "%s/bh/connection_%d.log"%(fileid, id1)
+filename = "%s/bid/connection_%d.log"%(fileid, id1)
 print "filename = %s"%filename
 fp = open(filename, "r")
 print "id1 = %d"%(id1)
@@ -165,8 +166,8 @@ latency = readSingleFile(fp)
 fp.close()
 
 print "===================Final================="
-print "TU total time = %f"%(float(TU_exec_total)/float(cnt))
-print "TU total cnt = %d ( %d )"%(TU_commit_total, TU_commit_total + TU_abort_total)
+print "BID total time = %f"%(float(TU_exec_total)/float(cnt))
+print "BID total cnt = %d ( %d )"%(TU_commit_total, TU_commit_total + TU_abort_total)
 
 print "%f\t%f\t%f\t%f\t%f"%(float(TU_commit_total)/360.0,  float(TU_commit_total)/(float(TU_exec_total)/float(cnt)), latency, float(TU_exec_total)/float(TU_commit_total+TU_abort_total), float(TU_abort_total)/float(TU_abort_total+TU_commit_total)) 
 

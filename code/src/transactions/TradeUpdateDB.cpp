@@ -33,7 +33,7 @@ void CTradeUpdateDB::DoTradeUpdateFrame1(const TTradeUpdateFrame1Input *pIn,
 	execute(pIn, pOut);
 
 
-	commitTransaction();
+//	commitTransaction();
 
 
 #ifdef DEBUG

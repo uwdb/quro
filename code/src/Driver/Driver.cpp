@@ -84,7 +84,6 @@ void *customerWorkerThread(void *data)
 	ts.tv_sec = (time_t) (pThrParam->pDriver->iPacingDelay / 1000);
 	ts.tv_nsec = (long) (pThrParam->pDriver->iPacingDelay % 1000) *
 			1000000;
-	cout<<"--------before creating Customer"<<endl;
 
 
 	customer = new CCustomer(pThrParam->pDriver->szInDir,
@@ -99,8 +98,14 @@ void *customerWorkerThread(void *data)
 			pThrParam->pDriver->iPacingDelay,
 			pThrParam->pDriver->outputDirectory,
 			&pThrParam->pDriver->m_fMix,
-			&pThrParam->pDriver->m_MixLock);
-	cout<<"Customer created successfully"<<endl;
+#ifdef WORKLOAD_SEATS
+			&pThrParam->pDriver->m_MixLock,
+			pThrParam->flight_ids
+#else
+			&pThrParam->pDriver->m_MixLock
+#endif
+			);
+
 	do {
 		customer->DoTxn();
 
@@ -221,7 +226,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 	uint64_t* new_flight_ids = new uint64_t[NUFlightIdRange];
 	for(int i=0; i<NUFlightIdRange; i++){
 			new_flight_ids[i] = rand()%numFlights;
-			cout<<"flight id ["<<i<<"] = "<<new_flight_ids[i]<<endl;
+			cout<<"new_flight_id["<<i<<"] = "<<new_flight_ids[i]<<endl;
 	}
 #endif
 	for (int i = 1; i <= iUsers; i++) {
@@ -229,7 +234,7 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 		// zero the structure
 		memset(pThrParam, 0, sizeof(TCustomerThreadParam));
 		pThrParam->pDriver = this;
-#ifdef WOAKLOAD_SEATS
+#ifdef WORKLOAD_SEATS
 		pThrParam->flight_ids = new_flight_ids;
 #endif
 		entryCustomerWorkerThread(reinterpret_cast<void *>(pThrParam), i);

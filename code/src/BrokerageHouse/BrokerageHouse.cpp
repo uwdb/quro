@@ -52,7 +52,7 @@ void signal_kill_handler(int signum){
 	for(int i=0; i<connectionCnt; i++){
 			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
 			double timerange = difftimeval(t2, t_start_values[i]);
-			cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<", timerange = "<<timerange<<endl;
+			cout<<"txn cnt for connection "<<i<<": commit "<<ptr->txn_cnt<<", abort "<<ptr->abort_cnt<<", timerange = "<<timerange<<", txn_time = "<<ptr->txn_time<<endl;
 //				cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<endl;
 	}
 	exit(signum);
@@ -134,6 +134,7 @@ void *workerThread(void *data)
 		CTradeResult tradeResult = CTradeResult(&tradeResultDB);
 
 		int txn_cnt = 0;
+		int abort_cnt = 0;
 		double txn_time = 0;
 		bool commit = true;
 		double receiving_time = 0;
@@ -159,11 +160,9 @@ void *workerThread(void *data)
 				break;
 			}
 loop:
-#ifdef CAL_RESP_TIME
 			timeval t1, t2;
 			double exec_time;
 		 	gettimeofday(&t1, NULL);
-#endif
 
 			commit = true;
 			iRet = CBaseTxnErr::SUCCESS;
@@ -240,11 +239,11 @@ loop:
 			exec_time = difftimeval(t2, t1);
 			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
-			pDBConnection->outfile<<"error: "<<str<<endl;
+//			pDBConnection->outfile<<"error: "<<str<<endl;
 //#ifdef PROFILE_EACH_QUERY
 //			pDBConnection->print_profile_query();
 //#endif
-			pDBConnection->outfile.flush();
+//			pDBConnection->outfile.flush();
 #endif
 				//ostringstream msg;
 				//msg << time(NULL) << " " << (long long) pthread_self() << " " <<
@@ -253,12 +252,16 @@ loop:
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
 				commit = false;
+				abort_cnt++;
+				pDBConnection->abort_cnt = abort_cnt;
 				//XXX:debug for trade result
 			}
-#ifdef CAL_RESP_TIME
 			gettimeofday(&t2, NULL);
 			exec_time = difftimeval(t2, t1);
+
 			txn_time += exec_time;
+			pDBConnection->txn_time = txn_time;
+#ifdef CAL_RESP_TIME
 
 //			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
 			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;

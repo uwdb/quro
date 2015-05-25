@@ -10,7 +10,7 @@
 #define numCountries 249
 #define numAirlines 1251
 #define numFlights   100000
-#define NUFlightIdRange 2
+#define NUFlightIdRange 4
 #define numCustomers 1000000
 #define MIN_DIS 100
 #define MAX_DIS 4000

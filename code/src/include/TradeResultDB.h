@@ -240,6 +240,7 @@ public:
 			charge = atof(dbt5_sql_getvalue(&result, 4, length)); \
 			is_lifo = atoi(dbt5_sql_getvalue(&result, 5, length)); \
 			trade_is_cash = atoi(dbt5_sql_getvalue(&result, 6, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 1, 1); \
 	}else{ \
 				ADD_FAIL_QUERY_NODE(1, 1, 0); \
@@ -255,6 +256,7 @@ public:
 			strncpy(type_name, val, length); \
 			type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length)); \
 			type_is_market = atoi(dbt5_sql_getvalue(&result, 2, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 2, 1); \
 	}else{ \
 			ADD_FAIL_QUERY_NODE(1, 2, 0); \
@@ -267,6 +269,7 @@ public:
 	if(r==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			hs_qty = atol(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 3, 1); \
 	}else{ \
 			FAIL_MSG("trade result frame1 query 3 fails"); \
@@ -277,6 +280,7 @@ public:
 	if(r==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			val = dbt5_sql_getvalue(&result, 0, length); \
+			dbt5_sql_close_cursor(&result); \
 			strncpy(now_dts, val, length); \
 	}
 
@@ -288,6 +292,7 @@ public:
 			broker_id = atol(dbt5_sql_getvalue(&result, 0, length)); \
 			cust_id = atol(dbt5_sql_getvalue(&result, 1, length)); \
 			tax_status = atoi(dbt5_sql_getvalue(&result, 2, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(2, 1, 1); \
 	}else{ \
 			FAIL_MSG("trade result frame2 query 1 fails"); \
@@ -497,6 +502,7 @@ public:
 			if(r==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					tax_rate = atof(dbt5_sql_getvalue(&result, 0, length)); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(3, 1, 1); \
 			}else{ \
 					FAIL_MSG("trade result frame3 query 1 fails"); \
@@ -518,6 +524,7 @@ public:
 			strncpy(sec_ex_id, val, length); \
 			val = dbt5_sql_getvalue(&result, 1, length); \
 			strncpy(s_name, val, length); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(4, 1, 1); \
 	}else{ \
 			FAIL_MSG("trade result frame4 query 1 fails"); \
@@ -529,6 +536,7 @@ public:
 	if(r==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(4, 2, 1); \
 	}else{ \
 			FAIL_MSG("trade result frame4 query 2 fails"); \
@@ -540,6 +548,7 @@ public:
 	if(r==1 && result.result_set){ \
 			dbt5_sql_fetchrow(&result); \
 			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length)); \
+			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(4, 3, 1); \
 	}else{ \
 			FAIL_MSG("trade result frame4 query 3 fails"); \
@@ -593,6 +602,7 @@ public:
 			if(r==1 && result.result_set){ \
 					dbt5_sql_fetchrow(&result); \
 					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length)); \
+					dbt5_sql_close_cursor(&result); \
 					ADD_QUERY_NODE(6, 4, 1); \
 			}else{ \
 					FAIL_MSG("trade result frame6 query4 fails"); \

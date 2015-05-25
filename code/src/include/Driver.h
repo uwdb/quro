@@ -16,7 +16,7 @@
 #include "InputFlatFilesStructure.h"
 #include "DMSUT.h"
 #include "locking.h"
-#elif WORKLOAD_SEATS
+#else /* WORKLOAD_TPCE */
 #include <iostream>
 #include <fstream>
 #include "locking.h"
@@ -28,7 +28,7 @@ using namespace std;
 #define INT32 int32_t
 #define iMaxPath 50
 #define iMaxHostname 20
-#endif
+#endif /* WORKLOAD_TPCE */
 
 using namespace TPCE;
 
