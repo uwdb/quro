@@ -80,12 +80,9 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			num_updated++;
 		}
 
-//		sprintf(query, "SET SESSION profiling = 1");
-//		dbt5_sql_execute(query, &result, "PROFILE");
 
 		//getTradeType
 		TRADEUPDATE_F1Q3;
-
 
 		//getSettlement
 		TRADEUPDATE_F1Q4;
@@ -95,7 +92,6 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		}
 		//getTradeHistory
 		TRADEUPDATE_F1Q6;
-
 
 		pOut->trade_info[i].bid_price = bid_price;
 		pOut->trade_info[i].cash_transaction_amount = cash_amount;
