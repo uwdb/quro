@@ -1,3 +1,4 @@
+
 /*
  * This file is released under the terms of the Artistic License.  Please see
  * the file LICENSE, included in this package, for details.
@@ -9,7 +10,7 @@
  * 25 July 2006
  */
 
-#include "BrokerageHouse.h"
+#include "TPCC.h"
 #include "DBT5Consts.h"
 
 // Establish defaults for command line option
@@ -23,18 +24,10 @@ char szSocket[256] = "/usr/local/var/mysqld/mysqld.sock";
 char szPass[25] = "";
 char outputDirectory[iMaxPath + 1] = ".";
 
-#ifdef NO_MEE_FOR_TRADERESULT
-char szFileLoc[iMaxPath + 1] = ".";
-int iActiveCustomerCount = 1000;
-int iConfiguredCustomerCount = 1000;
-char szBHaddr[iMaxHostname + 1] = "localhost"; // Brokerage House address
-int iUsers = 1;
-#endif
-
 // shows program usage
 void usage()
 {
-	cout << "Usage: BrokerageHouseMain [options]" << endl << endl;
+	cout << "Usage: TPCCMain [options]" << endl << endl;
  	cout << "   Option      Default    Description" << endl;
  	cout << "   =========   =========  ===============" << endl;
 	cout << "   -d string              Database name" << endl;
@@ -96,20 +89,6 @@ void parse_command_line(int argc, char *argv[])
 		case 'l':
 			iListenPort = atoi(vp);
 			break;
-#ifdef NO_MEE_FOR_TRADERESULT
-		case 'i':
-			strncpy(szFileLoc, vp, iMaxPath);
-			break;
-		case 't':
-			iConfiguredCustomerCount = atol(vp);
-			break;
-		case 'c':
-			iActiveCustomerCount = atol(vp);
-			break;
-		case 'e':
-			iUsers = atol(vp);
-			break;
-#endif
 		case 'u':
 			strcpy(szUser, vp);
 			break;
@@ -129,8 +108,6 @@ void parse_command_line(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	cout << "dbt5 - Brokerage House" << endl;
-	cout << "Listening on port: " << iListenPort << endl << endl;
 
 	// Parse command line
 	parse_command_line(argc, argv);
@@ -142,20 +119,14 @@ int main(int argc, char *argv[])
 	cout << "Database name: " << szDBName << endl;
 
 #ifdef DB_PGSQL
-	CBrokerageHouse	BrokerageHouse(szHost, szDBName, szDBPort, iListenPort,
+	TPCCRunner tpccRunner(szHost, szDBName, szDBPort, iListenPort,
 			outputDirectory);
 #else
-#ifdef NO_MEE_FOR_TRADERESULT
-	CBrokerageHouse	BrokerageHouse(szDBName, szHost, szUser, szPass, szDBPort, szSocket,
-									iListenPort, outputDirectory, szFileLoc, szBHaddr, iActiveCustomerCount, iConfiguredCustomerCount, iUsers);
-#else
-	CBrokerageHouse	BrokerageHouse(szDBName, szHost, szUser, szPass, szDBPort, szSocket,
+	TPCCRunner tpccRunner(szDBName, szHost, szUser, szPass, szDBPort, szSocket,
 									iListenPort, outputDirectory);
 #endif
-#endif
-	cout << "Brokerage House opened for business, waiting traders..." << endl;
 	try {
-		BrokerageHouse.startListener();
+		tpccRunner.startListener();
 	} catch (CBaseErr *pErr) {
 		cout << "Error " << pErr->ErrorNum() << ": " << pErr->ErrorText();
 		if (pErr->ErrorLoc()) {
@@ -175,6 +146,5 @@ int main(int argc, char *argv[])
 
 	pthread_exit(NULL);
 
-	cout << "Brokerage House closed for business" << endl;
 	return(0);
 }

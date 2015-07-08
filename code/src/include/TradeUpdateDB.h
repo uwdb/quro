@@ -14,7 +14,9 @@
 
 #include "TxnBaseDB.h"
 #include "DBConnection.h"
+
 using namespace TPCE;
+
 
 class CTradeUpdateDB : public CTxnBaseDB, public CTradeUpdateDBInterface
 {

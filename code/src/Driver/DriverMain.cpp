@@ -27,7 +27,11 @@ int iBHListenerPort = iBrokerageHousePort;
 TIdent iConfiguredCustomerCount = iDefaultCustomerCount;
 // total number of customers in the database
 TIdent iActiveCustomerCount = iDefaultCustomerCount;
+#ifdef WORKLOAD_TPCE
 int iScaleFactor = 500; // # of customers for 1 TRTPS
+#else
+int iScaleFactor = 1;
+#endif
 int iDaysOfInitialTrades = 300;
 int iTestDuration = 0;
 int iSleep = 1000; // msec between thread creation

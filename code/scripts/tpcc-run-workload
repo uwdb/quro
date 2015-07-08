@@ -13,7 +13,7 @@ make_directories()
 #		COMMAND="ssh ${HOST}"
 #	fi
 	${COMMAND} mkdir -p ${OUTPUT_DIR}
-	${COMMAND} mkdir -p ${BID_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${TPCC_OUTPUT_DIR}
 	${COMMAND} mkdir -p ${DRIVER_OUTPUT_DIR}
 	${COMMAND} mkdir -p ${DB_OUTPUT_DIR}
 }
@@ -30,7 +30,7 @@ usage()
 	echo 'other options:'
 	echo '       -a <pgsql>'
 	echo '       -b <database parameters>'
-	echo '       -f <scale factor. (default 500)>'
+	echo '       -f <scale factor. (default 1)>'
 	echo '       -h <database host name. (default localhost)>'
 	echo '       -i <egen_path>'
 	echo '       -l <pacing delay. (default 0)>'
@@ -51,7 +51,7 @@ usage()
 	echo ''
 }
 
-SCALE_FACTOR=500
+SCALE_FACTOR=1
 SLEEPY=1000 # milliseconds
 USE_OPROFILE=0
 USE_READPROFILE=0
@@ -146,7 +146,7 @@ while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
 	esac
 done
 
-BID_OUTPUT_DIR=${OUTPUT_DIR}/bid
+TPCC_OUTPUT_DIR=${OUTPUT_DIR}/tpcc
 DRIVER_OUTPUT_DIR=${OUTPUT_DIR}/driver
 DB_OUTPUT_DIR=${OUTPUT_DIR}/db
 
@@ -192,9 +192,9 @@ echo "************************************************************************"
 echo "Results can be found in: ${OUTPUT_DIR}"
 
 echo
-echo "1. Starting Bid server"
-BidMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-		-o ${BID_OUTPUT_DIR} > ${BID_OUTPUT_DIR}/bid.out 2>&1 &
+echo "1. Starting TPCC server"
+TPCCMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+		-o ${TPCC_OUTPUT_DIR} > ${TPCC_OUTPUT_DIR}/tpcc.out 2>&1 &
 
 do_sleep ${USERS} 
 
@@ -218,14 +218,13 @@ DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 #quit
 #GDB_INPUT
 
-#gdb --args BidMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
-#		-o ${BID_OUTPUT_DIR} <<GDB_INPUT
+#gdb --args TPCCMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#		-o ${TPCC_OUTPUT_DIR} <<GDB_INPUT
 #pwd
 #run
 #backtrace
 #quit
 #GDB_INPUT
-
 
 DCMPID=`ps -C DriverMain -o pid=`
 echo "Results will be written to: $OUTPUT_DIR"
@@ -233,7 +232,7 @@ echo "Results will be written to: $OUTPUT_DIR"
 do_sleep ${DURATION}
 
 echo "Killing Servers..."
-killall BidMain 2> /dev/null
+killall TPCCMain 2> /dev/null
 
 echo ">> Test completed."
 echo "Results are in: ${OUTPUT_DIR}"

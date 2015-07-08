@@ -127,6 +127,9 @@ CDBConnection::CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_my
 #elif WORKLOAD_BID
 CDBConnection::CDBConnection(BidRunner *_bid, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
 	setBidRunner(_bid);
+#elif WORKLOAD_TPCC
+CDBConnection::CDBConnection(TPCCRunner *_tpcc, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket){
+	setTPCCRunner(_tpcc);
 #endif
 	if (_mysql_dbname != NULL) {
 		strcpy(mysql_dbname, _mysql_dbname);
@@ -3070,6 +3073,12 @@ void CDBConnection::setBidRunner(BidRunner *_bid)
 {
 	this->bid = _bid;
 }
+#elif WORKLOAD_TPCC
+void CDBConnection::setTPCCRunner(TPCCRunner *_tpcc)
+{
+	this->tpcc = _tpcc;
+}
+
 #endif
 #ifdef DB_PGSQL
 void CDBConnection::setReadCommitted()
@@ -3234,6 +3243,8 @@ void CDBConnection::logErrorMessage(const char *c, ...){
 			seats->logErrorMessage(s, false);
 #elif WORKLOAD_BID
 			bid->logErrorMessage(s, false);
+#elif WORKLOAD_TPCC
+			tpcc->logErrorMessage(s, false);
 #endif
 }
 #ifdef CAL_RESP_TIME
@@ -3253,6 +3264,108 @@ void CDBConnection::append_profile_node(timeval _start, timeval _end, eTxnType _
 			cur = cur->next;
 }
 #endif
+
+string get_random_string(int length){
+	char c[1000] = {0};
+	int len = length/2 + rand()%(length/2);
+	for(int i=0; i<len; i++){
+		c[i] = rand()%26+'a';
+	}
+	string s(c);
+	return s;
+}
+string parseQueryParams(char* query){
+	if(strstr(query, "SELECT")!=NULL || strstr(query, "DELETE")!=NULL || strstr(query, "UPDATE")){
+			char* p_where = strstr(query, "WHERE");
+			char* temp_p = p_where+6;
+			char str[2000] = {0};
+			char i = 0;
+			while(strstr(temp_p, "AND")!=NULL){
+					if(*temp_p == 'A' && *(temp_p+1) == 'N' && *(temp_p+2) == 'D'){
+							temp_p = temp_p + 3;
+					}
+					if(*temp_p == '\n')
+							temp_p++;
+					str[i] = *temp_p;
+					temp_p++;
+					i++;
+			}
+			while(strlen(temp_p)>0 && *temp_p != '\n'){
+					str[i] = *temp_p;
+					temp_p++;
+					i++;
+			}
+			str[i] = 0;
+			string result(str);
+			return result;
+	}
+	else if(strstr(query, "INSERT")!=NULL){
+			char* p_where = strstr(query, "VALUES");
+			char* temp_p = p_where+7;
+			int i = 0;
+			char str[1000] = {0};
+			strcpy(str, temp_p);
+			string result(str);
+			return result;
+	}
+	string empty("");
+	return empty;
+}
+
+void splitByBlank(vector<string>& vec, string str){
+			char s[2000] = {0};
+			int i = 0;
+			int j = 0;
+			while(i < str.length()){
+					if(str[i]==' ' || str[i]=='\n'){
+							string s1(s);
+							vec.push_back(s1);
+							memset(s, 0, sizeof(char)*1000);
+							j = 0;
+							i++;
+					}else{
+							s[j] = str[i];
+							i++, j++;
+					}
+			}
+			string s1(s);
+			vec.push_back(s1);
+}
+
+string returnTableName(char* query){
+		vector<string> words;
+		string lit_str(query);
+		splitByBlank(words, lit_str);
+		int i=0;
+		if(strcmp(words[0].c_str(), "SELECT")==0){
+				while(i<words.size() && strcmp(words[i].c_str(), "FROM")!=0)
+						i++;
+				assert(i+1<words.size());
+				i++;
+				string table_name(words[i]);
+				return table_name;
+		}else if(strcmp(words[0].c_str(), "UPDATE")==0){
+				i=1;
+				string table_name(words[i]);
+				return table_name;
+		}else if(strcmp(words[0].c_str(), "DELETE") == 0){
+				while(i<words.size() && strcmp(words[i].c_str(), "FROM")!=0)
+						i++;
+				assert(i+1<words.size());
+				i++;
+				string table_name(words[i]);
+				return table_name;
+		}else if(strcmp(words[0].c_str(), "INSERT") == 0){
+				while(i<words.size() && strcmp(words[i].c_str(), "INTO")!=0)
+							i++;
+				assert(i+1<words.size());
+				i++;
+				string table_name(words[i]);
+				return table_name;
+		}
+		string empty("");
+		return empty;
+}
 
 /*double difftimeval(timeval rt1, timeval rt0)
 {

@@ -1,19 +1,18 @@
-#include "Bid.h"
+#include "TPCC.h"
 #include "CommonStructs.h"
 #include "DBConnection.h"
 
-#include "BiddingDB.h"
-//#include "UpdateCustomer.h"
-//#include "UpdateReservation.h"
+#include "TPCCDB.h"
 
 #include "util.h"
 using namespace std;
-
 #include <signal.h>
 #include <sys/time.h>
 
 extern CDBConnection* pDBClist[1024];
 extern int connectionCnt;
+
+
 void signal_kill_handler(int signum){
 	timeval t2;
 	gettimeofday(&t2, NULL);
@@ -37,21 +36,21 @@ try {
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
 		cout<<"client sock = "<<pThrParam->iSockfd<<endl;
 
-		PMsgDriverBid pMessage = new TMsgDriverBid;
-		memset(pMessage, 0, sizeof(TMsgDriverBid)); // zero the structure
+		PMsgDriverTPCC pMessage = new TMsgDriverTPCC;
+		memset(pMessage, 0, sizeof(TMsgDriverTPCC)); // zero the structure
 
-		TMsgBidDriver Reply; // return message
+		TMsgTPCCDriver Reply; // return message
 		INT32 iRet = 0; // transaction return code
 		CDBConnection *pDBConnection = NULL;
 
 		pDBConnection = new CDBConnection(
-			pThrParam->pBid,
-			pThrParam->pBid->mysql_dbname,
-			pThrParam->pBid->mysql_host,
-			pThrParam->pBid->mysql_user,
-			pThrParam->pBid->mysql_pass,
-			pThrParam->pBid->mysql_port_t,
-			pThrParam->pBid->mysql_socket_t);
+			pThrParam->pTPCC,
+			pThrParam->pTPCC->mysql_dbname,
+			pThrParam->pTPCC->mysql_host,
+			pThrParam->pTPCC->mysql_user,
+			pThrParam->pTPCC->mysql_pass,
+			pThrParam->pTPCC->mysql_port_t,
+			pThrParam->pTPCC->mysql_socket_t);
 #ifdef CAL_RESP_TIME
 			timeval t1, t2;
 			double exec_time;
@@ -59,7 +58,7 @@ try {
 			pDBConnection->init_profile_node(pThrParam->t_id, pThrParam->outputDir);
 #endif
 
-		CBiddingDB biddingDB(pDBConnection);
+		CTPCCDB tpccDB(pDBConnection);
 
 		int txn_cnt = 0;
 		int abort_cnt = 0;
@@ -69,8 +68,7 @@ try {
 		do {
 			try {
 				sockDrv.dbt5Receive(reinterpret_cast<void *>(pMessage),
-						sizeof(TMsgDriverBid));
-				pDBConnection->outfile.flush();
+						sizeof(TMsgDriverTPCC));
 			} catch(CSocketErr *pErr) {
 				sockDrv.dbt5Disconnect();
 
@@ -87,7 +85,17 @@ try {
 			iRet = CBaseTxnErr::SUCCESS;
 			try {
 				//  Parse Txn type
-					iRet = pThrParam->pBid->RunBidding(&pMessage->TxnInput, biddingDB);
+				switch (pMessage->TxnType) {
+					case NEWORDER:
+						iRet = pThrParam->pTPCC->RunNewOrder(&pMessage->TxnInput.neworderTxnInput, tpccDB);
+						break;
+					case PAYMENT:
+						iRet = pThrParam->pTPCC->RunPayment(&pMessage->TxnInput.paymentTxnInput, tpccDB);
+						break;
+					default:
+						pDBConnection->outfile<<"Wrong txn type!"<<endl;
+						iRet = ERR_TYPE_WRONGTXN;
+				}
 				txn_cnt++;
 				pDBConnection->txn_cnt = txn_cnt;
 			}catch (const char *str) {
@@ -184,7 +192,7 @@ void entryWorkerThread(void *data)
 	}
 }
 
-BidRunner::BidRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
+TPCCRunner::TPCCRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory)
 : m_iListenPort(iListenPort)
 {
 	if (_mysql_dbname != NULL) {
@@ -206,7 +214,7 @@ BidRunner::BidRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user,
 		strcpy(mysql_socket_t, _mysql_socket);
 	}
 	char filename[iMaxPath + 1];
-	snprintf(filename, iMaxPath, "%s/BidError.log",
+	snprintf(filename, iMaxPath, "%s/TPCCError.log",
 			outputDirectory);
 	char s[1000];
 	m_fLog.open(filename, ios::out);
@@ -215,16 +223,24 @@ BidRunner::BidRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user,
 }
 
 
-int BidRunner::RunBidding(TBiddingTxnInput* pTxnInput, CBiddingDB &bidding){
-	TBiddingTxnOutput bidOutput;
+int TPCCRunner::RunNewOrder(TNewOrderTxnInput* pTxnInput, CTPCCDB &tpcc){
+	TNewOrderTxnOutput tpccOutput;
 
-	bidding.DoBidding(pTxnInput, &bidOutput);
+	tpcc.DoNewOrder(pTxnInput, &tpccOutput);
 
-	return bidOutput.status;
+	return tpccOutput.status;
+}
+
+int TPCCRunner::RunPayment(TPaymentTxnInput* pTxnInput, CTPCCDB &tpcc){
+	TPaymentTxnOutput tpccOutput;
+
+	tpcc.DoPayment(pTxnInput, &tpccOutput);
+
+	return tpccOutput.status;
 }
 
 // Listener
-void BidRunner::startListener(void)
+void TPCCRunner::startListener(void)
 {
 	int acc_socket;
 	PThreadParameter pThrParam = NULL;
@@ -244,11 +260,12 @@ void BidRunner::startListener(void)
 			memset(pThrParam, 0, sizeof(TThreadParameter));
 
 			pThrParam->iSockfd = acc_socket;
-			pThrParam->pBid = this;
+			pThrParam->pTPCC = this;
 			pThrParam->t_id = t_cnt;
 			strcpy(pThrParam->outputDir, outputDir);
 			t_cnt++;
 			connectionCnt = t_cnt;
+			cout<<"TPCC Listener connection_cnt = "<<t_cnt<<endl;
 			assert(connectionCnt < 1024);
 			// call entry point
 			entryWorkerThread(reinterpret_cast<void *>(pThrParam));
@@ -265,7 +282,7 @@ void BidRunner::startListener(void)
 }
 
 // logErrorMessage
-void BidRunner::logErrorMessage(const string sErr, bool bScreen)
+void TPCCRunner::logErrorMessage(const string sErr, bool bScreen)
 {
 	m_LogLock.lock();
 	if (bScreen) cout << sErr;
@@ -273,3 +290,4 @@ void BidRunner::logErrorMessage(const string sErr, bool bScreen)
 	m_fLog.flush();
 	m_LogLock.unlock();
 }
+

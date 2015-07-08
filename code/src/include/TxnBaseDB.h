@@ -101,4 +101,5 @@ public:
 	~CTxnBaseDB();
 };
 
+
 #endif // TXN_BASE_DB_H

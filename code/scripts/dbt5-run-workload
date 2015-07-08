@@ -471,7 +471,7 @@ BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
 #backtrace
 #quit
 #GDB_INPUT
-#
+
 do_sleep 1
 
 #

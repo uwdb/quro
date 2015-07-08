@@ -112,18 +112,18 @@ using namespace TPCE;
 		"FROM charge\n" \
 		"WHERE ch_c_tier = %d\n" \
 		"  AND ch_tt_id = '%s'\n"
-    
+
 #define SQLTOF3_10 \
 		"SELECT ca_bal\n" \
 		"FROM customer_account\n" \
 		"WHERE ca_id = %ld"
-    
+
 #define SQLTOF3_11 \
 		"SELECT sum(hs_qty * lt_price)\n" \
 		"FROM holding_summary, last_trade\n" \
 		"WHERE hs_ca_id = %ld\n" \
 		"  AND lt_s_symb = hs_s_symb"
-    
+
 #define SQLTOF4_0 \
 		"INSERT INTO seq_trade_id VALUE()"
 
@@ -212,7 +212,7 @@ public:
 			val = dbt5_sql_getvalue(&result, 1, length); \
 			strncpy(cust_l_name, val, length); \
 			cust_tier = atoi(dbt5_sql_getvalue(&result, 2, length)); \
-			val = dbt5_sql_getvalue(&result, 2, length); \
+			val = dbt5_sql_getvalue(&result, 3, length); \
 			strncpy(tax_id, val, length); \
 			dbt5_sql_close_cursor(&result); \
 			ADD_QUERY_NODE(1, 2, 1); \

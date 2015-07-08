@@ -187,6 +187,77 @@ typedef struct TMsgBidDriver
 	int			iStatus;
 } *PMsgBidDriver;
 
+
+#elif WORKLOAD_TPCC
+#include <fstream>
+#include <iostream>
+#include <sstream>
+using namespace std;
+enum eTxnType
+{
+		NULL_TXN = -1,
+		NEWORDER,
+		PAYMENT
+};
+struct OrderLine{
+	int ol_i_id;
+	int ol_supply_w_id;
+	int ol_quantity;
+};
+
+typedef struct TNewOrderTxnInput
+{
+		int w_id;
+		int d_id;
+		int c_id;
+		int o_all_local;
+		int o_ol_cnt;
+		OrderLine order_line[15];
+};
+typedef struct TPaymentTxnInput
+{
+	int w_id;
+	int d_id;
+	int c_id;
+	int c_w_id;
+	int c_d_id;
+	char c_last[200];
+	double h_amount;
+};
+
+typedef struct TNewOrderTxnOutput
+{
+		string w_tax;
+		string d_tax;
+		long d_next_o_id;
+		string c_discount;
+		string c_last;
+		string c_credit;
+		int status;
+};
+typedef struct TPaymentTxnOutput
+{
+		string w_name;
+		string d_name;
+		string c_credit;
+		int status;
+};
+
+typedef struct TMsgDriverTPCC
+{
+		eTxnType TxnType;
+		union
+		{
+				TNewOrderTxnInput neworderTxnInput;
+				TPaymentTxnInput paymentTxnInput;
+		}TxnInput;
+} *PMsgDriverTPCC;
+
+typedef struct TMsgTPCCDriver
+{
+	int			iStatus;
+} *PMsgTPCCDriver;
+
 #endif /* WORKLOAD */
 
 #endif	//COMMON_STRUCTS_H

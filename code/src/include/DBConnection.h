@@ -28,6 +28,8 @@
 #include "Seats.h"
 #elif WORKLOAD_BID
 #include "Bid.h"
+#elif WORKLOAD_TPCC
+#include "TPCC.h"
 #endif
 #include "DBT5Consts.h"
 #include "CommonStructs.h"
@@ -37,6 +39,8 @@ using namespace TPCE;
 class SeatsRunner;
 #elif WORKLOAD_BID
 class BidRunner;
+#elif WORKLOAD_TPCC
+class TPCCRunner;
 #endif
 
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
@@ -113,6 +117,8 @@ private:
 	SeatsRunner *seats;
 #elif WORKLOAD_BID
 	BidRunner *bid;
+#elif WORKLOAD_TPCC
+	TPCCRunner *tpcc;
 #endif
 
 	TTradeRequest m_TriggeredLimitOrders;
@@ -128,6 +134,8 @@ public:
 	CDBConnection(SeatsRunner *_seats, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 #elif WORKLOAD_BID
 	CDBConnection(BidRunner *_bid, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
+#elif WORKLOAD_TPCC
+	CDBConnection(TPCCRunner *_bid, char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket);
 #endif
 #endif
 
@@ -225,6 +233,9 @@ public:
 	void execute(const TNewReservationTxnInput* pIn, TNewReservationTxnOutput* pOut);
 #elif WORKLOAD_BID
 	void execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut);
+#elif WORKLOAD_TPCC
+	void execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pOut);
+	void execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut);
 #endif // WORKLOAD_TPCE
 
 #ifdef WORKLOAD_TPCE
@@ -233,6 +244,8 @@ public:
 	void setSeatsRunner(SeatsRunner *);
 #elif WORKLOAD_BID
 	void setBidRunner(BidRunner *);
+#elif WORKLOAD_TPCC
+	void setTPCCRunner(TPCCRunner *);
 #endif
 	void logErrorMessage(const char* c, ...);
 	void reconnect();
@@ -264,5 +277,35 @@ double difftimeval(timeval rt1, timeval rt0)
 	return (rt1.tv_sec - rt0.tv_sec) +
 	(double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
 }
+
+string get_random_string(int length);
+struct FIELDHIST{
+	map<string, int> field_hist;
+};
+#define CLANG_PROFILE(QUERYN) \
+tbl_name = returnTableName(QUERYN); \
+param_str = parseQueryParams(QUERYN); \
+if(table_hist.find(tbl_name) != table_hist.end()){ \
+	if(table_hist[tbl_name].field_hist.find(param_str) != table_hist[tbl_name].field_hist.end()) \
+		table_hist[tbl_name].field_hist[param_str] = table_hist[tbl_name].field_hist[param_str] + 1;  \
+	else table_hist[tbl_name].field_hist[param_str] = 1; \
+} \
+else if(tbl_name.length()>0 && param_str.length()>0){ \
+	FIELDHIST fh; \
+	fh.field_hist[param_str] = 1; \
+	table_hist[tbl_name] = fh; \
+} \
+profile_cnt++; \
+if(profile_cnt%1000 == 0){\
+	profile_cnt = 1; \
+	cout<<"=========OUTPUT PROFILE========="<<endl; \
+	for(map<string, FIELDHIST>::iterator it = table_hist.begin(); it != table_hist.end(); it++){ \
+			cout<<it->first<<", size = "<<it->second.field_hist.size()<<endl; \
+	} \
+}
+string parseQueryParams(char* query);
+void splitByBlank(vector<string>& vec, string str);
+string returnTableName(char* query);
+
 
 #endif //DB_CONNECTION_H

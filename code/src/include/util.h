@@ -125,6 +125,11 @@ inline int get_nurand(int a, int x, int y, fast_random& r)
 	return ((get_random(r, a + 1) | (x + get_random(r, y + 1))) % (y - x + 1)) + x;
 }
 
+inline int get_nurand(fast_random& r, int a, int x, int y)
+{
+	return ((get_random(r, a + 1) | (x + get_random(r, y + 1))) % (y - x + 1)) + x;
+}
+
 inline long unsigned int getRandomAirportId(fast_random& r){
 		return get_random(r, numAirports+1);
 }

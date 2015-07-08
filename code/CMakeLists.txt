@@ -3,6 +3,7 @@ PROJECT(dbt5 CXX)
 SET(WORKLOAD_TPCE 1)
 #SET(WORKLOAD_SEATS 1)
 #SET(WORKLOAD_BID 1)
+#SET(WORKLOAD_TPCC 1)
 #SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
@@ -12,6 +13,7 @@ SET(MYSQL_LIB /usr/lib/x86_64-linux-gnu)
 SET(MYSQL_INCLUDE /usr/include/mysql)
 #SET(HOME /afs/csail.mit.edu/u/c/congy)
 SET(DBT5_SEATS bin/SeatsMain)
+SET(DBT5_TPCC bin/TPCCMain)
 SET(DBT5_BID bin/BidMain)
 SET(DBT5_BROKERAGE_HOUSE bin/BrokerageHouseMain)
 SET(DBT5_DRIVER bin/DriverMain)
@@ -90,6 +92,10 @@ ELSEIF (WORKLOAD_BID)
 	SET(DB_SCRIPTS scripts/mysql/bid-mysql-create-tables
 										scripts/mysql/bid-mysql-create-db
 										scripts/mysql/bid-mysql-build-db)
+ELSEIF (WORKLOAD_TPCC)
+	SET(DB_SCRIPTS scripts/mysql/tpcc-mysql-create-tables
+										scripts/mysql/tpcc-mysql-create-db
+										scripts/mysql/tpcc-mysql-create-db)
 ENDIF (WORKLOAD_TPCE)
 #
 # Defining commonly used paths.
@@ -161,6 +167,11 @@ ELSEIF (WORKLOAD_BID)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
 									${TXN}/BiddingTxn.cpp)
+ELSEIF (WORKLOAD_TPCC)
+			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
+									${TXN}/TxnBaseDB.cpp
+									${TXN}/NewOrderTxn.cpp
+									${TXN}/PaymentTxn.cpp)
 ENDIF (WORKLOAD_TPCE)
 #
 # Files to build.
@@ -288,7 +299,27 @@ ELSEIF (WORKLOAD_BID)
 											${INTF}/util.cpp
 			 						    ${INTF}/CBid.cpp
 			                ${INTF}/BaseInterface.cpp)
-
+ELSEIF (WORKLOAD_TPCC)
+				ADD_EXECUTABLE(${DBT5_TPCC}
+							 ${EGENSRC}/DateTime.cpp
+               ${EGENSRC}/locking.cpp
+               ${INTF}/CSocket.cpp
+							 ${INTF}/util.cpp
+							 ${INTF}/CTPCC.cpp
+               ${TXN_SOURCE}
+							 ${INTF}/BaseInterface.cpp
+							 src/TPCC/TPCCMain.cpp
+							 src/TPCC/TPCC.cpp)
+			 	ADD_EXECUTABLE(${DBT5_DRIVER}
+			                src/Customer/Customer.cpp
+			                ${CE}/Driver.cpp
+			                ${CE}/DriverMain.cpp
+			 							  ${EGENSRC}/DateTime.cpp
+			 							  ${EGENSRC}/locking.cpp
+			 							  ${INTF}/CSocket.cpp
+											${INTF}/util.cpp
+											${INTF}/CTPCC.cpp
+			                ${INTF}/BaseInterface.cpp)
 ENDIF (WORKLOAD_TPCE)
 
 set(GLOBAL_LIBRARIES "mysqlclient.so" "pthread.so")
@@ -307,6 +338,8 @@ ELSEIF (WORKLOAD_SEATS)
 	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_SEATS -std=c++11")
 ELSEIF (WORKLOAD_BID)
 	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_BID -std=c++11")
+ELSEIF (WORKLOAD_TPCC)
+	SET(CMAKE_CXX_FLAGS "-g -Wall -I${EGENINC} -Isrc/include ${LFS_CFLAGS} -I${MYSQL_INCLUDE} -DWORKLOAD_TPCC -std=c++11")
 ENDIF (WORKLOAD_TPCE)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_FORMAT_MACROS")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_CONSTANT_MACROS")
@@ -328,6 +361,10 @@ ELSEIF (WORKLOAD_SEATS)
 		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
 ELSEIF (WORKLOAD_BID)
 		SET_TARGET_PROPERTIES(${DBT5_BID} PROPERTIES LINK_FLAGS
+				"-L${MYSQL_LIB} ${DB_LIBS} -lpthread")
+		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
+ELSEIF (WORKLOAD_TPCC)
+		SET_TARGET_PROPERTIES(${DBT5_TPCC} PROPERTIES LINK_FLAGS
 				"-L${MYSQL_LIB} ${DB_LIBS} -lpthread")
 		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
 ENDIF (WORKLOAD_TPCE)
@@ -360,6 +397,12 @@ ELSEIF (WORKLOAD_BID)
 		INSTALL(PROGRAMS ${DBT5_BID}
                  ${DBT5_DRIVER}
                  scripts/bid-run-workload
+                 ${DB_SCRIPTS}
+        DESTINATION "/bin")
+ELSEIF (WORKLOAD_TPCC)		
+		INSTALL(PROGRAMS ${DBT5_TPCC}
+                 ${DBT5_DRIVER}
+                 scripts/tpcc-run-workload
                  ${DB_SCRIPTS}
         DESTINATION "/bin")
 

@@ -30,6 +30,10 @@ using namespace TPCE;
 #include "CBid.h"
 #include <thread>
 #include <mutex>
+#elif WORKLOAD_TPCC
+#include "CTPCC.h"
+#include <thread>
+#include <mutex>
 #endif /* WORKLOAF_TPCE */
 
 class CCustomer
@@ -51,6 +55,10 @@ class CCustomer
 	mutex m_LogLock;
 #elif WORKLOAD_BID
 	CBID *m_pBID;
+	ofstream m_fLog;
+	mutex m_LogLock;
+#elif WORKLOAD_TPCC
+	CTPCC *m_pTPCC;
 	ofstream m_fLog;
 	mutex m_LogLock;
 #endif
@@ -83,6 +91,13 @@ public:
 			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
 			int iBHlistenPort, int iUsers, int iPacingDelay,
 			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock);
+#elif WORKLOAD_TPCC
+	CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
+			TIdent iActiveCustomerCount, INT32 iScaleFactor,
+			INT32 iDaysOfInitialTrades, UINT32 UniqueId, char *szBHaddr,
+			int iBHlistenPort, int iUsers, int iPacingDelay,
+			char *outputDirectory, ofstream *m_fMix, mutex *m_MixLock);
+
 #endif
 	~CCustomer();
 

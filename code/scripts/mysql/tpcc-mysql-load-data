@@ -1,0 +1,55 @@
+#!/bin/bash
+MYSQL=~/mysql-bin/bin/mysql
+DB_NAME=tpcc
+
+TPCC_DATA=~/dbt2/tmp/dbt2-w4
+DB_PATH=~/dbt2/tmp/dbt2-w4
+
+command_exec()
+{
+    if [ -n "$VERBOSE" ]; then
+        echo "Executed command: $1"
+    fi
+
+    eval "$1"
+
+    rc=$?
+    if [ $rc -ne 0 ]; then
+        echo "ERROR: rc=$rc"
+        case $rc in
+            127) echo "COMMAND NOT FOUND"
+                ;;
+            *) echo "SCRIPT INTERRUPTED"
+                ;;
+        esac
+        exit 255
+    fi
+}
+
+
+
+load_tables()
+{
+
+    TABLES="customer district history item new_order order_line orders stock warehouse"
+
+    for TABLE in $TABLES ; do
+
+        echo "Loading table $TABLE"
+
+        if [ "$TABLE" == "orders" ]; then
+            FN="order"
+        else
+            FN="$TABLE"
+        fi
+
+        echo "$MYSQL $DB_NAME -e \"LOAD DATA LOCAL INFILE \\\"$DB_PATH/$FN.data\\\" \
+            INTO TABLE $TABLE FIELDS TERMINATED BY '\t'\""
+
+        command_exec "$MYSQL $DB_NAME -e \"LOAD DATA LOCAL INFILE \\\"$DB_PATH/$FN.data\\\" \
+            INTO TABLE $TABLE FIELDS TERMINATED BY '\t'\""
+
+    done
+}
+
+load_tables

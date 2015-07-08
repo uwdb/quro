@@ -166,6 +166,7 @@ loop:
 
 			commit = true;
 			iRet = CBaseTxnErr::SUCCESS;
+			cout<<"receive transaction type = "<<pMessage->TxnType<<endl;
 			try {
 				//  Parse Txn type
 				switch (pMessage->TxnType) {
@@ -211,6 +212,7 @@ loop:
 				//			tradeStatus);
 				//	break;
 				case TRADE_UPDATE:
+					cout<<"receive trade update txn"<<endl;
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
 					break;

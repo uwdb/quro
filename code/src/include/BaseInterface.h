@@ -32,6 +32,8 @@ protected:
 	bool talkToSUT(PMsgDriverSeats);
 #elif WORKLOAD_BID
 	bool talkToSUT(PMsgDriverBid);
+#elif WORKLOAD_TPCC
+	bool talkToSUT(PMsgDriverTPCC);
 #endif
 	void logErrorMessage(const string);
 

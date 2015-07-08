@@ -87,7 +87,9 @@ public:
 typedef struct TCustomerThreadParam
 {
 	CDriver *pDriver;
+#ifdef WORKLOAD_SEATS
 	uint64_t* flight_ids;
+#endif
 } *PCustomerThreadParam;
 
 

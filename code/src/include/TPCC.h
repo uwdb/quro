@@ -1,19 +1,22 @@
-#ifndef BID_RUNNER
-#define BID_RUNNER
+#ifndef TPCC_RUNNER
+#define TPCC_RUNNER
 
 #define PROFILE_EACH_QUERY
 #define CAL_RESP_TIME
+#define TABLE_PROFILE
 #include <fstream>
 using namespace std;
 
 #include "locking.h"
 #include "TxnHarnessStructs.h"
-#include "BiddingDB.h"
+#include "TPCCDB.h"
 #include "CommonStructs.h"
 #include "CSocket.h"
 
+class CNewOrderDB;
+class CPaymentDB;
 
-class BidRunner
+class TPCCRunner
 {
 private:
 	int m_iListenPort;
@@ -32,13 +35,15 @@ private:
 
 	friend void entryWorkerThread(void *); // entry point for worker thread
 
-	int RunBidding(TBiddingTxnInput* pTxnInput,
-									CBiddingDB &Bidding);
+	int RunNewOrder(TNewOrderTxnInput* pTxnInput,
+									CTPCCDB &tpcc);
+	int RunPayment(TPaymentTxnInput* pTxnInput,
+									CTPCCDB &tpcc);
 
 	friend void *workerThread(void *);
 
 public:
-	BidRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory);
+	TPCCRunner(char *_mysql_dbname, char *_mysql_host, char * _mysql_user, char * _mysql_pass, char *_mysql_port, char * _mysql_socket, const int iListenPort, char *outputDirectory);
 
 	void logErrorMessage(const string sErr, bool bScreen = true);
 
@@ -49,11 +54,7 @@ public:
 //parameter structure for the threads
 typedef struct TThreadParameter
 {
-#ifdef WORKLOAD_TPCE
-	CBrokerageHouse* pBrokerageHouse;
-#elif WORKLOAD_BID
-	BidRunner* pBid;
-#endif
+	TPCCRunner* pTPCC;
 	int iSockfd;
 	int t_id;
 	char outputDir[256];

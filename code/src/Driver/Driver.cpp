@@ -107,7 +107,14 @@ void *customerWorkerThread(void *data)
 			);
 
 	do {
+	cout<<"Customer do txn"<<endl;
+		timeval rt1, rt0;
+		gettimeofday(&rt0, NULL);
 		customer->DoTxn();
+		gettimeofday(&rt1, NULL);
+		double tr = (rt1.tv_sec - rt0.tv_sec) + (double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
+
+		cout<<"txn exe time = "<<tr<<endl;
 
 		// wait for pacing delay -- this delays happens after the mix logging
 		/*while (nanosleep(&ts, &rem) == -1) {
@@ -228,6 +235,8 @@ void CDriver::runTest(int iSleep, int iTestDuration)
 			new_flight_ids[i] = rand()%numFlights;
 			cout<<"new_flight_id["<<i<<"] = "<<new_flight_ids[i]<<endl;
 	}
+#elif WORKLOAD_TPCC
+	int tbl_card_wh = iScaleFactor;
 #endif
 	for (int i = 1; i <= iUsers; i++) {
 		pThrParam = new TCustomerThreadParam;

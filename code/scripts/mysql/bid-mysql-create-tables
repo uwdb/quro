@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MYSQL=/usr/bin/mysql
+MYSQL=mysql
 DB_NAME=bid
 
 ${MYSQL} ${DB_NAME} -e "

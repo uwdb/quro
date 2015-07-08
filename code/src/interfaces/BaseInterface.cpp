@@ -233,6 +233,52 @@ bool CBaseInterface::talkToSUT(PMsgDriverBid pRequest)
 }
 
 
+#elif WORKLOAD_TPCC
+bool CBaseInterface::talkToSUT(PMsgDriverTPCC pRequest)
+{
+	int length = 0;
+	TMsgTPCCDriver Reply; // reply message from BrokerageHouse
+	memset(&Reply, 0, sizeof(Reply));
+
+
+	// send and wait for response
+	try {
+		length = sock->dbt5Send(reinterpret_cast<void *>(pRequest),
+				sizeof(*pRequest));
+	} catch(CSocketErr *pErr) {
+		sock->dbt5Reconnect();
+		logResponseTime(-1, 0, -1);
+
+		ostringstream msg;
+		msg << time(NULL) << " " << (long long) pthread_self() << " " <<
+				szTransactionName[pRequest->TxnType] << ": " << endl <<
+				"Error sending " << length << " bytes of data" << endl <<
+				pErr->ErrorText() << endl;
+		logErrorMessage(msg.str());
+		length = -1;
+		delete pErr;
+	}
+	try {
+		length = sock->dbt5Receive(reinterpret_cast<void *>(&Reply),
+				sizeof(Reply));
+	} catch(CSocketErr *pErr) {
+		logResponseTime(-1, 0, -2);
+
+		ostringstream msg;
+		msg << time(NULL) << " " << (long long) pthread_self() << " " <<
+				szTransactionName[pRequest->TxnType] << ": " << endl <<
+				"Error receiving " << length << " bytes of data" << endl <<
+				pErr->ErrorText() << errno << endl;
+		logErrorMessage(msg.str());
+		length = -1;
+		if (pErr->getAction() == CSocketErr::ERR_SOCKET_CLOSED)
+			sock->dbt5Reconnect();
+		delete pErr;
+	}
+	if (Reply.iStatus == CBaseTxnErr::SUCCESS)
+		return true;
+	return false;
+}
 #endif
 
 // Log Transaction Response Times
