@@ -269,40 +269,50 @@ void CCE::DoTxn( void )
         ZeroInputBuffer(iTxnType);
     }
 
+		cout<<"iTxnType = "<<iTxnType<<endl;
     switch( iTxnType )
     {
     case CCETxnMixGenerator::BROKER_VOLUME:
+				cout<<"--break volumn"<<endl;
         m_TxnInputGenerator.GenerateBrokerVolumeInput( m_BrokerVolumeTxnInput );
         m_pSUT->BrokerVolume( &m_BrokerVolumeTxnInput );
         break;
     case CCETxnMixGenerator::CUSTOMER_POSITION:
+				cout<<"--cus pos"<<endl;
         m_TxnInputGenerator.GenerateCustomerPositionInput( m_CustomerPositionTxnInput );
         m_pSUT->CustomerPosition( &m_CustomerPositionTxnInput );
         break;
     case CCETxnMixGenerator::MARKET_WATCH:
+				cout<<"--market watch"<<endl;
         m_TxnInputGenerator.GenerateMarketWatchInput( m_MarketWatchTxnInput );
         m_pSUT->MarketWatch( &m_MarketWatchTxnInput );
         break;
     case CCETxnMixGenerator::SECURITY_DETAIL:
+				cout<<"--security detail"<<endl;
         m_TxnInputGenerator.GenerateSecurityDetailInput( m_SecurityDetailTxnInput );
         m_pSUT->SecurityDetail( &m_SecurityDetailTxnInput );
         break;
     case CCETxnMixGenerator::TRADE_LOOKUP:
+				cout<<"--trade loopkup"<<endl;
         m_TxnInputGenerator.GenerateTradeLookupInput( m_TradeLookupTxnInput );
         m_pSUT->TradeLookup( &m_TradeLookupTxnInput );
         break;
     case CCETxnMixGenerator::TRADE_ORDER:
         bool    bExecutorIsAccountOwner;
         INT32   iTradeType;
+				cout<<"--trade order"<<endl;
         m_TxnInputGenerator.GenerateTradeOrderInput( m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner );
         m_pSUT->TradeOrder( &m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner );
         break;
     case CCETxnMixGenerator::TRADE_STATUS:
+				cout<<"--trade status"<<endl;
         m_TxnInputGenerator.GenerateTradeStatusInput( m_TradeStatusTxnInput );
         m_pSUT->TradeStatus( &m_TradeStatusTxnInput );
         break;
     case CCETxnMixGenerator::TRADE_UPDATE:
+				cout<<"--trade update"<<endl;
         m_TxnInputGenerator.GenerateTradeUpdateInput( m_TradeUpdateTxnInput );
+				cout<<"call TradeUpdate"<<endl;
         m_pSUT->TradeUpdate( &m_TradeUpdateTxnInput );
         break;
     default:
@@ -325,7 +335,7 @@ void CCE::ZeroInputBuffer(int iTxnType)
     switch( iTxnType )
     {
     case CCETxnMixGenerator::BROKER_VOLUME:
-        memset( &m_BrokerVolumeTxnInput, 0, sizeof(m_BrokerVolumeTxnInput) );        
+        memset( &m_BrokerVolumeTxnInput, 0, sizeof(m_BrokerVolumeTxnInput) );
         break;
     case CCETxnMixGenerator::CUSTOMER_POSITION:
         memset( &m_CustomerPositionTxnInput, 0, sizeof(m_CustomerPositionTxnInput) );

@@ -107,7 +107,7 @@ void *customerWorkerThread(void *data)
 			);
 
 	do {
-	cout<<"Customer do txn"<<endl;
+		cout<<"Customer do txn"<<endl;
 		timeval rt1, rt0;
 		gettimeofday(&rt0, NULL);
 		customer->DoTxn();

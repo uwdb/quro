@@ -1,11 +1,11 @@
 #!/bin/bash
 REORDERN="reorder"
 ORIGN="orig"
-#TXN="tpcc"
-#TXNNAME="mix"
+TXN="tpcc"
+TXNNAME="neworder"
 
-TXN="tpce"
-TXNNAME="tradeupdate"
+#TXN="tpce"
+#TXNNAME="tradeupdate_1024t"
 
 USERS=1
 WHN=4
@@ -18,8 +18,8 @@ run_benchmark()
 				echo "start loading $USER user"
 
 
-				#./tpcc-run-workload -d 300 -u ${USER} -n tpcc -f ${WHN} -o ~/results_link/DBT5_results/${TXN}_${REORDERN}_${TXNNAME}_${WHN}wh_${USER}conn_300sec		
-				./dbt5-run-workload -c 1000 -t 1000 -d 300 -u ${USER} -f 100 -w 20 -n dbt5 -o ~/results_link/DBT5_results/${TXN}_${ORIGN}_${TXNNAME}_${USER}conn_300sec
+				./tpcc-run-workload -d 300 -u ${USER} -n tpcc -f ${WHN} -o ~/results/${TXN}_${REORDERN}_${TXNNAME}_${WHN}wh_${USER}conn_300sec		
+				#./dbt5-run-workload -c 1000 -t 1000 -d 300 -u ${USER} -f 100 -w 20 -n dbt5 -o ~/results_link/DBT5_results/${TXN}_${ORIGN}_${TXNNAME}_${USER}conn_300sec
 				sleep 120
 
 #				cd ..

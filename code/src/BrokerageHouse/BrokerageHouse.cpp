@@ -166,7 +166,6 @@ loop:
 
 			commit = true;
 			iRet = CBaseTxnErr::SUCCESS;
-			cout<<"receive transaction type = "<<pMessage->TxnType<<endl;
 			try {
 				//  Parse Txn type
 				switch (pMessage->TxnType) {
@@ -212,7 +211,6 @@ loop:
 				//			tradeStatus);
 				//	break;
 				case TRADE_UPDATE:
-					cout<<"receive trade update txn"<<endl;
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
 					break;
@@ -237,9 +235,9 @@ loop:
 
 			pDBConnection->rollback();
 #ifdef CAL_RESP_TIME
-			gettimeofday(&t2, NULL);
-			exec_time = difftimeval(t2, t1);
-			txn_time += exec_time;
+//			gettimeofday(&t2, NULL);
+//			exec_time = difftimeval(t2, t1);
+//			txn_time += exec_time;
 			//pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, false);
 //			pDBConnection->outfile<<"error: "<<str<<endl;
 //#ifdef PROFILE_EACH_QUERY
@@ -913,6 +911,7 @@ INT32 CBrokerageHouse::RunTradeStatus(PTradeStatusTxnInput pTxnInput,
 INT32 CBrokerageHouse::RunTradeUpdate(PTradeUpdateTxnInput pTxnInput,
 		CTradeUpdate &tradeUpdate)
 {
+cout<<"Try RunTradeUpdate"<<endl;
 	TTradeUpdateTxnOutput tuOutput;
 	memset(&tuOutput, 0, sizeof(TTradeUpdateTxnOutput));
 

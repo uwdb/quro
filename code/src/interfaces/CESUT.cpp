@@ -29,7 +29,7 @@ bool CCESUT::BrokerVolume(PBrokerVolumeTxnInput pTxnInput)
 	request.TxnType = BROKER_VOLUME;
 	memcpy(&(request.TxnInput.BrokerVolumeTxnInput), pTxnInput,
 			sizeof(request.TxnInput.BrokerVolumeTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -41,7 +41,7 @@ bool CCESUT::CustomerPosition(PCustomerPositionTxnInput pTxnInput)
 	request.TxnType = CUSTOMER_POSITION;
 	memcpy(&(request.TxnInput.CustomerPositionTxnInput), pTxnInput,
 			sizeof(request.TxnInput.CustomerPositionTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -53,7 +53,7 @@ bool CCESUT::MarketWatch(PMarketWatchTxnInput pTxnInput)
 	request.TxnType = MARKET_WATCH;
 	memcpy(&(request.TxnInput.MarketWatchTxnInput), pTxnInput,
 			sizeof(request.TxnInput.MarketWatchTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -65,7 +65,7 @@ bool CCESUT::SecurityDetail(PSecurityDetailTxnInput pTxnInput)
 	request.TxnType = SECURITY_DETAIL;
 	memcpy(&(request.TxnInput.SecurityDetailTxnInput), pTxnInput,
 			sizeof(request.TxnInput.SecurityDetailTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -77,7 +77,7 @@ bool CCESUT::TradeLookup(PTradeLookupTxnInput pTxnInput)
 	request.TxnType = TRADE_LOOKUP;
 	memcpy(&(request.TxnInput.TradeLookupTxnInput), pTxnInput,
 			sizeof(request.TxnInput.TradeLookupTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -89,7 +89,7 @@ bool CCESUT::TradeStatus(PTradeStatusTxnInput pTxnInput)
 	request.TxnType = TRADE_STATUS;
 	memcpy(&(request.TxnInput.TradeStatusTxnInput), pTxnInput,
 			sizeof(request.TxnInput.TradeStatusTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 
@@ -102,7 +102,7 @@ bool CCESUT::TradeOrder(PTradeOrderTxnInput pTxnInput, INT32 iTradeType,
 	request.TxnType = TRADE_ORDER;
 	memcpy(&(request.TxnInput.TradeOrderTxnInput), pTxnInput,
 			sizeof(request.TxnInput.TradeOrderTxnInput));
-	
+
 	return talkToSUT(&request);
 }
 // Trade Update
@@ -111,8 +111,9 @@ bool CCESUT::TradeUpdate(PTradeUpdateTxnInput pTxnInput)
 	memset(&request, 0, sizeof(struct TMsgDriverBrokerage));
 
 	request.TxnType = TRADE_UPDATE;
+	cout<<"Sending message from TRADE_UPDATE"<<endl;
 	memcpy(&(request.TxnInput.TradeUpdateTxnInput), pTxnInput,
 			sizeof(request.TxnInput.TradeUpdateTxnInput));
-	
+
 	return talkToSUT(&request);
 }

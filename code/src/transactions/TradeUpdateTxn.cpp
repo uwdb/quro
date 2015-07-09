@@ -57,7 +57,6 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 
 	for(int i=0; i<pIn->max_trades; i++){
 
-		cout<<"Trade id = "<<pIn->trade_id[i]<<", num_updated = "<<num_updated<<", max_updates = "<<max_updates<<endl;
 		if(num_updated < max_updates)
 		{
 			sprintf(query1, TRADE_UPDATE_Q1, pIn->trade_id[i]);
