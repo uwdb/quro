@@ -72,7 +72,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 		ol_supply_w_id[i1] = pIn->order_line[i1].ol_supply_w_id;
 		ol_quantity[i1] = pIn->order_line[i1].ol_quantity;
 	}
-
+/*
 	sprintf(query1, NEW_ORDER_1, w_id);
 //	CLANG_PROFILE(query1);
 	r1 = dbt5_sql_execute(query1, &result1, "get wh");
@@ -195,7 +195,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 
 	}
 
-/*
+*/
 
 	for(i=0; i<o_ol_cnt; i++){
 			if(ol_i_id[i] != 0){
@@ -361,7 +361,7 @@ sprintf(query1, NEW_ORDER_1, w_id);
 			string fail_msg("get wh fail");
 			throw fail_msg.c_str();
 	}
-*/
+
 	pOut->status = CBaseTxnErr::SUCCESS;
 
 	return ;

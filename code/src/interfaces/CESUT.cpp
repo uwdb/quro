@@ -111,7 +111,6 @@ bool CCESUT::TradeUpdate(PTradeUpdateTxnInput pTxnInput)
 	memset(&request, 0, sizeof(struct TMsgDriverBrokerage));
 
 	request.TxnType = TRADE_UPDATE;
-	cout<<"Sending message from TRADE_UPDATE"<<endl;
 	memcpy(&(request.TxnInput.TradeUpdateTxnInput), pTxnInput,
 			sizeof(request.TxnInput.TradeUpdateTxnInput));
 

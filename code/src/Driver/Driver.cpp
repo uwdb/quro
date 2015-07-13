@@ -107,14 +107,12 @@ void *customerWorkerThread(void *data)
 			);
 
 	do {
-		cout<<"Customer do txn"<<endl;
 		timeval rt1, rt0;
 		gettimeofday(&rt0, NULL);
 		customer->DoTxn();
 		gettimeofday(&rt1, NULL);
 		double tr = (rt1.tv_sec - rt0.tv_sec) + (double) (rt1.tv_usec - rt0.tv_usec) / 1000000.00;
 
-		cout<<"txn exe time = "<<tr<<endl;
 
 		// wait for pacing delay -- this delays happens after the mix logging
 		/*while (nanosleep(&ts, &rem) == -1) {

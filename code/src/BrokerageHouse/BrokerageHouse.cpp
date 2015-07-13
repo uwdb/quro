@@ -911,7 +911,6 @@ INT32 CBrokerageHouse::RunTradeStatus(PTradeStatusTxnInput pTxnInput,
 INT32 CBrokerageHouse::RunTradeUpdate(PTradeUpdateTxnInput pTxnInput,
 		CTradeUpdate &tradeUpdate)
 {
-cout<<"Try RunTradeUpdate"<<endl;
 	TTradeUpdateTxnOutput tuOutput;
 	memset(&tuOutput, 0, sizeof(TTradeUpdateTxnOutput));
 

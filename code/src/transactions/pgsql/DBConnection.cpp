@@ -188,6 +188,7 @@ void CDBConnection::connect()
 		dbc=mysql_init(NULL);
 
 		LOG_ERROR_MESSAGE("in connect, finish init");
+		cout<<"DBC = "<<dbc<<endl;
     //FIXME: change atoi() to strtol() and check for errors
     if (!mysql_real_connect(dbc, mysql_host, mysql_user, mysql_pass, mysql_dbname, atoi(mysql_port_t), mysql_socket_t, 0))
     {

@@ -43,7 +43,7 @@
 
 #include <iostream>
 using namespace TPCE;
-#define CUSBASE 70
+#define CUSBASE 50
 /*
 *   Default constructor.
 */
@@ -195,7 +195,7 @@ void CCustomerSelection::GenerateRandomCustomer(TIdent &C_ID, eCustomerTier &C_T
     }
 
     //double fCW = m_pRND->RndDoubleIncrRange(0.0001, 2000, 0.000000001);
-	double fCW = cusBase + m_pRND->RndDoubleIncrRange(0.0001, 1, 0.000000001);
+	double fCW = cusBase + m_pRND->RndDoubleIncrRange(0.0001, 32, 0.000000001);
 
 
     // Uniformly select the higher portion of the C_ID.
