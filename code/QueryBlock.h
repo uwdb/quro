@@ -122,8 +122,6 @@ public:
 	string getBlockStr();
 	void setDepBlocks();
 	void propagateDep();
-	void setChildren();
-	bool isChildren(codeBlock* cb);
 	int conflict_index;
 	int sort_index;
 	int sort_base;
@@ -186,7 +184,7 @@ void printSourceRange(const SourceLocation& begin, const SourceLocation& end, So
 bool rangeIsWithin(SourceLocation inner_begin, SourceLocation inner_end,  SourceLocation outer_begin, SourceLocation outer_end, SourceManager& M);
 void addSets(set<const VarDecl*>& dest, set<const VarDecl*>& src);
 
-bool crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2);
+const VarDecl* crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2);
 bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_end,  SourceLocation after_begin, SourceLocation after_end, SourceManager& M);
 void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs, SourceManager& M);
 const char* getStmtType(Stmt* st);

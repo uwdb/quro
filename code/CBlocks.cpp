@@ -34,13 +34,12 @@ stack<Stmt*> expr_stack;
 
 CmpUnorderedSet<SourceRange> sr_uses;
 CmpUnorderedSet<SourceRange> sr_defs;
-vector<queryBlock*> code_blocks;
+vector<codeBlock*> code_blocks;
 vector<condBlock*> cond_blocks;
 
 map<Stmt*, int> stmt_to_index;
 
 stack<condBlock*> stack_cond_blocks;
-vector<codeBlock*> code_blocks;
 
 map<string, TABLE_DESC> tables;
 
@@ -732,6 +731,7 @@ public:
 						processedCodeBeginPlace = stmt->getLocStart();
 				}
 		}
+/*
 		void recursiveSort(int i, bool* processed, vector<queryBlock*>& temp_qblocks){
 			for(set<queryBlock*>::iterator it = query_blocks[i]->children.begin();
 										it != query_blocks[i]->children.end(); it++){
@@ -746,7 +746,7 @@ public:
 					temp_qblocks.push_back(query_blocks[i]);
 
 		}
-
+*/
 };	
 
 class myAnalysisConsumer : public ASTConsumer {

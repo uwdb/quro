@@ -428,7 +428,7 @@ void setControlFlow(){
 			int j = i+1;
 			code_blocks[i]->successor.insert(code_blocks[j]);
 			code_blocks[j]->predecessor.insert(code_blocks[i]);
-			for(j=code_blocks[i]->cond_blocks.size()-1; j>=0; j--){
+			for(j=0; j<code_blocks[i]->cond_blocks.size(); j++){
 					bool exist = false;
 					for(int k=0; k<all_cond_blocks.size(); k++)
 							if(all_cond_blocks[k] == code_blocks[i]->cond_blocks[j])
@@ -454,7 +454,7 @@ void setControlFlow(){
 											suc->predecessor.erase(pre);
 									}
 									pre = condb->stmt_list[0];
-									suc = efb->stmt_list[efb->stmt_list.size()-1];
+									suc = efb->stmt_list[0];
 									for(set<codeBlock*>::iterator it = pre->predecessor.begin(); it != pre->predecessor.end(); it++){
 											if((*it) != suc && suc->predecessor.find(*it) == suc->predecessor.end()){
 												nochange = false;
@@ -462,6 +462,8 @@ void setControlFlow(){
 												(*it)->successor.insert(suc);
 											}
 									}
+									pre = condb->stmt_list[condb->stmt_list.size()-1];
+									suc = efb->stmt_list[efb->stmt_list.size()-1];
 									for(set<codeBlock*>::iterator it = suc->successor.begin(); it != suc->successor.end(); it++){
 											if((*it) != pre && pre->successor.find(*it) == pre->successor.end()){
 												pre->successor.insert(*it);
@@ -470,15 +472,28 @@ void setControlFlow(){
 											}
 									}
 					}else{
-							codeBlock* pre = condb->stmt_list[condb->stmt_list.size()-1];
-							codeBlock* suc = cond_block->stmt_list[0];
-							if(pre != suc && pre->successor.find(suc) == pre->successor.end()){
-										nochange = false;
-										pre->successor.insert(suc);
-										suc->predecessor.insert(pre);
-							}
+							codeBlock* pre = condb->stmt_list[0];
+							codeBlock* suc = condb->stmt_list[condb->stmt_list.size()-1];
+							for(set<codeBlock*>::iterator it = suc->successor.begin(); it != suc->successor.end(); it++){
+										for(set<codeBlock*>::iterator it1 = pre->predecessor.begin(); it1!= pre->predecessor.end(); it1++){
+												if((*it) != (*it1) && (*it1)->successor.find(*it) == (*it1)->successor.end()){
+														nochange = false;
+														(*it1)->successor.insert(*it);
+												} 
+										}
+							}	 
 					}
-			}
+				}/*else if(condb->type == WHILE || condb->type == FOR){
+						codeBlock* pre = condb->stmt_list[condb->stmt_list.size()-1];
+						codeBlock* suc = condb->stmt_list[0];
+						if(pre != suc && pre->successor.find(suc) == pre->successor.end()){
+									nochange = false;
+									pre->successor.insert(suc);
+									suc->predecessor.insert(pre);
+						}
+				}*/
+
+		}
 	}
 
 #ifdef DEBUG
@@ -504,7 +519,7 @@ void setControlFlow(){
 					queue<codeBlock*> que;
 					
 					for(set<codeBlock*>::iterator it = cb->predecessor.begin(); it != cb->predecessor.end(); it++){
-							que.push_back(*it);
+							que.push(*it);
 					}
 					while(!que.empty()){
 							codeBlock* pre = que.front();
@@ -528,10 +543,9 @@ void setControlFlow(){
 			for(set<codeBlock*>::iterator itv = scb.begin(); itv != scb.end(); itv++){
 					cout<<"\t <"<<(*itv)->label<<">"<<endl;
 			}
-	}
-#endif
 		}
-
+#endif
+	}
 	
 }
 
@@ -709,27 +723,6 @@ string codeBlock::recursiveGenerate(int i){
 
 	string str(code);
 	return str;
-}
-
-bool isChildren(codeBlock* cb){
-	for(map<const VarDecl*, set<codeBlock*>>::iterator it = children.begin(); it != children.end(); it++){
-			if(it->second.find(cb) != it->second.end())
-					return true;
-	}
-	return false;
-}
-
-void codeBlock::setChildren(){
-	for(set<const VarDecl*>::iterator it = defs.begin(); it != defs.end(); it++){
-			set<codeBlock*> new_set;
-			children[(*it)] = new_set;
-	}
-	for(int i=index+1; i<code_blocks.size(); i++){
-			const VarDecl* vd = crossCompare(defs.begin
-			if(){
-					
-			}	
-	}
 }
 
 int codeBlock::crossCompareAllConds(condBlock* most_inner_cond, int c_block){
