@@ -34,7 +34,7 @@ stack<Stmt*> expr_stack;
 
 CmpUnorderedSet<SourceRange> sr_uses;
 CmpUnorderedSet<SourceRange> sr_defs;
-vector<queryBlock*> query_blocks;
+vector<queryBlock*> code_blocks;
 vector<condBlock*> cond_blocks;
 
 map<Stmt*, int> stmt_to_index;
@@ -223,6 +223,10 @@ public:
 									defuses[expr] = temp_set; 
 							}
 							analyzeStmts(expr, defuses[expr].uses, defuses[expr].defs, M);
+#ifdef DEBUG
+							cout<<"anayzeStmt:"<<endl;
+							printSourceRange(expr->getLocStart(), expr->getLocEnd(), M);
+#endif
 							while((!expr_stack.empty()) && rangeIsWithin(expr->getLocStart(), expr->getLocEnd(), expr_stack.top()->getLocStart(), expr_stack.top()->getLocEnd(), M)==false ){
 										Stmt* temp_st = expr_stack.top();
 										expr_stack.pop();
@@ -376,6 +380,7 @@ public:
 											printSourceRange(c_block->begin, c_block->end, M);
 #endif
 											q_block->cond_blocks.push_back(c_block);
+											c_block->stmt_list.push_back(q_block);
 											temp_sta.push(c_block);
 											stack_cond_blocks.pop();
 										}else{
@@ -541,6 +546,9 @@ public:
 							in_execute_function = false;
 							third_pass = true;
 							
+							setControlFlow();
+
+/*							
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->setDepBlocks();
 							for(int i=0; i<code_blocks.size(); i++)
@@ -548,15 +556,116 @@ public:
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->insert_code = code_blocks[i]->getBlockStr();
 							
-							SourceLocation insertPlace = processedCodeBeginPlace;
-							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
-							rewriter.RemoveText(sr);
+*/
+		/*
 							for(int i=code_blocks.size()-1; i>=0; i--){	
 									codeBlock* c_block = code_blocks[i];
 									if(c_block->processed)
 											continue;
 									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
 							}
+					
+							SourceLocation insertPlace = processedCodeBeginPlace;
+							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
+							rewriter.RemoveText(sr);
+							for(int i=0; i<code_blocks.size(); i++){
+								for(int j=i+1; j<code_blocks.size(); j++){
+										if(crossCompare(code_blocks[i]->defs, query_blocks[j]->uses)){
+												code_blocks[j]->parents.insert(query_blocks[i]);
+												code_blocks[i]->children.insert(query_blocks[j]);
+										}
+								}
+							}
+							//Generate queryinfo.txt, for ILP solver
+							ofstream outfile("queryinfo.txt");
+							int nQueries = 0;
+							map<const codeBlock*, int> q_map;
+							for(int i=0; i<code_blocks.size(); i++)
+										if(code_blocks[i]->type == QUERY){
+												q_map[code_blocks[i]] = nQueries;
+												nQueries++;
+										}
+							outfile<<nQueries<<endl;
+							//c_index
+							for(int i=0; i<code_blocks.size(); i++)
+									if(code_blocks[i]->in_query)
+											outfile<<code_blocks[i]->conflict_index<<" ";
+							outfile<<endl;
+							for(int i=0; i<code_blocks.size(); i++){
+									if(code_blocks[i]->in_query){
+											for(set<queryBlock*>::iterator it = code_blocks[i]->children.begin();
+														it != code_blocks[i]->children.end(); it++){
+													if((*it)->type != QUERY)
+														continue;
+													assert(q_map.find(code_blocks[i]) != q_map.end());
+													assert(q_map.find((*it)) != q_map.end());
+													outfile<<q_map[code_blocks[i]]<<" "<<q_map[(*it)]<<endl;
+											}
+									}
+							}
+							//End Generate queryinfo.txt
+
+
+
+
+							sort(code_blocks.begin(), code_blocks.end(), qBlockCmp1);
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->sort_index = i;
+								
+							int blocknum = code_blocks.size();
+							vector<queryBlock*> temp_qblocks;
+							bool *processed = new bool[blocknum];
+							memset(processed, 0, sizeof(bool)*blocknum);
+							for(int i=blocknum-1; i>=0; i--){
+									if(processed[i] == false){
+	#ifdef DEBUG
+											cout<<"--process block "<<code_blocks[i]->query_name<<endl;
+	#endif
+											recursiveSort(i, processed, temp_qblocks);
+									}
+							}
+	#ifdef DEBUG
+							assert(temp_qblocks.size() == blocknum);
+							cout<<"#### Execution sequence:####"<<endl;
+							for(int i=blocknum-1; i>=0; i--){
+								cout<<temp_qblocks[i]->query_name<<endl;
+							}
+							cout<<"#### End execution sequence ####"<<endl;
+	#endif
+							SourceLocation insertPlace = ret_stmt->getLocStart().getLocWithOffset(-1);
+							for(int i=0; i<blocknum; i++){	
+									rewriter.InsertTextBefore(insertPlace, temp_qblocks[i]->stmts);
+							}
+	#ifdef DEBUG
+							for(int i=0; i<code_blocks.size(); i++){	
+									if(code_blocks[i]->in_query == true)
+											cout<<"query "<<code_blocks[i]->query_name<<": ";
+											cout<<"\tconflict_index = "<<code_blocks[i]->conflict_index<<endl;
+											cout<<"\tdefs:";
+											for(set<const VarDecl*>::iterator it = code_blocks[i]->defs.begin(); it != query_blocks[i]->defs.end(); it++){
+												cout<<(*it)->getNameAsString()<<", ";
+											}
+											cout<<endl;
+											cout<<"\tuses: ";
+											for(set<const VarDecl*>::iterator it = code_blocks[i]->uses.begin(); it != query_blocks[i]->uses.end(); it++){
+													cout<<(*it)->getNameAsString()<<", ";
+											}
+											cout<<endl;
+											cout<<"\tparents: ";
+											for(set<queryBlock*>::iterator it = code_blocks[i]->parents.begin(); it != query_blocks[i]->parents.end(); it++){
+													cout<<"("<<(*it)->query_name<<"), ";
+											}	
+											cout<<endl;
+							}
+	#endif
+
+							for(int i=code_blocks.size()-1; i>=0; i--){	
+									codeBlock* c_block = code_blocks[i];
+									if(c_block->processed)
+											continue;
+									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
+							}
+*/
 					}
 					if(stmt_processed == false && processedCodeBeginPlace.isValid()){
 #ifdef DEBUG
@@ -599,6 +708,7 @@ public:
 										printSourceRange(c_block->begin, c_block->end, M);
 #endif
 										nonq_block->cond_blocks.push_back(c_block);
+										c_block->stmt_list.push_back(nonq_block);
 										temp_sta.push(c_block);
 										stack_cond_blocks.pop();
 									}else{
@@ -622,6 +732,21 @@ public:
 						processedCodeBeginPlace = stmt->getLocStart();
 				}
 		}
+		void recursiveSort(int i, bool* processed, vector<queryBlock*>& temp_qblocks){
+			for(set<queryBlock*>::iterator it = query_blocks[i]->children.begin();
+										it != query_blocks[i]->children.end(); it++){
+					if(processed[(*it)->sort_index] == false){
+							recursiveSort((*it)->sort_index, processed, temp_qblocks);
+					}
+			}
+#ifdef DEBUG
+					cout<<"--- push back "<<query_blocks[i]->query_name<<", children.size = "<<query_blocks[i]->children.size()<<endl;
+#endif
+					processed[i] = true;
+					temp_qblocks.push_back(query_blocks[i]);
+
+		}
+
 };	
 
 class myAnalysisConsumer : public ASTConsumer {

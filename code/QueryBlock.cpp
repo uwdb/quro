@@ -63,18 +63,18 @@ bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_en
 		return false;
 }
 
-bool crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2){
+const VarDecl* crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2){
 		for(set<const VarDecl*>::iterator it1 = s1.begin(); it1 != s1.end(); it1++){
 				for(set<const VarDecl*>::iterator it2 = s2.begin(); it2 != s2.end(); it2++){
 						if(*it1 == *it2){
 #ifdef DEBUG
 								cout<<"crossCompare: "<<(*it1)->getNameAsString()<<endl;
 #endif
-								return true;
+								return (*it1);
 						}
 				}
 		}
-		return false;
+		return NULL;
 }
 
 
@@ -408,6 +408,9 @@ SourceLocation condBlock::instack_getEnd(){
 
 codeBlock::codeBlock(){
 	processed = false;
+	conflict_index = 0;
+	sort_index = 0;
+	sort_base = 0;
 }
 
 queryBlock::queryBlock(){
@@ -416,6 +419,120 @@ queryBlock::queryBlock(){
 
 nonqueryBlock::nonqueryBlock(){
 	type = NONQUERY;
+}
+
+
+void setControlFlow(){
+	vector<condBlock*> all_cond_blocks;
+	for(int i=0; i<code_blocks.size()-1; i++){
+			int j = i+1;
+			code_blocks[i]->successor.insert(code_blocks[j]);
+			code_blocks[j]->predecessor.insert(code_blocks[i]);
+			for(j=code_blocks[i]->cond_blocks.size()-1; j>=0; j--){
+					bool exist = false;
+					for(int k=0; k<all_cond_blocks.size(); k++)
+							if(all_cond_blocks[k] == code_blocks[i]->cond_blocks[j])
+									exist = true;
+					if(exist == false)
+							all_cond_blocks.push_back(code_blocks[i]->cond_blocks[j]);
+			}
+	}
+	bool nochange = false;
+	while(nochange == false){
+			nochange = true;
+			for(int i=0; i<all_cond_blocks.size(); i++){
+					condBlock* condb = all_cond_blocks[i];
+					if(condb->type == IF){
+							ifBlock* ifb = reinterpret_cast<ifBlock*>(condb);
+							if(ifb->matched_else != NULL){
+									elseBlock* efb = reinterpret_cast<elseBlock*>(ifb->matched_else);
+									codeBlock* pre = condb->stmt_list[condb->stmt_list.size()-1];
+									codeBlock* suc = efb->stmt_list[0];
+									if(pre->successor.find(suc) != pre->successor.end()){
+											nochange = false;
+											pre->successor.erase(suc);
+											suc->predecessor.erase(pre);
+									}
+									pre = condb->stmt_list[0];
+									suc = efb->stmt_list[efb->stmt_list.size()-1];
+									for(set<codeBlock*>::iterator it = pre->predecessor.begin(); it != pre->predecessor.end(); it++){
+											if((*it) != suc && suc->predecessor.find(*it) == suc->predecessor.end()){
+												nochange = false;
+												suc->predecessor.insert(*it);
+												(*it)->successor.insert(suc);
+											}
+									}
+									for(set<codeBlock*>::iterator it = suc->successor.begin(); it != suc->successor.end(); it++){
+											if((*it) != pre && pre->successor.find(*it) == pre->successor.end()){
+												pre->successor.insert(*it);
+												(*it)->predecessor.insert(pre);
+												nochange = false;
+											}
+									}
+					}else{
+							codeBlock* pre = condb->stmt_list[condb->stmt_list.size()-1];
+							codeBlock* suc = cond_block->stmt_list[0];
+							if(pre != suc && pre->successor.find(suc) == pre->successor.end()){
+										nochange = false;
+										pre->successor.insert(suc);
+										suc->predecessor.insert(pre);
+							}
+					}
+			}
+	}
+
+#ifdef DEBUG
+	cout<<"%%%%%%%% setControlFlow %%%%%%%%%"<<endl<<endl;
+	for(int i=0; i<code_blocks.size(); i++){
+			cout<<"######## "<<code_blocks[i]->label<<" ####### 's successor:"<<endl;
+			for(set<codeBlock*>::iterator it = code_blocks[i]->successor.begin(); it != code_blocks[i]->successor.end(); it++){
+					cout<<"\t $ "<<(*it)->label<<endl;
+			}
+			cout<<" ------------------- "<<endl;
+	}
+#endif
+
+	for(int i=0; i<code_blocks.size(); i++){
+			codeBlock* cb = code_blocks[i];
+			for(set<const VarDecl*>::iterator it = cb->uses.begin(); it != cb->uses.end(); it++){
+					set<codeBlock*> scb;
+					cb->real_uses[*it] = scb;
+			}
+			for(set<const VarDecl*>::iterator itv = cb->uses.begin(); itv != cb->uses.end(); itv++){
+					set<codeBlock*> processed_blocks;
+					processed_blocks.insert(cb);
+					queue<codeBlock*> que;
+					
+					for(set<codeBlock*>::iterator it = cb->predecessor.begin(); it != cb->predecessor.end(); it++){
+							que.push_back(*it);
+					}
+					while(!que.empty()){
+							codeBlock* pre = que.front();
+							que.pop();
+							processed_blocks.insert(pre);
+							if(pre->defs.find(*itv) != pre->defs.end()){
+									cb->real_uses[*itv].insert(pre);
+							}else{
+									for(set<codeBlock*>::iterator preit = pre->predecessor.begin(); preit != pre->predecessor.end(); preit++)
+											if(processed_blocks.find(*preit) == processed_blocks.end()){
+													que.push(*preit);
+											}
+							}
+					}
+			}
+#ifdef DEBUG
+		cout<<endl<<endl<<"============code block "<<cb->label<<"============"<<endl;
+		for(set<const VarDecl*>::iterator it = cb->uses.begin(); it != cb->uses.end(); it++){
+			set<codeBlock*> scb = cb->real_uses[*it];
+			cout<<"var "<<(*it)->getNameAsString()<<" is defined by: "<<endl;
+			for(set<codeBlock*>::iterator itv = scb.begin(); itv != scb.end(); itv++){
+					cout<<"\t <"<<(*itv)->label<<">"<<endl;
+			}
+	}
+#endif
+		}
+
+	
 }
 
 string codeBlock::getBlockStr(){
@@ -571,6 +688,9 @@ string codeBlock::recursiveGenerate(int i){
 #endif
 						if(type == NONQUERY && code_blocks[j]->type == QUERY)
 									label = code_blocks[j]->label;
+//Add code_blocks[j]'s use/def set to this use/def set
+						addSets(defs, code_blocks[j]->defs);
+						addSets(uses, code_blocks[j]->uses);
 						code_blocks[j]->processed = true;
 				}
 		}
@@ -591,6 +711,26 @@ string codeBlock::recursiveGenerate(int i){
 	return str;
 }
 
+bool isChildren(codeBlock* cb){
+	for(map<const VarDecl*, set<codeBlock*>>::iterator it = children.begin(); it != children.end(); it++){
+			if(it->second.find(cb) != it->second.end())
+					return true;
+	}
+	return false;
+}
+
+void codeBlock::setChildren(){
+	for(set<const VarDecl*>::iterator it = defs.begin(); it != defs.end(); it++){
+			set<codeBlock*> new_set;
+			children[(*it)] = new_set;
+	}
+	for(int i=index+1; i<code_blocks.size(); i++){
+			const VarDecl* vd = crossCompare(defs.begin
+			if(){
+					
+			}	
+	}
+}
 
 int codeBlock::crossCompareAllConds(condBlock* most_inner_cond, int c_block){
 	int i=0;
@@ -712,10 +852,10 @@ void readConflictInfo(){
 	}
 }
 
-bool qBlockCmp1(queryBlock* q1, queryBlock* q2){
+bool qBlockCmp1(codeBlock* q1, codeBlock* q2){
 		return q1->conflict_index < q2->conflict_index;
 }
-bool qBlockCmp(queryBlock* q1, queryBlock* q2){
+bool qBlockCmp(codeBlock* q1, codeBlock* q2){
 		return q1->sort_index < q2->sort_index;
 }
 

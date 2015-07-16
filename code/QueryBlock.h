@@ -72,6 +72,7 @@ public:
 extern CmpUnorderedSet<SourceRange> sr_uses;
 extern CmpUnorderedSet<SourceRange> sr_defs;
 
+class codeBlock;
 
 class condBlock{
 public:
@@ -87,12 +88,14 @@ public:
 		CONDTYPE type;
 		set<const VarDecl*> uses;
 		vector<queryBlock*> queries;
+		vector<codeBlock*> stmt_list;
 		bool checkDep(set<const VarDecl*>& defs, set<const VarDecl*>& uses);
 		bool inCond(SourceLocation loc, SourceManager& M);
 		virtual condBlock* isWithin(SourceLocation loc, SourceManager& M) = 0;
 		virtual bool checkQueryDep(queryBlock* q1, queryBlock* q2) = 0;
 		virtual condBlock* isWithin(SourceLocation loc_begin, SourceLocation loc_end, SourceManager& M) = 0;
 };
+
 
 class codeBlock{
 public:
@@ -103,10 +106,15 @@ public:
 	set<codeBlock*> dep_blocks;
 	set<const VarDecl*> defs;
 	set<const VarDecl*> uses;
+	map<const VarDecl*, set<codeBlock*>> real_uses;
+	set<codeBlock*> predecessor;
+	set<codeBlock*> successor;
 	string source;
 	CODETYPE type;
 	bool processed;
 	string insert_code;
+	map<const VarDecl*, set<codeBlock*> > children;
+
 	int index;
 	string label;
 	codeBlock();	
@@ -114,6 +122,13 @@ public:
 	string getBlockStr();
 	void setDepBlocks();
 	void propagateDep();
+	void setChildren();
+	bool isChildren(codeBlock* cb);
+	int conflict_index;
+	int sort_index;
+	int sort_base;
+
+
 	string recursiveGenerate(int i);
 };
 
@@ -124,10 +139,6 @@ public:
 
 class queryBlock : public codeBlock{
 public:
-	int conflict_index;
-	int sort_index;
-	int sort_base;
-
 	queryBlock();
 };
 class elseBlock;
@@ -180,6 +191,7 @@ bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_en
 void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs, SourceManager& M);
 const char* getStmtType(Stmt* st);
 
+void setControlFlow();
 
 condBlock* inAnyCond(SourceLocation loc, SourceManager& M);
 bool inAnyQuery(SourceLocation begin, SourceLocation end, SourceManager& M);
@@ -188,8 +200,8 @@ extern vector<queryBlock*> query_blocks;
 extern vector<codeBlock*> code_blocks;
 extern vector<condBlock*> cond_blocks;
 
-bool qBlockCmp1(queryBlock* q1, queryBlock* q2);
-bool qBlockCmp2(queryBlock* q1, queryBlock* q2);
+bool qBlockCmp1(codeBlock* q1, codeBlock* q2);
+bool qBlockCmp2(codeBlock* q1, codeBlock* q2);
 
 struct TABLE_DESC{
 	string name;
