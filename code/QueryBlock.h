@@ -18,6 +18,7 @@
 #include <iostream>
 #include <queue>
 #include <unordered_set>
+#include <algorithm>
 #include <fstream>
 
 using namespace std;
@@ -106,14 +107,16 @@ public:
 	set<codeBlock*> dep_blocks;
 	set<const VarDecl*> defs;
 	set<const VarDecl*> uses;
+#ifdef EXACT_USEDEF
 	map<const VarDecl*, set<codeBlock*>> real_uses;
 	set<codeBlock*> predecessor;
 	set<codeBlock*> successor;
+	map<const VarDecl*, set<codeBlock*> > children;
+#endif
 	string source;
 	CODETYPE type;
 	bool processed;
 	string insert_code;
-	map<const VarDecl*, set<codeBlock*> > children;
 
 	int index;
 	string label;
@@ -188,8 +191,9 @@ const VarDecl* crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2);
 bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_end,  SourceLocation after_begin, SourceLocation after_end, SourceManager& M);
 void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs, SourceManager& M);
 const char* getStmtType(Stmt* st);
-
+#ifdef EXACT_USEDEF
 void setControlFlow();
+#endif
 
 condBlock* inAnyCond(SourceLocation loc, SourceManager& M);
 bool inAnyQuery(SourceLocation begin, SourceLocation end, SourceManager& M);
@@ -206,6 +210,14 @@ struct TABLE_DESC{
 //	vector<COLUMN_DESC> columns;
 	int num_rows;
 };
+
+struct reorderBufferUnit{
+	codeBlock* cb;
+	int cycle_dispatched;
+	int cycle_finish;
+	int exec_cycles;
+};
+bool reorderBufCmp(reorderBufferUnit r1, reorderBufferUnit r2);
 
 extern vector<queryBlock*> query_blocks;
 void splitByBlank(vector<string>& vec, string str);

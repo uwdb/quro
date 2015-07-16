@@ -199,14 +199,14 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 				}
 				else if (const BinaryOperator *BO = dyn_cast<BinaryOperator>(s_it)){
 						if (BO->getOpcode() == BO_Assign) {
-              	if (const DeclRefExpr *DR =
-                    dyn_cast<DeclRefExpr>(BO->getLHS()->IgnoreParens())) {
-												if (const VarDecl *vard = dyn_cast<VarDecl>(DR->getDecl())){
+              	//if (const DeclRefExpr *DR =
+                    //dyn_cast<DeclRefExpr>(BO->getLHS()->IgnoreParens())) {
+												//if (const VarDecl *vard = dyn_cast<VarDecl>(DR->getDecl())){
 														SourceRange sr_left(BO->getLHS()->getLocStart(), BO->getLHS()->getLocEnd());
 														sr_defs.insert(sr_left);
 														que.push(BO->getLHS());
-												}
-								}
+												//}
+								//}
 						}
 				}else if(const UnaryOperator *UO = dyn_cast<UnaryOperator>(s_it)){
 						que.push(UO->getSubExpr());
@@ -421,7 +421,7 @@ nonqueryBlock::nonqueryBlock(){
 	type = NONQUERY;
 }
 
-
+#ifdef EXACT_USEDEF
 void setControlFlow(){
 	vector<condBlock*> all_cond_blocks;
 	for(int i=0; i<code_blocks.size()-1; i++){
@@ -548,6 +548,7 @@ void setControlFlow(){
 	}
 	
 }
+#endif
 
 string codeBlock::getBlockStr(){
 	bool contain_query = false;
@@ -625,11 +626,28 @@ void codeBlock::setDepBlocks(){
 							if(code_blocks[j]->cond_blocks[k] == cond_blocks[i] &&
 									(crossCompare(code_blocks[j]->defs, uses) || 
 									 crossCompare(defs, code_blocks[j]->uses))){
+									const VarDecl* v1 = crossCompare(code_blocks[j]->defs, uses);
+									const VarDecl* v2 = crossCompare(defs, code_blocks[j]->uses);
+									if(v1 != NULL){
+											if(const ArrayType *atype = dyn_cast<ArrayType>(v1->getType().getTypePtr())){}
+											else{
 #ifdef DEBUG
 								cout<<"Due to data dependency, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##"<<endl;
 #endif
-											code_blocks[j]->dep_blocks.insert(this);
-											dep_blocks.insert(code_blocks[j]);
+												code_blocks[j]->dep_blocks.insert(this);
+												dep_blocks.insert(code_blocks[j]);
+											}
+									}
+									if(v2 != NULL){
+											if(const ArrayType *atype = dyn_cast<ArrayType>(v2->getType().getTypePtr())){}
+											else{
+#ifdef DEBUG
+								cout<<"Due to data dependency, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##"<<endl;
+#endif
+												code_blocks[j]->dep_blocks.insert(this);
+												dep_blocks.insert(code_blocks[j]);
+											}
+									}
 							}
 							else if(code_blocks[j]->cond_blocks[k] == cond_blocks[i]){
 									for(int l=0; l<k; l++){
@@ -663,6 +681,8 @@ void codeBlock::setDepBlocks(){
 	}
 
 }
+
+
 void codeBlock::propagateDep(){
 	//Dep property propagate:
 	//If A has dep_block B and B has dep_block C, then A has dep_block C
@@ -705,6 +725,10 @@ string codeBlock::recursiveGenerate(int i){
 //Add code_blocks[j]'s use/def set to this use/def set
 						addSets(defs, code_blocks[j]->defs);
 						addSets(uses, code_blocks[j]->uses);
+						addSets(code_blocks[j]->defs, defs);
+						addSets(code_blocks[j]->uses, uses);
+
+						conflict_index = max(conflict_index, code_blocks[j]->conflict_index);
 						code_blocks[j]->processed = true;
 				}
 		}
@@ -806,7 +830,7 @@ void splitByBlank(vector<string>& vec, string str){
 int getConflictIndex(int row_num, OPERATION op){
 	int pri_index = 4000000/row_num;
 	if(op == UPDATE)
-		pri_index += 10;
+		pri_index += 10000;
 	if(op == INSERT)
 		pri_index = 10;
 	return pri_index;
@@ -851,4 +875,6 @@ bool qBlockCmp1(codeBlock* q1, codeBlock* q2){
 bool qBlockCmp(codeBlock* q1, codeBlock* q2){
 		return q1->sort_index < q2->sort_index;
 }
-
+bool reorderBufCmp(reorderBufferUnit r1, reorderBufferUnit r2){
+		return r1.cycle_finish < r2.cycle_finish;
+}

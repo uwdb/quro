@@ -395,6 +395,7 @@ public:
 									assert(sprintf_stmt != NULL);
 									//SourceRange sprintf_sr(sprintf_stmt->getLocStart(), sprintf_stmt->getLocEnd().getLocWithOffset(1));
 									char c_index_str[100] = {0};
+									q_block->conflict_index = this_conflict_index;
 									sprintf(c_index_str, "//conflict index = %d\n", this_conflict_index);
 									q_block->source.assign(c_index_str);
 									//q_block->source.append(rewriter.getRewrittenText(sprintf_sr));
@@ -545,9 +546,9 @@ public:
 							in_execute_function = false;
 							third_pass = true;
 							
-							setControlFlow();
+//							setControlFlow();
 
-/*							
+						
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->setDepBlocks();
 							for(int i=0; i<code_blocks.size(); i++)
@@ -555,27 +556,13 @@ public:
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->insert_code = code_blocks[i]->getBlockStr();
 							
-*/
-		/*
-							for(int i=code_blocks.size()-1; i>=0; i--){	
-									codeBlock* c_block = code_blocks[i];
-									if(c_block->processed)
-											continue;
-									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
-							}
-					
+
 							SourceLocation insertPlace = processedCodeBeginPlace;
 							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
 							rewriter.RemoveText(sr);
-							for(int i=0; i<code_blocks.size(); i++){
-								for(int j=i+1; j<code_blocks.size(); j++){
-										if(crossCompare(code_blocks[i]->defs, query_blocks[j]->uses)){
-												code_blocks[j]->parents.insert(query_blocks[i]);
-												code_blocks[i]->children.insert(query_blocks[j]);
-										}
-								}
-							}
+
 							//Generate queryinfo.txt, for ILP solver
+/*
 							ofstream outfile("queryinfo.txt");
 							int nQueries = 0;
 							map<const codeBlock*, int> q_map;
@@ -602,62 +589,61 @@ public:
 											}
 									}
 							}
+*/
 							//End Generate queryinfo.txt
-
-
-
-
-							sort(code_blocks.begin(), code_blocks.end(), qBlockCmp1);
-							for(int i=0; i<code_blocks.size(); i++)
-									code_blocks[i]->sort_index = i;
-								
-							int blocknum = code_blocks.size();
-							vector<queryBlock*> temp_qblocks;
-							bool *processed = new bool[blocknum];
-							memset(processed, 0, sizeof(bool)*blocknum);
-							for(int i=blocknum-1; i>=0; i--){
-									if(processed[i] == false){
-	#ifdef DEBUG
-											cout<<"--process block "<<code_blocks[i]->query_name<<endl;
-	#endif
-											recursiveSort(i, processed, temp_qblocks);
+							vector<codeBlock*> tempQ;
+							for(int i=0; i<code_blocks.size(); i++){	
+									codeBlock* c_block = code_blocks[i];
+									if(c_block->processed == false){
+											tempQ.push_back(c_block);
+											for(int j=0; j<c_block->cond_blocks.size(); j++){
+													addSets(c_block->uses, c_block->cond_blocks[j]->uses);
+											}
 									}
 							}
-	#ifdef DEBUG
-							assert(temp_qblocks.size() == blocknum);
-							cout<<"#### Execution sequence:####"<<endl;
-							for(int i=blocknum-1; i>=0; i--){
-								cout<<temp_qblocks[i]->query_name<<endl;
-							}
-							cout<<"#### End execution sequence ####"<<endl;
-	#endif
-							SourceLocation insertPlace = ret_stmt->getLocStart().getLocWithOffset(-1);
-							for(int i=0; i<blocknum; i++){	
-									rewriter.InsertTextBefore(insertPlace, temp_qblocks[i]->stmts);
-							}
-	#ifdef DEBUG
-							for(int i=0; i<code_blocks.size(); i++){	
-									if(code_blocks[i]->in_query == true)
-											cout<<"query "<<code_blocks[i]->query_name<<": ";
-											cout<<"\tconflict_index = "<<code_blocks[i]->conflict_index<<endl;
-											cout<<"\tdefs:";
-											for(set<const VarDecl*>::iterator it = code_blocks[i]->defs.begin(); it != query_blocks[i]->defs.end(); it++){
-												cout<<(*it)->getNameAsString()<<", ";
+							//code_blocks.clear();
+							vector<reorderBufferUnit> reorderBuffer;
+							for(int i=0; i<tempQ.size(); i++){
+									//code_blocks.push_back(tempQ[i]);
+									reorderBufferUnit ru;
+									ru.cb = tempQ[i];
+									if(tempQ[i]->conflict_index == 0)
+											ru.exec_cycles = 1;
+									else
+											ru.exec_cycles = tempQ[i]->conflict_index;
+									ru.cycle_dispatched = i+1;
+									//check and determine the dispatch cycle
+									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+											for(int j=reorderBuffer.size()-1; j>=0; j--){
+													if(reorderBuffer[j].cb->defs.find(*it) != reorderBuffer[j].cb->defs.end()){
+																ru.cycle_dispatched = max(ru.cycle_dispatched, reorderBuffer[j].cycle_finish);
+																break;
+													}	
 											}
-											cout<<endl;
-											cout<<"\tuses: ";
-											for(set<const VarDecl*>::iterator it = code_blocks[i]->uses.begin(); it != query_blocks[i]->uses.end(); it++){
-													cout<<(*it)->getNameAsString()<<", ";
-											}
-											cout<<endl;
-											cout<<"\tparents: ";
-											for(set<queryBlock*>::iterator it = code_blocks[i]->parents.begin(); it != query_blocks[i]->parents.end(); it++){
-													cout<<"("<<(*it)->query_name<<"), ";
-											}	
-											cout<<endl;
-							}
-	#endif
+									}
+									ru.cycle_finish = ru.exec_cycles + ru.cycle_dispatched;
+#ifdef DEBUG
+									cout<<"$$ code block "<<tempQ[i]->label<<" $$:"<<endl;
+								cout<<"defs: "<<endl;
+								for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
+										cout<<(*it)->getNameAsString()<<", ";
+								}
+								cout<<endl;
+								cout<<"uses: "<<endl;
+								for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+										cout<<(*it)->getNameAsString()<<", ";
+								}
+								cout<<endl;
 
+									cout<<"\tcycle_dispatched = "<<ru.cycle_dispatched<<", cycle_finished = "<<ru.cycle_finish<<endl;
+#endif
+									reorderBuffer.push_back(ru);
+							}
+							sort(reorderBuffer.begin(), reorderBuffer.end(), reorderBufCmp);
+							for(int i=reorderBuffer.size()-1; i>=0; i--)
+									rewriter.InsertTextBefore(insertPlace, reorderBuffer[i].cb->insert_code);
+
+/*
 							for(int i=code_blocks.size()-1; i>=0; i--){	
 									codeBlock* c_block = code_blocks[i];
 									if(c_block->processed)
