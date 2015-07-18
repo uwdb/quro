@@ -16,7 +16,8 @@
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/Lex/Lexer.h"
-
+#include "ControlFlowGraph.h"
+#include "AnalysisConsumer.h"
 
 #include <fstream>
 #include <iostream>
@@ -73,6 +74,18 @@ public:
 			second_pass = false;
 			third_pass = false;
 			execute_func_count = 0;
+		}
+		void myTraverseReturnStmt(Stmt* st){
+				if(st == NULL)
+						return ;
+				if(CompoundStmt* cst = dyn_cast<CompoundStmt>(st)){
+							for(CompoundStmt::const_body_iterator it = cst->body_begin(); it != cst->body_end(); it++){
+									myTraverseReturnStmt(*it);
+							}
+				}
+				else if(ReturnStmt* rst = dyn_cast<ReturnStmt>(st)){
+							reorderCode(st);
+				}
 		}
 		bool myTraverseStmt(Stmt* st){
 				SourceManager& M = astContext->getSourceManager();
@@ -404,6 +417,10 @@ public:
 									q_block->source.append(rewriter.getRewrittenText(qblock_sr));
 							}
 							else if(strcmp(funcName.c_str(), "sprintf")==0){
+#ifdef DEBUG_CFG
+									cout<<"sprintf function: "<<endl;
+									printSourceRange(st->getLocStart(), st->getLocEnd(), M);
+#endif
 									for(map<Stmt*, int>::iterator it = stmt_to_index.begin(); it != stmt_to_index.end(); it++){
 											if(rangeIsWithin(it->first->getLocStart(), it->first->getLocEnd(), st->getLocStart(), st->getLocEnd(), M)){
 													stmt_to_index[st] = it->second;
@@ -431,6 +448,8 @@ public:
 							if_block->cond_end = if_stmt->getCond()->getLocEnd();
 							if_block->stmt = if_stmt;
 							if_block->body = if_stmt->getThen();
+							if_block->cond = if_stmt->getCond();
+							cond_blocks.push_back(if_block);
 
 							if_block->uses = defuses[if_stmt->getCond()].uses;
 
@@ -445,6 +464,8 @@ public:
 									else_block->begin = if_block->end.getLocWithOffset(1);
 									else_block->end = if_stmt->getLocEnd();
 									else_block->stmt = if_stmt->getElse();
+									else_block->cond = if_stmt->getCond();
+									cond_blocks.push_back(else_block);
 
 									SourceRange remove_sr(if_stmt->getElseLoc(), if_stmt->getElseLoc().getLocWithOffset(4));
 									rewriter.RemoveText(remove_sr);
@@ -493,6 +514,9 @@ public:
 									for_block->stmt = for_stmt;
 									for_block->body = for_stmt->getBody();
 									for_block->uses = defuses[for_stmt->getCond()].uses;
+									for_block->cond = for_stmt->getCond();
+									cond_blocks.push_back(for_block);									
+
 									addSets(for_block->uses, defuses[for_stmt->getInit()].uses);
 
 									SourceRange init_sr(for_stmt->getInit()->getLocStart(), for_stmt->getInit()->getLocEnd());
@@ -525,6 +549,9 @@ public:
 									while_block->stmt = while_stmt;
 									while_block->body = while_stmt->getBody();
 									while_block->uses = defuses[while_stmt->getCond()].uses;
+									while_block->cond = while_stmt->getCond();
+									cond_blocks.push_back(while_block);
+
 									addSets(while_block->uses, defuses[while_stmt->getCond()].uses);
 
 									SourceRange cond_sr(while_stmt->getCond()->getLocStart(), while_stmt->getCond()->getLocEnd());
@@ -540,119 +567,7 @@ public:
 #endif
 							}
 					}
-					else if(ReturnStmt* ret_stmt = dyn_cast<ReturnStmt>(st)){
-							second_pass = false;
-							stmt_processed = true;
-							in_execute_function = false;
-							third_pass = true;
-							
-//							setControlFlow();
-
-						
-							for(int i=0; i<code_blocks.size(); i++)
-									code_blocks[i]->setDepBlocks();
-							for(int i=0; i<code_blocks.size(); i++)
-									code_blocks[i]->propagateDep();
-							for(int i=0; i<code_blocks.size(); i++)
-									code_blocks[i]->insert_code = code_blocks[i]->getBlockStr();
-							
-
-							SourceLocation insertPlace = processedCodeBeginPlace;
-							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
-							rewriter.RemoveText(sr);
-
-							//Generate queryinfo.txt, for ILP solver
-/*
-							ofstream outfile("queryinfo.txt");
-							int nQueries = 0;
-							map<const codeBlock*, int> q_map;
-							for(int i=0; i<code_blocks.size(); i++)
-										if(code_blocks[i]->type == QUERY){
-												q_map[code_blocks[i]] = nQueries;
-												nQueries++;
-										}
-							outfile<<nQueries<<endl;
-							//c_index
-							for(int i=0; i<code_blocks.size(); i++)
-									if(code_blocks[i]->in_query)
-											outfile<<code_blocks[i]->conflict_index<<" ";
-							outfile<<endl;
-							for(int i=0; i<code_blocks.size(); i++){
-									if(code_blocks[i]->in_query){
-											for(set<queryBlock*>::iterator it = code_blocks[i]->children.begin();
-														it != code_blocks[i]->children.end(); it++){
-													if((*it)->type != QUERY)
-														continue;
-													assert(q_map.find(code_blocks[i]) != q_map.end());
-													assert(q_map.find((*it)) != q_map.end());
-													outfile<<q_map[code_blocks[i]]<<" "<<q_map[(*it)]<<endl;
-											}
-									}
-							}
-*/
-							//End Generate queryinfo.txt
-							vector<codeBlock*> tempQ;
-							for(int i=0; i<code_blocks.size(); i++){	
-									codeBlock* c_block = code_blocks[i];
-									if(c_block->processed == false){
-											tempQ.push_back(c_block);
-											for(int j=0; j<c_block->cond_blocks.size(); j++){
-													addSets(c_block->uses, c_block->cond_blocks[j]->uses);
-											}
-									}
-							}
-							//code_blocks.clear();
-							vector<reorderBufferUnit> reorderBuffer;
-							for(int i=0; i<tempQ.size(); i++){
-									//code_blocks.push_back(tempQ[i]);
-									reorderBufferUnit ru;
-									ru.cb = tempQ[i];
-									if(tempQ[i]->conflict_index == 0)
-											ru.exec_cycles = 1;
-									else
-											ru.exec_cycles = tempQ[i]->conflict_index;
-									ru.cycle_dispatched = i+1;
-									//check and determine the dispatch cycle
-									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
-											for(int j=reorderBuffer.size()-1; j>=0; j--){
-													if(reorderBuffer[j].cb->defs.find(*it) != reorderBuffer[j].cb->defs.end()){
-																ru.cycle_dispatched = max(ru.cycle_dispatched, reorderBuffer[j].cycle_finish);
-																break;
-													}	
-											}
-									}
-									ru.cycle_finish = ru.exec_cycles + ru.cycle_dispatched;
-#ifdef DEBUG
-									cout<<"$$ code block "<<tempQ[i]->label<<" $$:"<<endl;
-								cout<<"defs: "<<endl;
-								for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
-										cout<<(*it)->getNameAsString()<<", ";
-								}
-								cout<<endl;
-								cout<<"uses: "<<endl;
-								for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
-										cout<<(*it)->getNameAsString()<<", ";
-								}
-								cout<<endl;
-
-									cout<<"\tcycle_dispatched = "<<ru.cycle_dispatched<<", cycle_finished = "<<ru.cycle_finish<<endl;
-#endif
-									reorderBuffer.push_back(ru);
-							}
-							sort(reorderBuffer.begin(), reorderBuffer.end(), reorderBufCmp);
-							for(int i=reorderBuffer.size()-1; i>=0; i--)
-									rewriter.InsertTextBefore(insertPlace, reorderBuffer[i].cb->insert_code);
-
-/*
-							for(int i=code_blocks.size()-1; i>=0; i--){	
-									codeBlock* c_block = code_blocks[i];
-									if(c_block->processed)
-											continue;
-									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
-							}
-*/
-					}
-					if(stmt_processed == false && processedCodeBeginPlace.isValid()){
+					if(stmt_processed == false /*&& processedCodeBeginPlace.isValid()*/){
 #ifdef DEBUG
 						cout<<"Process code:";
 						printSourceRange(st->getLocStart(), st->getLocEnd(), M);
@@ -710,7 +625,241 @@ public:
 						}
 					}
 			}
+			if(ReturnStmt* ret_stmt = dyn_cast<ReturnStmt>(st)){
+					second_pass = false;
+					third_pass = true;
+					in_execute_function = false;
+			}
 			return ;
+		}
+		void reorderCode(Stmt* stmt){
+			SourceManager& M = astContext->getSourceManager();
+			BeforeThanCompare<SourceLocation> Compare(M);
+			bool stmt_processed = false;
+			if(third_pass && in_execute_function){
+					if(ReturnStmt* ret_stmt = dyn_cast<ReturnStmt>(stmt)){
+
+//							setControlFlow();
+
+						
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->setDepBlocks();
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->propagateDep();
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->insert_code = code_blocks[i]->getBlockStr();
+							cout<<"finalize Dep"<<endl;
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->setFinalcBlock();
+							for(int i=0; i<code_blocks.size(); i++)
+									code_blocks[i]->finalizeDefs();
+/*
+							for(int i=0; i<code_blocks.size(); i++){
+									if(code_blocks[i]->processed == true)
+											continue;
+									for(map<const VarDecl*, set<codeBlock*> >::iterator it  = code_blocks[i]->def_stmts.begin(); it != code_blocks[i]->def_stmts.end(); it++){
+											cout<<"Var "<<it->first->getNameAsString()<<" in block "<<code_blocks[i]->label<<endl;
+											cout<<"\t\tdefined by ";
+											for(set<codeBlock*>::iterator cit = it->second.begin(); cit != it->second.end(); cit++)
+													cout<<(*cit)->label<<"("<<(*cit)->finalcBlock->label<<"), ";
+											cout<<endl;
+									}
+							}
+
+							for(int i=0; i<code_blocks.size(); i++){
+									cout<<"\tcode "<<code_blocks[i]->pre_label<<"("<<code_blocks[i]->processed<<")'s finalized code block is "<<code_blocks[i]->finalcBlock->pre_label<<" ("<<code_blocks[i]->finalcBlock->processed<<endl;
+
+							}
+*/
+//							for(int i=0; i<code_blocks.size(); i++)
+//									code_blocks[i]->finalizeDefs();	
+
+							SourceLocation insertPlace = processedCodeBeginPlace;
+							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
+							rewriter.RemoveText(sr);
+
+							//Generate queryinfo.txt, for ILP solver
+/*
+							ofstream outfile("queryinfo.txt");
+							int nQueries = 0;
+							map<const codeBlock*, int> q_map;
+							for(int i=0; i<code_blocks.size(); i++)
+										if(code_blocks[i]->type == QUERY){
+												q_map[code_blocks[i]] = nQueries;
+												nQueries++;
+										}
+							outfile<<nQueries<<endl;
+							//c_index
+							for(int i=0; i<code_blocks.size(); i++)
+									if(code_blocks[i]->in_query)
+											outfile<<code_blocks[i]->conflict_index<<" ";
+							outfile<<endl;
+							for(int i=0; i<code_blocks.size(); i++){
+									if(code_blocks[i]->in_query){
+											for(set<queryBlock*>::iterator it = code_blocks[i]->children.begin();
+														it != code_blocks[i]->children.end(); it++){
+													if((*it)->type != QUERY)
+														continue;
+													assert(q_map.find(code_blocks[i]) != q_map.end());
+													assert(q_map.find((*it)) != q_map.end());
+													outfile<<q_map[code_blocks[i]]<<" "<<q_map[(*it)]<<endl;
+											}
+									}
+							}
+*/
+
+							//End Generate queryinfo.txt
+							vector<codeBlock*> tempQ;
+							for(int i=0; i<code_blocks.size(); i++){	
+									codeBlock* c_block = code_blocks[i];
+									if(c_block->processed == false){
+											tempQ.push_back(c_block);
+											for(int j=0; j<c_block->cond_blocks.size(); j++){
+													addSets(c_block->uses, c_block->cond_blocks[j]->uses);
+											}
+									}
+							}
+							cout<<endl<<"#######     #######        ##########"<<endl;
+							for(int i=0; i<tempQ.size(); i++){
+									cout<<"block "<<tempQ[i]->index<<" content: "<<endl;
+									cout<<"          $$$$$ "<<endl;
+									cout<<tempQ[i]->insert_code<<endl;
+									cout<<"          $$$$$ "<<endl;
+									cout<<"  defines: ";
+/*									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++)
+											cout<<(*it)->getNameAsString()<<", ";
+									cout<<endl<<" uses: ";
+									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++)
+											cout<<(*it)->getNameAsString()<<", ";
+									cout<<endl;*/
+
+									for(map<const VarDecl*, set<codeBlock*> >::iterator it  =  tempQ[i]->def_stmts.begin(); it != tempQ[i]->def_stmts.end(); it++){
+											cout<<"Var "<<it->first->getNameAsString()<<" ";
+											cout<<"\t\tdefined by ";
+											for(set<codeBlock*>::iterator cit = it->second.begin(); cit != it->second.end(); cit++)
+													cout<<(*cit)->finalcBlock->index<<", ";
+											cout<<endl;
+									}
+
+							}
+
+
+							//code_blocks.clear();
+							vector<reorderBufferUnit> reorderBuffer;
+							renameTable renameT;
+							int rnb_cnt = 0;
+
+							for(int i=0; i<tempQ.size(); i++){
+									//code_blocks.push_back(tempQ[i]);
+									reorderBufferUnit ru;
+									map<const VarDecl*, string> changed_names;
+									ru.cb = tempQ[i];
+									if(tempQ[i]->conflict_index == 0)
+											ru.exec_cycles = 1;
+									else
+											ru.exec_cycles = tempQ[i]->conflict_index;
+									ru.cycle_dispatched = i+1;
+
+									//check and determine the dispatch cycle
+									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+											for(int j=reorderBuffer.size()-1; j>=0; j--){
+													//if(reorderBuffer[j].cb->defs.find(*it) != reorderBuffer[j].cb->defs.end()){
+													if(tempQ[i]->isDefinedBy(reorderBuffer[j].cb)){
+																ru.cycle_dispatched = max(ru.cycle_dispatched, reorderBuffer[j].cycle_finish);
+																//break;
+													}	
+											}
+											codeBlock* def_cb = NULL;
+											for(set<codeBlock*>::iterator cit = tempQ[i]->def_stmts[*it].begin(); cit != tempQ[i]->def_stmts[*it].end(); cit++){
+													if((*cit)->finalcBlock != tempQ[i])
+															def_cb = (*cit)->finalcBlock;
+											}
+											if(def_cb != NULL && renameT.table.find(def_cb) != renameT.table.end()){
+													if(renameT.table[def_cb].names.find(*it) != renameT.table[def_cb].names.end()){
+#ifdef DEBUG_CFG
+																cout<<"block "<<tempQ[i]->index<<" uses "<<(*it)->getNameAsString()<<", rename to "<<renameT.table[def_cb].names[*it]<<endl;
+#endif
+																changed_names[*it] = renameT.table[def_cb].names[*it];
+																//TODO: if the name is defined by multiple statements, insert a new assign into after these defining stmts.
+																//tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (*it)->getNameAsString(), renameT.table[def_cb].names[*it]); 
+													}
+											}
+									}
+
+									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
+											string new_name = (*it)->getNameAsString();
+											bool need_rename = false;
+											char n_str[10] = {0};
+											for(int j=reorderBuffer.size()-1; j>=0; j--){
+													if(reorderBuffer[j].cb->uses.find(*it) != reorderBuffer[j].cb->uses.end() && ru.cycle_dispatched < reorderBuffer[j].cycle_finish){
+																//Insert an item into the reorder buffer
+																sprintf(n_str, "_%d", rnb_cnt);
+																rnb_cnt++;
+																need_rename = true;
+																//ru.cycle_dispatched = max(ru.cycle_dispatched, reorderBuffer[j].cycle_finish);
+																//break;
+													}	
+											}
+											if(need_rename){
+													new_name.append(n_str);
+													if(renameT.table.find(tempQ[i]) == renameT.table.end()){
+															cb_renames newrenames;
+															newrenames.names[*it] = new_name;	
+															renameT.table[tempQ[i]] = newrenames;
+													}else{
+															renameT.table[tempQ[i]].names[(*it)] = new_name;
+													}
+#ifdef DEBUG_CFG
+													cout<<"block "<<tempQ[i]->index<<" rename var "<<(*it)->getNameAsString()<<" to "<<new_name<<endl;
+#endif
+													if(changed_names.find(*it) != changed_names.end()){
+															//this var is both used and defined in this block (assuming used first).
+															string added_assign = generateAssignment(*it, changed_names[*it], new_name);
+															changed_names[*it] = new_name;
+															tempQ[i]->insert_code.insert(0, added_assign);
+													}else{
+															changed_names[*it] = new_name;
+													}
+													//tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (*it)->getNameAsString(), new_name);	
+}
+									}
+									for(map<const VarDecl*, string>::iterator vit = changed_names.begin(); vit != changed_names.end(); vit++){
+												tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (vit->first)->getNameAsString(), vit->second);
+									}
+
+									ru.cycle_finish = ru.exec_cycles + ru.cycle_dispatched;
+#ifdef DEBUG_CFG
+									cout<<"$$ code block "<<tempQ[i]->label<<" ("<<tempQ[i]->index<<") $$:"<<endl;
+/*
+									cout<<"defs: "<<endl;
+									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
+											cout<<(*it)->getNameAsString()<<", ";
+									}
+									cout<<endl;
+									cout<<"uses: "<<endl;
+									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+											cout<<(*it)->getNameAsString()<<", ";
+									}
+									cout<<endl;
+*/
+									cout<<"\tcycle_dispatched = "<<ru.cycle_dispatched<<", cycle_finished = "<<ru.cycle_finish<<endl;
+#endif
+									reorderBuffer.push_back(ru);
+							}
+							sort(reorderBuffer.begin(), reorderBuffer.end(), reorderBufCmp);
+							for(int i=reorderBuffer.size()-1; i>=0; i--)
+									rewriter.InsertTextBefore(insertPlace, reorderBuffer[i].cb->insert_code);
+
+/*
+							for(int i=code_blocks.size()-1; i>=0; i--){	
+									codeBlock* c_block = code_blocks[i];
+									if(c_block->processed)
+											continue;
+									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
+							}
+*/
+					}
+				}
 		}
 		void setFirstStmtPlace(Stmt* stmt){
 				if(processedCodeBeginPlace.isValid() == false){
@@ -735,12 +884,66 @@ public:
 */
 };	
 
-class myAnalysisConsumer : public ASTConsumer {
+class myAnalysisConsumer : public AnalysisConsumer {
     private:
 		myVisitor *visitor; // doesn't have to be private
 		CompilerInstance *myCI;
+public:
+		// override the constructor in order to pass CI
+		explicit myAnalysisConsumer(CompilerInstance *CI,
+								const Preprocessor& pp,
+                   				const std::string& outdir,
+                   				AnalyzerOptionsRef opts,
+                   				ArrayRef<std::string> plugins)
+								//CodeInjector *injector)
+					: AnalysisConsumer(pp, outdir, opts, plugins),
+					myCI(CI),
+					visitor(new myVisitor(CI))  // initialize the visitor
+				{ }
+
+	bool HandleTopLevelDecl(DeclGroupRef DG) {
+//		storeTopLevelDecls(DG);
+		// a DeclGroupRef may have multiple Decls, so we iterate through each one
+		for (DeclGroupRef::iterator i = DG.begin(), e = DG.end(); i != e; i++) {
+			Decl *D = *i;
+			if(FunctionDecl* FD = dyn_cast<FunctionDecl>(D)){	
+				string func_name = FD->getNameInfo().getAsString();
+				if(strcmp(func_name.c_str(), "execute")==0)
+				{
+						visitor->in_execute_function = true;
+						visitor->TraverseDecl(D); // recursively visit each AST node in Decl "D"
+						visitor->in_execute_function = true;
+						visitor->myTraverseStmt(FD->getBody());
+
+						AnalysisDeclContext* adCtxt = Mgr->getAnalysisDeclContext(D);
+						myLiveVariables *liveV = myLiveVariables::create(*adCtxt, myCI->getASTContext().getSourceManager());
+						if(liveV==nullptr){
+						}else{
+						//liveV->dumpBlockLiveness(myCI->getASTContext().getSourceManager());
+						}
+
+						visitor->in_execute_function = true;
+						visitor->myTraverseReturnStmt(FD->getBody());
+
+				}
+			}
+		}
+
+		return true;
+	}
+	virtual void HandleTranslationUnit(ASTContext &Context) {
+			/* we can use ASTContext to get the TranslationUnitDecl, which is
+			a single Decl that collectively represents the entire source file */
+		visitor->TraverseDecl(Context.getTranslationUnitDecl());
+		DeclarationNameTable* declaNameTbl = new DeclarationNameTable(Context);
+	}
+	~myAnalysisConsumer() {}
+//    void AddDiagnosticConsumer(PathDiagnosticConsumer* c){
+//	}
+/*
 	public:
-	explicit myAnalysisConsumer(CompilerInstance *CI)
+()){
+																		explicit myAnalysisConsumer(CompilerInstance *CI)
 						: visitor(new myVisitor(CI)) // initialize the visitor
 				{ }
 	bool HandleTopLevelDecl(DeclGroupRef DG) {
@@ -760,14 +963,9 @@ class myAnalysisConsumer : public ASTConsumer {
 			}
 		}
 		return true;
-	}/*
-	virtual void HandleTranslationUnit(ASTContext &Context) {
-		visitor->TraverseDecl(Context.getTranslationUnitDecl());
-		DeclarationNameTable* declaNameTbl = new DeclarationNameTable(Context);
-	}*/
+	}
 	~myAnalysisConsumer() {}
-//    void AddDiagnosticConsumer(PathDiagnosticConsumer* c){
-//	}
+*/
 };
 
 class myAnalysisAction : public ASTFrontendAction {
@@ -783,9 +981,13 @@ class myAnalysisAction : public ASTFrontendAction {
  		AnalyzerOptionsRef analyzerOpts = CI.getAnalyzerOpts();
  // 		bool hasModelPath = analyzerOpts->Config.count("model-path") > 0;
 
-		std::unique_ptr<ASTConsumer> p(new myAnalysisConsumer(&CI));
-		return p;
+//		std::unique_ptr<ASTConsumer> p(new myAnalysisConsumer(&CI));
+//		return p;
 			//hasModelPath ? new ModelInjector(CI) : nullptr);
+		return llvm::make_unique<myAnalysisConsumer>(&CI, 
+      		CI.getPreprocessor(), CI.getFrontendOpts().OutputFile, analyzerOpts,
+      		CI.getFrontendOpts().Plugins);
+
 	}
 };
 

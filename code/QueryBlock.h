@@ -1,3 +1,5 @@
+#ifndef QUERY_BLOCK_H
+#define QUERY_BLOCK_H
 #include "clang/AST/Decl.h"
 #include "clang/Analysis/AnalysisContext.h"
 #include "llvm/ADT/DenseMap.h"
@@ -10,7 +12,8 @@
 #include "clang/AST/StmtVisitor.h"
 #include "clang/AST/DeclCXX.h"
 
-#define DEBUG
+//#define DEBUG
+#define DEBUG_CFG
 
 #include <vector>
 #include <set>
@@ -85,9 +88,12 @@ public:
 		SourceLocation instack_getEnd();
 		Stmt* stmt;
 		Stmt* body;
+		Stmt* cond;
 		string cond_str;
 		CONDTYPE type;
+		const VarDecl* isDefinedBy(codeBlock* cb);
 		set<const VarDecl*> uses;
+		map<const VarDecl*, set<codeBlock*> > def_stmts;
 		vector<queryBlock*> queries;
 		vector<codeBlock*> stmt_list;
 		bool checkDep(set<const VarDecl*>& defs, set<const VarDecl*>& uses);
@@ -107,6 +113,9 @@ public:
 	set<codeBlock*> dep_blocks;
 	set<const VarDecl*> defs;
 	set<const VarDecl*> uses;
+	map<const VarDecl*, set<codeBlock*>> def_stmts;
+	codeBlock* finalcBlock;
+	string pre_label;
 #ifdef EXACT_USEDEF
 	map<const VarDecl*, set<codeBlock*>> real_uses;
 	set<codeBlock*> predecessor;
@@ -122,9 +131,12 @@ public:
 	string label;
 	codeBlock();	
 	int crossCompareAllConds(condBlock* most_inner_cond, int c_block);
+	const VarDecl* isDefinedBy(codeBlock* cb);
 	string getBlockStr();
 	void setDepBlocks();
+	void setFinalcBlock();
 	void propagateDep();
+	void finalizeDefs();
 	int conflict_index;
 	int sort_index;
 	int sort_base;
@@ -185,7 +197,10 @@ string parseLabel(const char* label_name);
 void printSourceRange(const SourceLocation& begin, const SourceLocation& end, SourceManager& M);
 
 bool rangeIsWithin(SourceLocation inner_begin, SourceLocation inner_end,  SourceLocation outer_begin, SourceLocation outer_end, SourceManager& M);
+bool rangeIsWithin(SourceLocation inner, SourceLocation outer_begin, SourceLocation outer_end, SourceManager& M);
+
 void addSets(set<const VarDecl*>& dest, set<const VarDecl*>& src);
+void addSets(map<const VarDecl*, set<codeBlock*> >& dest, map<const VarDecl*, set<codeBlock*> >& src);
 
 const VarDecl* crossCompare(set<const VarDecl*>& s1, set<const VarDecl*>& s2);
 bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_end,  SourceLocation after_begin, SourceLocation after_end, SourceManager& M);
@@ -217,6 +232,15 @@ struct reorderBufferUnit{
 	int cycle_finish;
 	int exec_cycles;
 };
+struct cb_renames{
+	map<const VarDecl*, string> names;
+};
+struct renameTable{
+	map<codeBlock*, cb_renames> table;
+};
+string replaceString(string src, string word, string new_word);
+string generateAssignment(const VarDecl* var, string before, string end);
+
 bool reorderBufCmp(reorderBufferUnit r1, reorderBufferUnit r2);
 
 extern vector<queryBlock*> query_blocks;
@@ -226,3 +250,4 @@ void setDependencies();
 extern map<string, TABLE_DESC> tables;
 void readConflictInfo();
 
+#endif

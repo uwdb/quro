@@ -21,6 +21,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -I/usr/include/mysql -lmysqlclient")
 add_clang_executable(cblock
   CBlocks.cpp
 	QueryBlock.cpp
+	ControlFlowGraph.cpp
+	AnalysisConsumer.cpp
   )
 
 target_link_libraries(cblock

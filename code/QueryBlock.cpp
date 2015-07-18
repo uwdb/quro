@@ -50,6 +50,17 @@ bool rangeIsWithin(SourceLocation inner_begin, SourceLocation inner_end,  Source
 		return false;
 }
 
+bool rangeIsWithin(SourceLocation inner, SourceLocation outer_begin, SourceLocation outer_end, SourceManager& M){
+		BeforeThanCompare<SourceLocation> Compare(M);
+		if(inner.isValid() && outer_begin.isValid() && outer_end.isValid()){
+				if(Compare(inner, outer_begin) || Compare(outer_end, inner))
+						return false;
+				return true;
+		}
+		return false;
+}
+
+
 bool rangeCompletelyBefore(SourceLocation before_begin, SourceLocation before_end,  SourceLocation after_begin, SourceLocation after_end, SourceManager& M){
 		BeforeThanCompare<SourceLocation> Compare(M);
 		if(before_begin.isValid() && before_end.isValid() && after_begin.isValid() && after_end.isValid()){
@@ -84,11 +95,25 @@ void addSets(set<const VarDecl*>& dest, set<const VarDecl*>& src){
 		}
 }
 
+void addSets(map<const VarDecl*, set<codeBlock*> >& dest, map<const VarDecl*, set<codeBlock*> >& src){
+		for(map<const VarDecl*, set<codeBlock*> >::iterator it = src.begin(); it != src.end(); it++){
+					if(dest.find(it->first) == dest.end()){
+							dest[it->first] = it->second;
+					}else{
+							for(set<codeBlock*>::iterator cit = it->second.begin(); cit != it->second.end(); cit++){
+								dest[it->first].insert(*cit);
+							}
+					}
+			}	
+}
+
+
 void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs, SourceManager& M){
 		if(DeclRefExpr *decl = dyn_cast<DeclRefExpr>(st)){
 				SourceRange sr(st->getLocStart(), st->getLocEnd());
 				if(sr_uses.find(sr) != sr_uses.end()){
 						if(const VarDecl *vardecl = dyn_cast<VarDecl>(decl->getDecl())){
+
 								if(sr_uses.getattr(sr)){
 										if(const ArrayType *atype = dyn_cast<ArrayType>(vardecl->getType().getTypePtr())){
 												defs.insert(vardecl);
@@ -98,6 +123,7 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 												defs.insert(vardecl);
 										}
 								}
+
 								uses.insert(vardecl);
 						}
 				}
@@ -126,11 +152,41 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 		  	que.pop();
 				if (const CallExpr *CE = dyn_cast<CallExpr>(s_it)) {
 		  			unsigned int nArgs = CE->getNumArgs();
-						for(int i=0; i<nArgs; i++){
-								const Expr* expr = CE->getArg(i);
-								SourceRange sr(expr->getLocStart(), expr->getLocEnd());
-								sr_uses.insert(sr, true);
-								que.push(expr);
+						string funcName = (CE->getDirectCallee()->getNameInfo().getAsString());
+//The part I hate: treating special functions 
+						if(strcmp(funcName.c_str(), "dbt5_sql_execute")==0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_uses.insert(sr1);
+								SourceRange sr2(CE->getArg(1)->getLocStart(), CE->getArg(1)->getLocEnd());
+								sr_defs.insert(sr2);
+						}else if(strcmp(funcName.c_str(), "sprintf") == 0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_defs.insert(sr1);
+								for(int i=2; i<nArgs; i++){
+										const Expr* expr = CE->getArg(i);
+										SourceRange sr(expr->getLocStart(), expr->getLocEnd());
+										sr_uses.insert(sr);
+										que.push(expr);
+								}
+						}else if(strcmp(funcName.c_str(), "dbt5_sql_close_cursor") == 0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_uses.insert(sr1);
+						}else if(strcmp(funcName.c_str(), "dbt5_sql_getvalue") == 0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_uses.insert(sr1);
+						}else if(strcmp(funcName.c_str(), "dbt5_sql_fetchrow") == 0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_uses.insert(sr1);
+								sr_defs.insert(sr1);
+						}
+//End the hating part, yay!
+						else{
+								for(int i=0; i<nArgs; i++){
+										const Expr* expr = CE->getArg(i);
+										SourceRange sr(expr->getLocStart(), expr->getLocEnd());
+										sr_uses.insert(sr, true);
+										que.push(expr);
+								}
 						}
 				}
 				else if(const MemberExpr* mexpr = dyn_cast<MemberExpr>(s_it)){
@@ -179,6 +235,7 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 							sr_uses.insert(sr);
 					  	continue;
 						}
+//TODO: handling assign() function here
 						//que.push(classH);
 						if(DeclRefExpr *_decl = dyn_cast<DeclRefExpr>(classH)){
 							if(const VarDecl *vardecl = dyn_cast<VarDecl>(_decl->getDecl())){
@@ -192,10 +249,12 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 						}
 						sr_defs.insert(sr);
 				}else if (const CallExpr *CE = dyn_cast<CallExpr>(s_it)) {
+/*
 						const Expr* classH = (CE->getCallee());
 						que.push(classH);
 						SourceRange sr(classH->getLocStart(), classH->getLocEnd());
 						sr_defs.insert(sr);
+*/
 				}
 				else if (const BinaryOperator *BO = dyn_cast<BinaryOperator>(s_it)){
 						if (BO->getOpcode() == BO_Assign) {
@@ -209,10 +268,25 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 								//}
 						}
 				}else if(const UnaryOperator *UO = dyn_cast<UnaryOperator>(s_it)){
-						que.push(UO->getSubExpr());
-						SourceRange sr(UO->getSubExpr()->getLocStart(), UO->getSubExpr()->getLocEnd());
-						sr_defs.insert(sr);
-						sr_uses.insert(sr);
+						if(UO->getOpcode() == UO_AddrOf){
+								SourceRange usr(UO->getLocStart(), UO->getLocEnd());
+								que.push(UO->getSubExpr());
+
+								SourceRange sr(UO->getSubExpr()->getLocStart(), UO->getSubExpr()->getLocEnd());
+								if(sr_uses.find(usr) != sr_uses.end() && sr_defs.find(usr) == sr_defs.end()){
+										sr_uses.insert(sr);
+								}else if(sr_defs.find(usr) != sr_defs.end() && sr_uses.find(usr) == sr_uses.end()){
+										sr_defs.insert(sr);
+								}else{
+										sr_defs.insert(sr);
+										sr_uses.insert(sr);
+								}
+						}else{
+								que.push(UO->getSubExpr());
+								SourceRange sr(UO->getSubExpr()->getLocStart(), UO->getSubExpr()->getLocEnd());
+								sr_defs.insert(sr);
+								sr_uses.insert(sr);
+						}
 				}
 		}
 }
@@ -407,6 +481,7 @@ SourceLocation condBlock::instack_getEnd(){
 }
 
 codeBlock::codeBlock(){
+	finalcBlock = this;
 	processed = false;
 	conflict_index = 0;
 	sort_index = 0;
@@ -560,7 +635,7 @@ string codeBlock::getBlockStr(){
 	sprintf(label_end, "\nQUERY_END_%s:\n\n", label.c_str());
 	char code[65536] = {0};
 //	string source_code = recursiveGenerate(cond_blocks.size()-1, contain_query);
-	string pre_label = label;
+	pre_label = label;
 	string source_code = recursiveGenerate(cond_blocks.size()-1);
 #ifdef DEBUG
 	cout<<"%%%%%%%%% "<<label<<" ("<<pre_label<<") %%%%%%%%%"<<endl;
@@ -575,6 +650,9 @@ string codeBlock::getBlockStr(){
 }
 
 void codeBlock::setDepBlocks(){
+	//1. condition
+	//2. in while/for: RAW
+	//3. in while/for: LCD (loop carry dependency)
 	set<codeBlock*> outer_while_contains;
 	for(int i=cond_blocks.size()-1; i>=0; i--){
 		//Most outer while/for loop: add all blocks inside the loop into outer_while_contains set
@@ -621,16 +699,25 @@ void codeBlock::setDepBlocks(){
 		}
 		//cond2: data dependencies
 		for(int j=index+1; j<code_blocks.size(); j++){
+			//RAW
+			const VarDecl* defined_var = isDefinedBy(code_blocks[j]);
+			//LCD
+			const VarDecl* defining_var = code_blocks[j]->isDefinedBy(this);
+
 			if(cond_blocks[i]->type == WHILE || cond_blocks[i]->type == FOR){
 					for(int k=0; k<code_blocks[j]->cond_blocks.size(); k++){
 							if(code_blocks[j]->cond_blocks[k] == cond_blocks[i] &&
+/*
 									(crossCompare(code_blocks[j]->defs, uses) || 
-									 crossCompare(defs, code_blocks[j]->uses))){
-									const VarDecl* v1 = crossCompare(code_blocks[j]->defs, uses);
-									const VarDecl* v2 = crossCompare(defs, code_blocks[j]->uses);
-									if(v1 != NULL){
-											if(const ArrayType *atype = dyn_cast<ArrayType>(v1->getType().getTypePtr())){}
-											else{
+									 crossCompare(defs, code_blocks[j]->uses))
+*/
+									(defined_var != NULL || defining_var != NULL)  //TODO: chiech whether it is array type...
+							){
+									//const VarDecl* v1 = crossCompare(code_blocks[j]->defs, uses);
+									//const VarDecl* v2 = crossCompare(defs, code_blocks[j]->uses);
+									if(defined_var != NULL){
+											//if(const ArrayType *atype = dyn_cast<ArrayType>(defined_var->getType().getTypePtr())){}
+											{
 #ifdef DEBUG
 								cout<<"Due to data dependency, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##"<<endl;
 #endif
@@ -638,9 +725,9 @@ void codeBlock::setDepBlocks(){
 												dep_blocks.insert(code_blocks[j]);
 											}
 									}
-									if(v2 != NULL){
-											if(const ArrayType *atype = dyn_cast<ArrayType>(v2->getType().getTypePtr())){}
-											else{
+									if(defining_var != NULL){
+											//if(const ArrayType *atype = dyn_cast<ArrayType>(defining_var->getType().getTypePtr())){}
+											{
 #ifdef DEBUG
 								cout<<"Due to data dependency, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##"<<endl;
 #endif
@@ -651,9 +738,11 @@ void codeBlock::setDepBlocks(){
 							}
 							else if(code_blocks[j]->cond_blocks[k] == cond_blocks[i]){
 									for(int l=0; l<k; l++){
-											if(crossCompare(defs, code_blocks[j]->cond_blocks[l]->uses)){
+//											const VarDecl* v = crossCompare(defs, code_blocks[j]->cond_blocks[l]->uses);
+											const VarDecl* v = code_blocks[j]->cond_blocks[l]->isDefinedBy(this);
+											if(v!=NULL){
 #ifdef DEBUG
-								cout<<"Due to data dependency to consequent for/while/if block condition, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##"<<endl;
+								cout<<"Due to data dependency to consequent for/while/if block condition, ##"<<code_blocks[j]->label<<"## depend on ##"<<label<<"##, on variable "<<v->getNameAsString()<<endl;
 #endif
 													code_blocks[j]->dep_blocks.insert(this);
 													dep_blocks.insert(code_blocks[j]);
@@ -717,9 +806,6 @@ string codeBlock::recursiveGenerate(int i){
 		for(int k=0; k<code_blocks[j]->cond_blocks.size(); k++){
 				if(code_blocks[j]->cond_blocks[k] == cond_blocks[i]){
 						dep_blocks_code.append(code_blocks[j]->recursiveGenerate(k-1));
-#ifdef DEBUG
-						cout<<"block ##"<<label<<"## appends block ##"<<code_blocks[j]->label<<"## into its dep_list, k = "<<k<<endl;
-#endif
 						if(type == NONQUERY && code_blocks[j]->type == QUERY)
 									label = code_blocks[j]->label;
 //Add code_blocks[j]'s use/def set to this use/def set
@@ -727,6 +813,35 @@ string codeBlock::recursiveGenerate(int i){
 						addSets(uses, code_blocks[j]->uses);
 						addSets(code_blocks[j]->defs, defs);
 						addSets(code_blocks[j]->uses, uses);
+						
+						addSets(def_stmts, code_blocks[j]->def_stmts);
+						addSets(code_blocks[j]->def_stmts, def_stmts);
+/*	
+						if(code_blocks[j]->finalcBlock != code_blocks[j]){
+								queue<codeBlock*> que;
+								que.push(code_blocks[j]);
+								while(!que.empty()){
+										codeBlock* temp_cb = que.front();
+										que.pop();
+										for(int s=temp_cb->index+1; s<code_blocks.size(); s++){
+												if(temp_cb->dep_blocks.find(code_blocks[s]) != temp_cb->dep_blocks.end() && code_blocks[s]->finalcBlock != this){
+														que.push(code_blocks[s]);
+#ifdef DEBUG_CFG
+								cout<<"propagate: code block "<<code_blocks[j]->label<<"'s finalcBlock = "<<code_blocks[j]->finalcBlock->label<<endl;
+#endif
+
+														code_blocks[s]->finalcBlock = this;
+												}
+										}	
+								}
+						}else{
+
+								code_blocks[j]->finalcBlock = this;
+#ifdef DEBUG_CFG
+								cout<<"code block "<<code_blocks[j]->label<<"'s finalcBlock = "<<code_blocks[j]->finalcBlock->label<<endl;
+#endif
+						}	
+*/
 
 						conflict_index = max(conflict_index, code_blocks[j]->conflict_index);
 						code_blocks[j]->processed = true;
@@ -748,6 +863,87 @@ string codeBlock::recursiveGenerate(int i){
 	string str(code);
 	return str;
 }
+
+void codeBlock::setFinalcBlock(){
+	if(processed == true){
+			queue<codeBlock*> que;
+			que.push(this);
+			while(finalcBlock == this){
+				codeBlock* cb = que.front();
+				que.pop();
+				for(set<codeBlock*>::iterator it = cb->dep_blocks.begin(); it != cb->dep_blocks.end(); it++){
+						if((*it)->index >= cb->index)
+							continue;
+						if((*it)->processed == false){
+								finalcBlock = *it;
+						}else{
+								que.push(*it);
+						}
+				}
+			}
+	}
+}
+void codeBlock::finalizeDefs(){
+#ifdef DEBUG_CFG
+	cout<<"-----code block: prelabel = "<<pre_label<<endl;
+#endif
+	if(processed == true){
+#ifdef DEBUG_CFG
+			cout<<"\tcur_label = "<<label<<endl;
+			cout<<"*******"<<endl;
+			cout<<insert_code<<endl;
+			cout<<"********"<<endl;
+#endif
+			for(int i=0; i<cond_blocks.size(); i++){
+					addSets(def_stmts, cond_blocks[i]->def_stmts);	
+					addSets(uses, cond_blocks[i]->uses);	
+			}
+
+			for(map<const VarDecl*, set<codeBlock*> >::iterator it = def_stmts.begin(); it != def_stmts.end(); it++){
+					set<codeBlock*> new_set;
+					for(set<codeBlock*>::iterator cit = it->second.begin(); cit != it->second.end(); cit++){
+								new_set.insert((*cit)->finalcBlock);
+								assert((*cit)->finalcBlock->processed == false);
+					}
+					def_stmts[it->first] = new_set;
+#ifdef DEBUG_CFG
+					cout<<"\t\t\tvar "<<(it->first)->getNameAsString()<<" defined by code block ";	
+					for(set<codeBlock*>::iterator cit = new_set.begin(); cit != new_set.end(); cit++){
+							cout<<(*cit)->label<<", ";
+					}
+					cout<<endl;
+#endif
+			}
+	}
+	else{
+			for(int i=0; i<cond_blocks.size(); i++){
+					addSets(def_stmts, cond_blocks[i]->def_stmts);	
+					addSets(uses, cond_blocks[i]->uses);	
+			}
+
+	}
+}
+
+const VarDecl* codeBlock::isDefinedBy(codeBlock* cb){
+		for(map<const VarDecl*, set<codeBlock*>>::iterator it = def_stmts.begin(); 
+				it != def_stmts.end(); it++){
+				for(set<codeBlock*>::iterator cit = it->second.begin(); cit != it->second.end(); cit++)
+						if((*cit)->finalcBlock == cb){
+								return it->first;
+						}
+		}
+		return NULL;
+}
+
+const VarDecl* condBlock::isDefinedBy(codeBlock* cb){
+		for(map<const VarDecl*, set<codeBlock*>>::iterator it = def_stmts.begin(); 
+				it != def_stmts.end(); it++){
+				if(it->second.find(cb) != it->second.end())
+						return it->first;
+		}
+		return NULL;
+}
+
 
 int codeBlock::crossCompareAllConds(condBlock* most_inner_cond, int c_block){
 	int i=0;
@@ -806,6 +1002,61 @@ const char* getStmtType(Stmt* st){
 	
 }
 
+inline bool isSpecialChar(char c){
+	if(c >= 'a' && c <= 'z') 
+			return false;
+	if(c >= 'A' && c <= 'Z')
+			return false;
+	if(c == '_')
+			return false;
+	return true;
+}
+bool isVarStr(string& src, int pos, int len){
+	if(pos==0){
+		if(isSpecialChar(src[pos+len]))
+			return true;
+		else
+			return false;
+	}
+	if(pos == src.length()-len){
+		if(isSpecialChar(src[pos-1]))
+			return true;
+		else 
+			return false;
+	}
+	if(isSpecialChar(src[pos-1]) && isSpecialChar(src[pos+len]))
+		return true;
+	return false;
+}
+
+string replaceString(string src, string word, string new_word){
+		int pos = 0;
+		while(src.find(word, pos) != string::npos){
+				pos = src.find(word);
+				while(pos != string::npos && isVarStr(src, pos, word.length())==false){
+						pos = src.find(word, pos+1);
+				}
+				//assert(pos != string::npos);
+				if(pos != string::npos)
+					src.replace(pos, word.length(), new_word);
+		}
+		return src;
+}
+
+string generateAssignment(const VarDecl* var, string before, string after){
+	//TODO: generate assignment according to var type
+	char assign[200] = {0};
+	if(const ArrayType *atype = dyn_cast<ArrayType>(var->getType().getTypePtr())){
+			const Type* etype = atype->getElementType().getTypePtr();
+			if(etype->isCharType()){
+					sprintf(assign, "strcpy(%s, %s);\n", after.c_str(), before.c_str());
+			}
+	}else{
+			sprintf(assign, "%s = %s;\n", after.c_str(), before.c_str());
+	}
+	string assign_str(assign);
+	return assign_str;
+}
 
 void splitByBlank(vector<string>& vec, string str){
 	char s[1000] = {0};
