@@ -178,6 +178,15 @@ void analyzeStmts(Stmt* st, set<const VarDecl*>& uses, set<const VarDecl*>& defs
 								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
 								sr_uses.insert(sr1);
 								sr_defs.insert(sr1);
+						}else if(strcmp(funcName.c_str(), "sscanf") == 0){
+								SourceRange sr1(CE->getArg(0)->getLocStart(), CE->getArg(0)->getLocEnd());
+								sr_uses.insert(sr1);
+								for(int i=2; i<nArgs; i++){
+										const Expr* expr = CE->getArg(i);
+										SourceRange sr(expr->getLocStart(), expr->getLocEnd());
+										sr_defs.insert(sr);
+										que.push(expr);
+								}
 						}
 //End the hating part, yay!
 						else{
@@ -806,8 +815,11 @@ string codeBlock::recursiveGenerate(int i){
 		for(int k=0; k<code_blocks[j]->cond_blocks.size(); k++){
 				if(code_blocks[j]->cond_blocks[k] == cond_blocks[i]){
 						dep_blocks_code.append(code_blocks[j]->recursiveGenerate(k-1));
-						if(type == NONQUERY && code_blocks[j]->type == QUERY)
+						if(type == NONQUERY && code_blocks[j]->type == QUERY){
 									label = code_blocks[j]->label;
+									type = QUERY;
+									conflict_index = max(conflict_index, code_blocks[j]->conflict_index);
+						}
 //Add code_blocks[j]'s use/def set to this use/def set
 						addSets(defs, code_blocks[j]->defs);
 						addSets(uses, code_blocks[j]->uses);
@@ -1129,3 +1141,4 @@ bool qBlockCmp(codeBlock* q1, codeBlock* q2){
 bool reorderBufCmp(reorderBufferUnit r1, reorderBufferUnit r2){
 		return r1.cycle_finish < r2.cycle_finish;
 }
+

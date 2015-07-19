@@ -205,6 +205,8 @@ public:
 													cout<<endl;
 											}
 #endif
+											if(tables.find(table_names[k]) == tables.end())
+													cout<<"ERROR: table "<<table_names[k]<<" not found"<<endl;
 											assert(tables.find(table_names[k])!=tables.end());
 											this_table_name = table_names[k];
 											this_conflict_index = getConflictIndex(tables[table_names[k]].num_rows, op);
@@ -648,12 +650,227 @@ public:
 									code_blocks[i]->propagateDep();
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->insert_code = code_blocks[i]->getBlockStr();
-							cout<<"finalize Dep"<<endl;
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->setFinalcBlock();
 							for(int i=0; i<code_blocks.size(); i++)
 									code_blocks[i]->finalizeDefs();
-/*
+							SourceLocation insertPlace = processedCodeBeginPlace;
+							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
+							rewriter.RemoveText(sr);
+
+							//Generate queryinfo.txt, for ILP solver
+
+							//End Generate queryinfo.txt
+							vector<codeBlock*> tempQ;
+							for(int i=0; i<code_blocks.size(); i++){	
+									codeBlock* c_block = code_blocks[i];
+									if(c_block->processed == false){
+											tempQ.push_back(c_block);
+											for(int j=0; j<c_block->cond_blocks.size(); j++){
+													addSets(c_block->uses, c_block->cond_blocks[j]->uses);
+											}
+									}
+							}
+
+#ifdef SORT_QUERIES
+							vector<codeBlock*> tempQ2;
+							for(int i=0; i<tempQ.size(); i++){
+									tempQ2.push_back(tempQ[i]);
+							}
+							map<codeBlock*, set<codeBlock*> > map_parent;
+							vector<codeBlock*> query_seq;
+							vector<codeBlock*> temp_query_seq;
+							for(int i=0; i<tempQ.size(); i++){
+									if(tempQ[i]->type == QUERY){
+											set<codeBlock*> new_set;
+											temp_query_seq.push_back(tempQ[i]);
+#ifdef DEBUG_CFG
+											cout<<"query_code block "<<tempQ[i]->index<<"("<<tempQ[i]->label<<"): ";
+#endif
+											for(int j=0; j<i; j++){
+													if(tempQ[i]->isDefinedBy(tempQ[j])){
+															if(tempQ[j]->type == QUERY)
+																	new_set.insert(tempQ[j]);
+															else{
+																	queue<codeBlock*> que;
+																	que.push(tempQ[j]);
+																	while(!que.empty()){
+																			codeBlock* pre = que.front();
+																			que.pop();
+																			for(int k=0; k<tempQ.size(); k++){
+																					if(tempQ[k] == pre)break;
+																					if(pre->isDefinedBy(tempQ[k])){
+																							que.push(tempQ[k]);
+																							if(tempQ[k]->type == QUERY)
+																									new_set.insert(tempQ[k]);
+																					}
+																			}	
+																	}	
+															}
+													}
+											}
+											map_parent[tempQ[i]] = new_set;
+#ifdef DEBUG_CFG
+											cout<<"\t\tparents include :";
+											for(set<codeBlock*>::iterator it = new_set.begin(); it != new_set.end(); it++)
+														cout<<(*it)->index<<", ";
+											cout<<endl;
+#endif
+									}
+							}
+							//Code to sort queries; should be ILP
+							sort(temp_query_seq.begin(), temp_query_seq.end(), qBlockCmp1);	
+							//End sort
+							set<codeBlock*> processed_blocks;
+							while(processed_blocks.size() < temp_query_seq.size()){
+									for(int i=0; i<temp_query_seq.size(); i++){
+											codeBlock* cur_block = temp_query_seq[i];
+											if(processed_blocks.find(cur_block) != processed_blocks.end())
+														continue;
+											//if empty_pqrents or parents are processed
+#ifdef DEBUG_CFG
+//											cout<<"---process block "<<cur_block->index<<"("<<cur_block->label<<"), parents.size = "<<map_parent[cur_block].size()<<endl;
+#endif
+											bool empty_parents = (map_parent[cur_block].size()==0);
+											if(empty_parents == 0){
+													bool no_parents = true;
+													for(set<codeBlock*>::iterator cit = map_parent[cur_block].begin(); cit != map_parent[cur_block].end(); cit++){
+															if(processed_blocks.find(*cit) == processed_blocks.end()){
+																	no_parents = false;
+																	break;
+															}
+													}
+													empty_parents = no_parents;
+											}
+											if(empty_parents){
+#ifdef DEBUG_CFG
+//													cout<<"\t\t\tinsert "<<cur_block->index<<", c_index = "<<cur_block->conflict_index<<endl;
+#endif
+													processed_blocks.insert(cur_block);
+													query_seq.push_back(cur_block);
+													break;
+											}
+									}
+							}
+#ifdef DEBUG_CFG
+							cout<<"After sort, query sequence: +++ "<<endl;
+							for(int i=0; i<query_seq.size(); i++)
+									cout<<"\t block "<<query_seq[i]->index<<endl;
+#endif
+
+							tempQ.clear();
+							processed_blocks.clear();
+							int q_index = 0;
+							while(processed_blocks.size() < tempQ2.size()){
+									if(q_index < query_seq.size()){
+#ifdef DEBUG_CFG
+											cout<<"Looking at block "<<query_seq[q_index]->index<<endl;
+#endif
+											codeBlock* cur_qblock = query_seq[q_index];
+											q_index++;
+											for(int i=0; i<tempQ2.size(); i++){
+													if(tempQ2[i]->type == QUERY 
+															|| cur_qblock->isDefinedBy(tempQ2[i]) == false 
+															|| processed_blocks.find(tempQ2[i]) != processed_blocks.end())continue;
+													if(tempQ2[i] == cur_qblock)break;
+													//recursively insert parents into tempQ
+													codeBlock* cb = tempQ2[i];
+													queue<codeBlock*> que;
+													que.push(cb);
+													while(!que.empty()){
+															cb = que.front();
+															que.pop();
+#ifdef DEBUG_CFG
+															cout<<"\t\tpop out block "<<cb->index<<", parents: ";
+#endif
+															//no parents or processed
+															bool no_parents = true;
+															for(int k=0; k<i; k++){
+																	if(cb->isDefinedBy(tempQ2[k]) && processed_blocks.find(tempQ2[k]) == processed_blocks.end()){
+																			que.push(tempQ2[k]);
+																			cout<<tempQ2[k]->index<<", ";
+																			no_parents = false;
+																	}
+															}
+															cout<<endl;
+															if(no_parents){
+#ifdef DEBUG_CFG
+																	cout<<"\t\tinsert block"<<cb->index<<" into queue"<<endl;
+#endif
+																	processed_blocks.insert(cb);
+																	tempQ.push_back(cb);
+															}else{
+																	que.push(cb);
+															}
+													}
+											}
+											for(int i=0; i<tempQ2.size(); i++){
+													if(tempQ2[i] == cur_qblock)break;
+													if(cur_qblock->isDefinedBy(tempQ2[i])){
+															if(processed_blocks.find(tempQ2[i]) == processed_blocks.end())
+																cout<<"\t\t\t--- block "<<tempQ2[i]->index<<" is not processed"<<endl;
+															assert(processed_blocks.find(tempQ2[i]) != processed_blocks.end());
+													}
+											}	
+											tempQ.push_back(cur_qblock);
+											processed_blocks.insert(cur_qblock);
+											for(int i=0; i<tempQ2.size(); i++){
+													if(tempQ2[i]->type == QUERY || tempQ2[i]->isDefinedBy(cur_qblock) == false)continue;
+													bool no_parents = true;
+													for(int k=0; k<i; k++){
+															if(tempQ2[i]->isDefinedBy(tempQ2[k]) && processed_blocks.find(tempQ2[k]) == processed_blocks.end())
+																		no_parents = false; 
+													}
+													if(no_parents){
+															tempQ.push_back(tempQ2[i]);
+															processed_blocks.insert(tempQ2[i]);
+													}
+											}
+									}else{
+											for(int i=0; i<tempQ2.size(); i++){
+													if(processed_blocks.find(tempQ2[i]) != processed_blocks.end())continue;
+													codeBlock* cb = tempQ2[i];
+													queue<codeBlock*> que;
+													que.push(cb);
+													while(!que.empty()){
+															cb = que.front();
+															que.pop();
+#ifdef DEBUG_CFG
+															cout<<"\t\tpop out block "<<cb->index<<", parents: ";
+#endif
+															//no parents or processed
+															bool no_parents = true;
+															for(int k=0; k<i; k++){
+																	if(cb->isDefinedBy(tempQ2[k]) && processed_blocks.find(tempQ2[k]) == processed_blocks.end()){
+																			que.push(tempQ2[k]);
+																			cout<<tempQ2[k]->index<<", ";
+																			no_parents = false;
+																	}
+															}
+															cout<<endl;
+															if(no_parents){
+#ifdef DEBUG_CFG
+																	cout<<"\t\tinsert block"<<cb->index<<" into queue"<<endl;
+#endif
+																	processed_blocks.insert(cb);
+																	tempQ.push_back(cb);
+															}else{
+																	que.push(cb);
+															}
+													}
+
+											}
+									}
+							}
+							
+							for(int i=tempQ.size()-1; i>=0; i--){	
+									codeBlock* c_block = tempQ[i];
+									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
+							}
+#endif
+
+#ifdef REORDER_BUFFER
+#ifdef DEBUG_DEPRECATED
 							for(int i=0; i<code_blocks.size(); i++){
 									if(code_blocks[i]->processed == true)
 											continue;
@@ -670,55 +887,8 @@ public:
 									cout<<"\tcode "<<code_blocks[i]->pre_label<<"("<<code_blocks[i]->processed<<")'s finalized code block is "<<code_blocks[i]->finalcBlock->pre_label<<" ("<<code_blocks[i]->finalcBlock->processed<<endl;
 
 							}
-*/
-//							for(int i=0; i<code_blocks.size(); i++)
-//									code_blocks[i]->finalizeDefs();	
+#endif
 
-							SourceLocation insertPlace = processedCodeBeginPlace;
-							SourceRange sr(insertPlace, ret_stmt->getLocStart().getLocWithOffset(-1));
-							rewriter.RemoveText(sr);
-
-							//Generate queryinfo.txt, for ILP solver
-/*
-							ofstream outfile("queryinfo.txt");
-							int nQueries = 0;
-							map<const codeBlock*, int> q_map;
-							for(int i=0; i<code_blocks.size(); i++)
-										if(code_blocks[i]->type == QUERY){
-												q_map[code_blocks[i]] = nQueries;
-												nQueries++;
-										}
-							outfile<<nQueries<<endl;
-							//c_index
-							for(int i=0; i<code_blocks.size(); i++)
-									if(code_blocks[i]->in_query)
-											outfile<<code_blocks[i]->conflict_index<<" ";
-							outfile<<endl;
-							for(int i=0; i<code_blocks.size(); i++){
-									if(code_blocks[i]->in_query){
-											for(set<queryBlock*>::iterator it = code_blocks[i]->children.begin();
-														it != code_blocks[i]->children.end(); it++){
-													if((*it)->type != QUERY)
-														continue;
-													assert(q_map.find(code_blocks[i]) != q_map.end());
-													assert(q_map.find((*it)) != q_map.end());
-													outfile<<q_map[code_blocks[i]]<<" "<<q_map[(*it)]<<endl;
-											}
-									}
-							}
-*/
-
-							//End Generate queryinfo.txt
-							vector<codeBlock*> tempQ;
-							for(int i=0; i<code_blocks.size(); i++){	
-									codeBlock* c_block = code_blocks[i];
-									if(c_block->processed == false){
-											tempQ.push_back(c_block);
-											for(int j=0; j<c_block->cond_blocks.size(); j++){
-													addSets(c_block->uses, c_block->cond_blocks[j]->uses);
-											}
-									}
-							}
 							cout<<endl<<"#######     #######        ##########"<<endl;
 							for(int i=0; i<tempQ.size(); i++){
 									cout<<"block "<<tempQ[i]->index<<" content: "<<endl;
@@ -726,12 +896,14 @@ public:
 									cout<<tempQ[i]->insert_code<<endl;
 									cout<<"          $$$$$ "<<endl;
 									cout<<"  defines: ";
-/*									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++)
+#ifdef DEBUG_DEPRECATED
+									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++)
 											cout<<(*it)->getNameAsString()<<", ";
 									cout<<endl<<" uses: ";
 									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++)
 											cout<<(*it)->getNameAsString()<<", ";
-									cout<<endl;*/
+									cout<<endl;
+#endif
 
 									for(map<const VarDecl*, set<codeBlock*> >::iterator it  =  tempQ[i]->def_stmts.begin(); it != tempQ[i]->def_stmts.end(); it++){
 											cout<<"Var "<<it->first->getNameAsString()<<" ";
@@ -830,7 +1002,7 @@ public:
 									ru.cycle_finish = ru.exec_cycles + ru.cycle_dispatched;
 #ifdef DEBUG_CFG
 									cout<<"$$ code block "<<tempQ[i]->label<<" ("<<tempQ[i]->index<<") $$:"<<endl;
-/*
+#ifdef DEBUG_DEPRECATED
 									cout<<"defs: "<<endl;
 									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
 											cout<<(*it)->getNameAsString()<<", ";
@@ -841,7 +1013,7 @@ public:
 											cout<<(*it)->getNameAsString()<<", ";
 									}
 									cout<<endl;
-*/
+#endif
 									cout<<"\tcycle_dispatched = "<<ru.cycle_dispatched<<", cycle_finished = "<<ru.cycle_finish<<endl;
 #endif
 									reorderBuffer.push_back(ru);
@@ -849,15 +1021,16 @@ public:
 							sort(reorderBuffer.begin(), reorderBuffer.end(), reorderBufCmp);
 							for(int i=reorderBuffer.size()-1; i>=0; i--)
 									rewriter.InsertTextBefore(insertPlace, reorderBuffer[i].cb->insert_code);
+#endif /* REORDER_BUFFER */
 
-/*
+#ifdef ONLY_FISSION
 							for(int i=code_blocks.size()-1; i>=0; i--){	
 									codeBlock* c_block = code_blocks[i];
 									if(c_block->processed)
 											continue;
 									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
 							}
-*/
+#endif
 					}
 				}
 		}

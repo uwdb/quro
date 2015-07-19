@@ -14,6 +14,8 @@
 
 //#define DEBUG
 #define DEBUG_CFG
+//#define ONLY_FISSION
+#define SORT_QUERIES
 
 #include <vector>
 #include <set>
