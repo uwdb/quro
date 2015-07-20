@@ -13,9 +13,10 @@
 #include "clang/AST/DeclCXX.h"
 
 //#define DEBUG
-#define DEBUG_CFG
+//#define DEBUG_CFG
 //#define ONLY_FISSION
 #define SORT_QUERIES
+#define GENERATE_ILP_INPUT
 
 #include <vector>
 #include <set>

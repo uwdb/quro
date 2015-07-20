@@ -718,6 +718,31 @@ public:
 #endif
 									}
 							}
+#ifdef GENERATE_ILP_INPUT
+							ofstream outfile("queryinfo.txt");
+							int query_cnt = 0;
+							map<codeBlock*, int> query_index;
+							for(int i=0; i<tempQ.size(); i++){
+									if(tempQ[i]->type == QUERY){
+										query_index[tempQ[i]] = query_cnt;
+										query_cnt++;
+									}
+							}
+							outfile<<query_cnt<<endl;
+							for(int i=0; i<tempQ.size(); i++){
+									if(tempQ[i]->type == QUERY)
+										outfile<<tempQ[i]->conflict_index<<" ";
+							}
+							outfile<<endl;
+							for(int i=0; i<tempQ.size(); i++){
+									if(tempQ[i]->type != QUERY)continue;
+									for(set<codeBlock*>::iterator it = map_parent[tempQ[i]].begin(); it != map_parent[tempQ[i]].end(); it++){
+											for(int k=0; k<i; k++)
+													if(tempQ[k]->type == QUERY && tempQ[k] == *it)
+															outfile<<query_index[tempQ[k]]<<" "<<query_index[tempQ[i]]<<endl;
+									}
+							}
+#endif
 							//Code to sort queries; should be ILP
 							sort(temp_query_seq.begin(), temp_query_seq.end(), qBlockCmp1);	
 							//End sort
@@ -863,13 +888,9 @@ public:
 									}
 							}
 							
-							for(int i=tempQ.size()-1; i>=0; i--){	
-									codeBlock* c_block = tempQ[i];
-									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
-							}
 #endif
 
-#ifdef REORDER_BUFFER
+//#ifdef REORDER_BUFFER
 #ifdef DEBUG_DEPRECATED
 							for(int i=0; i<code_blocks.size(); i++){
 									if(code_blocks[i]->processed == true)
@@ -887,7 +908,6 @@ public:
 									cout<<"\tcode "<<code_blocks[i]->pre_label<<"("<<code_blocks[i]->processed<<")'s finalized code block is "<<code_blocks[i]->finalcBlock->pre_label<<" ("<<code_blocks[i]->finalcBlock->processed<<endl;
 
 							}
-#endif
 
 							cout<<endl<<"#######     #######        ##########"<<endl;
 							for(int i=0; i<tempQ.size(); i++){
@@ -896,14 +916,12 @@ public:
 									cout<<tempQ[i]->insert_code<<endl;
 									cout<<"          $$$$$ "<<endl;
 									cout<<"  defines: ";
-#ifdef DEBUG_DEPRECATED
 									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++)
 											cout<<(*it)->getNameAsString()<<", ";
 									cout<<endl<<" uses: ";
 									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++)
 											cout<<(*it)->getNameAsString()<<", ";
 									cout<<endl;
-#endif
 
 									for(map<const VarDecl*, set<codeBlock*> >::iterator it  =  tempQ[i]->def_stmts.begin(); it != tempQ[i]->def_stmts.end(); it++){
 											cout<<"Var "<<it->first->getNameAsString()<<" ";
@@ -915,12 +933,98 @@ public:
 
 							}
 
+#endif
 
 							//code_blocks.clear();
 							vector<reorderBufferUnit> reorderBuffer;
 							renameTable renameT;
 							int rnb_cnt = 0;
+#ifdef SORT_QUERIES
+							vector<map<const VarDecl*, int> > last_use;
+							for(int i=0; i<tempQ.size(); i++){
+									map<const VarDecl*, int> new_map;
+									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
+											if(new_map.find(*it) != new_map.end())continue;
+											for(int j=tempQ.size()-1; j>i; j--){
+													if(tempQ[j]->def_stmts[*it].find(tempQ[i]) != tempQ[j]->def_stmts[*it].end()){
+															new_map[*it] = j;
+													}
+											}
+									}
+									last_use.push_back(new_map);
+							}
+							for(int i=0; i<tempQ.size(); i++){
+									map<const VarDecl*, string> changed_names;
 
+									for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+											codeBlock* def_cb = NULL;
+											for(set<codeBlock*>::iterator cit = tempQ[i]->def_stmts[*it].begin(); cit != tempQ[i]->def_stmts[*it].end(); cit++){
+													if((*cit)->finalcBlock != tempQ[i])
+															def_cb = (*cit)->finalcBlock;
+											}
+											if(def_cb != NULL && renameT.table.find(def_cb) != renameT.table.end()){
+													if(renameT.table[def_cb].names.find(*it) != renameT.table[def_cb].names.end()){
+#ifdef DEBUG_CFG
+																cout<<"block "<<tempQ[i]->index<<" uses "<<(*it)->getNameAsString()<<", rename to "<<renameT.table[def_cb].names[*it]<<endl;
+#endif
+																changed_names[*it] = renameT.table[def_cb].names[*it];
+																//TODO: if the name is defined by multiple statements, insert a new assign into after these defining stmts.
+																//tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (*it)->getNameAsString(), renameT.table[def_cb].names[*it]); 
+													}
+											}
+									}
+									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
+											string new_name = (*it)->getNameAsString();
+											bool need_rename = false;
+											char n_str[10] = {0};
+											for(int j=0; j<i; j++){
+													if(last_use[j].find(*it) != last_use[j].end() && 
+															last_use[j][*it] > i){
+																need_rename = true;
+																sprintf(n_str, "_%d", rnb_cnt);
+																rnb_cnt++;
+
+													}
+											}
+											if(need_rename){
+													new_name.append(n_str);
+													if(renameT.table.find(tempQ[i]) == renameT.table.end()){
+															cb_renames newrenames;
+															newrenames.names[*it] = new_name;	
+															renameT.table[tempQ[i]] = newrenames;
+													}else{
+															renameT.table[tempQ[i]].names[(*it)] = new_name;
+													}
+#ifdef DEBUG_CFG
+													cout<<"block "<<tempQ[i]->index<<" rename var "<<(*it)->getNameAsString()<<" to "<<new_name<<endl;
+#endif
+													if(changed_names.find(*it) != changed_names.end()){
+															//this var is both used and defined in this block (assuming used first).
+															//In case they are defined and used in a same function call... 
+															//Add an assign: result32 = result29;
+															string added_assign = generateAssignment(*it, changed_names[*it], new_name);
+															changed_names[*it] = new_name;
+															tempQ[i]->insert_code.insert(0, added_assign);
+													}else{
+															changed_names[*it] = new_name;
+													}
+													//tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (*it)->getNameAsString(), new_name);	
+											}
+									}
+									for(map<const VarDecl*, string>::iterator vit = changed_names.begin(); vit != changed_names.end(); vit++){
+											tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (vit->first)->getNameAsString(), vit->second);
+									}
+							}
+
+							for(int i=tempQ.size()-1; i>=0; i--){	
+									codeBlock* c_block = tempQ[i];
+									rewriter.InsertTextBefore(insertPlace, c_block->insert_code);
+							}
+
+#endif /* SORT_QUERIES */
+
+
+#ifdef REORDER_BUFFER
 							for(int i=0; i<tempQ.size(); i++){
 									//code_blocks.push_back(tempQ[i]);
 									reorderBufferUnit ru;
@@ -993,16 +1097,15 @@ public:
 															changed_names[*it] = new_name;
 													}
 													//tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (*it)->getNameAsString(), new_name);	
-}
+											}
 									}
 									for(map<const VarDecl*, string>::iterator vit = changed_names.begin(); vit != changed_names.end(); vit++){
 												tempQ[i]->insert_code = replaceString(tempQ[i]->insert_code, (vit->first)->getNameAsString(), vit->second);
 									}
 
 									ru.cycle_finish = ru.exec_cycles + ru.cycle_dispatched;
-#ifdef DEBUG_CFG
-									cout<<"$$ code block "<<tempQ[i]->label<<" ("<<tempQ[i]->index<<") $$:"<<endl;
 #ifdef DEBUG_DEPRECATED
+									cout<<"$$ code block "<<tempQ[i]->label<<" ("<<tempQ[i]->index<<") $$:"<<endl;
 									cout<<"defs: "<<endl;
 									for(set<const VarDecl*>::iterator it = tempQ[i]->defs.begin(); it != tempQ[i]->defs.end(); it++){
 											cout<<(*it)->getNameAsString()<<", ";
@@ -1013,15 +1116,19 @@ public:
 											cout<<(*it)->getNameAsString()<<", ";
 									}
 									cout<<endl;
-#endif
 									cout<<"\tcycle_dispatched = "<<ru.cycle_dispatched<<", cycle_finished = "<<ru.cycle_finish<<endl;
 #endif
 									reorderBuffer.push_back(ru);
 							}
 							sort(reorderBuffer.begin(), reorderBuffer.end(), reorderBufCmp);
+
+//Insert code block into the original source code file
 							for(int i=reorderBuffer.size()-1; i>=0; i--)
 									rewriter.InsertTextBefore(insertPlace, reorderBuffer[i].cb->insert_code);
-#endif /* REORDER_BUFFER */
+#endif
+
+
+//#endif /* REORDER_BUFFER */
 
 #ifdef ONLY_FISSION
 							for(int i=code_blocks.size()-1; i>=0; i--){	
