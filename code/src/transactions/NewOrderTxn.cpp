@@ -253,6 +253,37 @@ sprintf(query4, NEW_ORDER_4, w_id, d_id, c_id);
 			throw fail_msg.c_str();
 	}
 
+for(i=0; i<o_ol_cnt; i++){
+	sprintf(query8, NEW_ORDER_8, s_dist[d_id - 1], ol_i_id[i], w_id);
+			r8 = dbt5_sql_execute(query8, &result8, "get stock");
+			if(r8 == 1 && result8.result_set){
+					dbt5_sql_fetchrow(&result8);
+					s_quantity[i] = atol(dbt5_sql_getvalue(&result8, 0, length));
+					my_s_dist[i].assign(dbt5_sql_getvalue(&result8, 1, length));
+					s_data[i].assign(dbt5_sql_getvalue(&result8, 2, length));
+					dbt5_sql_close_cursor(&result8);
+			}else{
+					string fail_msg("get stock fail");
+					throw fail_msg.c_str();
+			}
+}
+
+for(i=0; i<o_ol_cnt; i++){
+	if(s_quantity[i] > ol_quantity[i] + 10){
+					sprintf(query9, NEW_ORDER_9, ol_quantity[i], ol_i_id[i], w_id);
+			}
+
+if(!(s_quantity[i] > ol_quantity[i] + 10)){
+					sprintf(query9, NEW_ORDER_9, ol_quantity[i]-91, ol_i_id[i], w_id);
+			}
+
+			r9 = dbt5_sql_execute(query9, &result9, "update stock");
+			if(!r9){
+					string fail_msg("update stock fail");
+					throw fail_msg.c_str();
+			}
+}
+
 
 
 sprintf(query2, NEW_ORDER_2, w_id, d_id);
@@ -271,18 +302,19 @@ sprintf(query2, NEW_ORDER_2, w_id, d_id);
 
 
 for(i=0; i<o_ol_cnt; i++){
-	sprintf(query8, NEW_ORDER_8, s_dist[d_id - 1], ol_i_id[i], w_id);
-			r8 = dbt5_sql_execute(query8, &result8, "get stock");
-			if(r8 == 1 && result8.result_set){
-					dbt5_sql_fetchrow(&result8);
-					s_quantity[i] = atol(dbt5_sql_getvalue(&result8, 0, length));
-					my_s_dist[i].assign(dbt5_sql_getvalue(&result8, 1, length));
-					s_data[i].assign(dbt5_sql_getvalue(&result8, 2, length));
-					dbt5_sql_close_cursor(&result8);
-			}else{
-					string fail_msg("get stock fail");
-					throw fail_msg.c_str();
-			}
+
+//	sprintf(query8, NEW_ORDER_8, s_dist[d_id - 1], ol_i_id[i], w_id);
+//			r8 = dbt5_sql_execute(query8, &result8, "get stock");
+//			if(r8 == 1 && result8.result_set){
+//					dbt5_sql_fetchrow(&result8);
+//					s_quantity[i] = atol(dbt5_sql_getvalue(&result8, 0, length));
+//					my_s_dist[i].assign(dbt5_sql_getvalue(&result8, 1, length));
+//					s_data[i].assign(dbt5_sql_getvalue(&result8, 2, length));
+//					dbt5_sql_close_cursor(&result8);
+//			}else{
+//					string fail_msg("get stock fail");
+//					throw fail_msg.c_str();
+//			}
 
 sprintf(query10, NEW_ORDER_10, d_next_o_id, d_id, w_id, i+1, ol_i_id[i],
                   ol_supply_w_id[i], ol_quantity[i], ol_amount[i], my_s_dist[i].c_str() );
@@ -305,21 +337,21 @@ for(i=0; i<o_ol_cnt; i++){
 
 
 
-for(i=0; i<o_ol_cnt; i++){
-	if(s_quantity[i] > ol_quantity[i] + 10){
-					sprintf(query9, NEW_ORDER_9, ol_quantity[i], ol_i_id[i], w_id);
-			}
-
-if(!(s_quantity[i] > ol_quantity[i] + 10))
-					sprintf(query9, NEW_ORDER_9, ol_quantity[i]-91, ol_i_id[i], w_id);
-			}
-
-			r9 = dbt5_sql_execute(query9, &result9, "update stock");
-			if(!r9){
-					string fail_msg("update stock fail");
-					throw fail_msg.c_str();
-			}
-
+//for(i=0; i<o_ol_cnt; i++){
+//	if(s_quantity[i] > ol_quantity[i] + 10){
+//					sprintf(query9, NEW_ORDER_9, ol_quantity[i], ol_i_id[i], w_id);
+//			}
+//
+//if(!(s_quantity[i] > ol_quantity[i] + 10)){
+//					sprintf(query9, NEW_ORDER_9, ol_quantity[i]-91, ol_i_id[i], w_id);
+//			}
+//
+//			r9 = dbt5_sql_execute(query9, &result9, "update stock");
+//			if(!r9){
+//					string fail_msg("update stock fail");
+//					throw fail_msg.c_str();
+//			}
+//}
 
 
 

@@ -264,11 +264,11 @@ loop:
 #ifdef CAL_RESP_TIME
 
 //			pDBConnection->append_profile_node(t1, t2, pMessage->TxnType, true);
-			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+//			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
 #ifdef PROFILE_EACH_QUERY
-			pDBConnection->print_profile_query();
+//			pDBConnection->print_profile_query();
 #endif
-			pDBConnection->outfile.flush();
+//			pDBConnection->outfile.flush();
 
 #endif
 			// send status to driver

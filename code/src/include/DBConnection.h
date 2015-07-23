@@ -43,7 +43,7 @@ class BidRunner;
 class TPCCRunner;
 #endif
 
-
+#define TABLE_PROFILE
 //#define LOG_ERROR_MESSAGE(arg...) logErrorMessage(arg...)
 //#define LOG_ERROR_MESSAGE logErrorMessage
 #define LOG_ERROR_MESSAGE(arg...)

@@ -53,7 +53,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	char* c_credit;
 	int c_id;
 	char my_c_data[1000];
-
+/*
 	sprintf(query_selectwh, PAYMENT_1, pIn->w_id);
 //	CLANG_PROFILE(query_selectwh);
 	r_1 = dbt5_sql_execute(query_selectwh, &result1, "get_wh");
@@ -160,7 +160,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("insert_his fail");
 				throw fail_msg.c_str();
 		}
-/*
+*/
 
 	if(!(pIn->c_id == 0)){
 			c_id = pIn->c_id;
@@ -286,7 +286,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("update_wh fail");
 				throw fail_msg.c_str();
 		}
-*/
+
 
 		pOut->w_name.assign(w_name);
 		pOut->d_name.assign(d_name);

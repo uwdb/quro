@@ -123,12 +123,12 @@ try {
 			txn_time += exec_time;
 			pDBConnection->txn_time = txn_time;
 #ifdef CAL_RESP_TIME
-			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
+//			pDBConnection->outfile<<commit<<" start=( "<<t1.tv_sec<<" "<<t1.tv_usec<<" ), end=( "<<t2.tv_sec<<" "<<t2.tv_usec<<" ), "<<exec_time<<", txn_cnt = "<<txn_cnt<<"total: "<<txn_time<<endl;
 #ifdef PROFILE_EACH_QUERY
-			pDBConnection->print_profile_query();
+//			pDBConnection->print_profile_query();
 #endif
 			//pDBConnection->outfile<<"commit txn "<<txn_cnt<<endl;
-			pDBConnection->outfile.flush();
+//			pDBConnection->outfile.flush();
 
 #endif
 

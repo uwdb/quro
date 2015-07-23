@@ -2,7 +2,7 @@
 #REORDERN="reorder"
 #ORIGN="orig"
 TXN="tpcc"
-TXNNAME="mix"
+TXNNAME="payment"
 TYPEN="reorder"
 
 #TXN="tpce"
@@ -12,14 +12,15 @@ TYPEN="reorder"
 #TXNNAME="1item"
 
 USER=32
-WHN=1
+#WH=4
 
 run_benchmark()
 {
-	USERS="8 16 32 64 128"
+	#USERS="8 16 32 64 128"
+	WH="2 8 16 32"
 	#USERS="128"
 
-		for USER in $USERS ; do
+		for WHN in $WH ; do
 				echo "start warehouse ${WHN}"
 
 
