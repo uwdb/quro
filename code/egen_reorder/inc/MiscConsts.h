@@ -146,8 +146,8 @@ const INT32     TradeLookupSValueForTimeGenFrame3       = 16;
 const INT32     TradeLookupAValueForTimeGenFrame4       = 4095;
 const INT32     TradeLookupSValueForTimeGenFrame4       = 16;
 // Trade Update
-//const INT32     TradeUpdateAValueForTradeIDGenFrame1    = 65535;
-const INT32     TradeUpdateAValueForTradeIDGenFrame1    = 4;
+const INT32     TradeUpdateAValueForTradeIDGenFrame1    = 65535;
+//const INT32     TradeUpdateAValueForTradeIDGenFrame1    = 4;
 const INT32     TradeUpdateSValueForTradeIDGenFrame1    = 7;
 const INT32     TradeUpdateAValueForTimeGenFrame2       = 4095;
 const INT32     TradeUpdateSValueForTimeGenFrame2       = 16;

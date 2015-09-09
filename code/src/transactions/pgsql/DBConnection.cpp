@@ -150,6 +150,13 @@ CDBConnection::CDBConnection(TPCCRunner *_tpcc, char *_mysql_dbname, char *_mysq
 		strcpy(mysql_socket_t, _mysql_socket);
 	}
   connect();
+#ifdef TIMEBREAK
+	q_cnt = 0;
+#endif
+#ifdef TIMEPROFILE
+	memset(_time, 0, sizeof(double)*100);
+	memset(_cnt, 0, sizeof(int)*100);
+#endif
 }
 #endif
 

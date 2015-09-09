@@ -1,5 +1,5 @@
-#define NEW_ORDER_PERC 0
-#define PAYMENT_PERC 1
+#define NEW_ORDER_PERC 0.5
+#define PAYMENT_PERC 0.5
 
 #define D_ID_MAX 10
 #define C_ID_UNKNOWN 0

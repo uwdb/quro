@@ -39,8 +39,6 @@ void *MarketWorkerThread(void* data)
 //			timeval t1;
 			ostringstream msg2;
 			gettimeofday(&t2, NULL);
-			msg2<<"msg transfer: socketfd = "<<pThrParam->iSockfd<<", range = "<<difftimeval(t2, t1)<<endl;
-			pThrParam->pMarketExchange->logErrorMessage(msg2.str());
 //			ostringstream msg1;
 //			msg1<<"send request, socketfd = "<<pThrParam->iSockfd<<", time = "<<t1.tv_sec<<","<<t1.tv_usec<<endl;
 //			pThrParam->pMarketExchange->logErrorMessage(msg1.str());
@@ -133,8 +131,8 @@ CMarketExchange::CMarketExchange(char *szFileLoc,
 #endif
 	// Initialize MEESUT
 	//iUsers = (iUsers>>2)>1?(iUsers>>2):1;
-	Users = iUsers;
-	//Users = 1;
+	//Users = iUsers;
+	Users = 1;
 	assert(iUsers <= 128);
 	for(int i=0; i<Users; i++){
 			m_pCMEESUT[i] = new CMEESUT(szBHaddr, iBHlistenPort, &m_fLog, &m_fMix,

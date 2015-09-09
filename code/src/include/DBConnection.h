@@ -34,6 +34,7 @@
 #include "DBT5Consts.h"
 #include "CommonStructs.h"
 
+
 using namespace TPCE;
 #ifdef WORKLOAD_SEATS
 class SeatsRunner;
@@ -155,15 +156,25 @@ public:
 	void disconnect();
 
 	ofstream outfile;
+
+	int q_cnt;
 #ifdef CAL_RESP_TIME
 	profile_node* head;
 	profile_node* cur;
 	void init_profile_node(int t_id, char* outputDir);
 	void append_profile_node(timeval _start, timeval _end, eTxnType _type, bool _commit);
 #endif
+#ifdef TIMEBREAK
+	map<string, double> tb;
+#endif
+#ifdef TIMEPROFILE
+	double _time[100];
+	int _cnt[100];
+	double _var[100];
+#endif
 #ifdef PROFILE_EACH_QUERY
 	p_query queries[200];
-	size_t q_cnt;
+//	size_t q_cnt;
 
 	double exec_time;
 

@@ -31,6 +31,9 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	char query_updatewh[1024];
 	char query_selectdis[1024];
 	char query_updatedis[1024];
+	char query[256];
+	double t_time;
+	sql_result_t result;
 	sql_result_t result1, result2, result3, result4, result5, result6, result7, result8, result9;
 	int length;
 	char* val;
@@ -53,8 +56,10 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	char* c_credit;
 	int c_id;
 	char my_c_data[1000];
+
 /*
 	sprintf(query_selectwh, PAYMENT_1, pIn->w_id);
+	GETTIME;
 //	CLANG_PROFILE(query_selectwh);
 	r_1 = dbt5_sql_execute(query_selectwh, &result1, "get_wh");
 	if(r_1==1 && result1.result_set){
@@ -70,7 +75,12 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 			string fail_msg("get_wh fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(0);
+	//EXECUTEPROFILING;
 
+
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_updatewh, PAYMENT_2, pIn->h_amount, pIn->w_id);
 //		CLANG_PROFILE(query_updatewh);
 		r_2 = dbt5_sql_execute(query_updatewh, &result2, "update_wh");
@@ -78,8 +88,12 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("update_wh fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(1);
+	//EXECUTEPROFILING;
 
 
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_selectdis, PAYMENT_3, pIn->d_id, pIn->w_id);
 //		CLANG_PROFILE(query_selectdis);
 		r_3 = dbt5_sql_execute(query_selectdis, &result3, "get_dis");
@@ -96,7 +110,12 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("get_dis fail");
 				throw fail_msg.c_str();
 		}
+	GETPROFILE(2);
+	//EXECUTEPROFILING;
 
+
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_updatedis, PAYMENT_4, pIn->h_amount, pIn->w_id, pIn->d_id);
 //		CLANG_PROFILE(query_updatedis);
 		r_4 = dbt5_sql_execute(query_updatedis, &result4, "update_dis");
@@ -104,8 +123,12 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("update_dis fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(3);
+	//EXECUTEPROFILING;
 
 		if(pIn->c_id == 0){
+				//SETPROFILING;
+				GETTIME;
 				sprintf(query_selectcus, PAYMENT_5, pIn->w_id, pIn->d_id, pIn->c_last);
 //				CLANG_PROFILE(query_selectcus);
 				r_5 = dbt5_sql_execute(query_selectcus, &result5, "get_cus");
@@ -117,10 +140,14 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 						string fail_msg("get_cus fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(4);
+			//EXECUTEPROFILING;
 		}else{
 				c_id = pIn->c_id;
 		}
 
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_selectcus2, PAYMENT_6, pIn->c_w_id, pIn->c_d_id, c_id);
 //		CLANG_PROFILE(query_selectcus2);
 		r_6 = dbt5_sql_execute(query_selectcus2, &result6, "get_cus2");
@@ -133,8 +160,12 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("get_cus2 fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(5);
+	//EXECUTEPROFILING;
 
 		if(c_credit[0] == 'G'){
+	//SETPROFILING;
+				GETTIME;
 				sprintf(query_updatecus, PAYMENT_7_GC, pIn->h_amount, c_id, pIn->c_w_id, pIn->c_d_id);
 //				CLANG_PROFILE(query_updatecus);
 				r_7 = dbt5_sql_execute(query_updatecus, &result7, "update_cusg");
@@ -142,7 +173,10 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 						string fail_msg("update_cusg fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(6);
+		//EXECUTEPROFILING;
 		}else{
+				GETTIME;
 				sprintf(my_c_data, "%d %d %d %d %d %f", c_id, pIn->c_d_id, pIn->c_w_id, pIn->d_id, pIn->w_id, pIn->h_amount);
 				sprintf(query_updatecus2, PAYMENT_7_BC, pIn->h_amount, my_c_data, c_id, pIn->c_w_id, pIn->c_d_id);
 //				CLANG_PROFILE(query_updatecus2);
@@ -151,8 +185,11 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 						string fail_msg("update_cusb fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(7);
 		}
 
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_inserthis, PAYMENT_8, c_id, pIn->c_d_id, pIn->c_w_id, pIn->d_id, pIn->w_id, pIn->h_amount, w_name, d_name);
 //		CLANG_PROFILE(query_inserthis);
 		r_9 = dbt5_sql_execute(query_inserthis, &result9, "insert_his");
@@ -160,8 +197,10 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("insert_his fail");
 				throw fail_msg.c_str();
 		}
-*/
+		GETPROFILE(8);
+	//EXECUTEPROFILING;
 
+*/
 	if(!(pIn->c_id == 0)){
 			c_id = pIn->c_id;
 	}
@@ -169,6 +208,8 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 
 
 	if(pIn->c_id == 0){
+			//SETPROFILING;
+				GETTIME;
 				sprintf(query_selectcus, PAYMENT_5, pIn->w_id, pIn->d_id, pIn->c_last);
 				r_5 = dbt5_sql_execute(query_selectcus, &result5, "get_cus");
 				if(r_5==1 && result5.result_set){
@@ -179,10 +220,13 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 						string fail_msg("get_cus fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(4);
+			//EXECUTEPROFILING;
 	}
 
 
-
+	//SETPROFILING;
+		GETTIME;
 		sprintf(query_selectcus2, PAYMENT_6, pIn->c_w_id, pIn->c_d_id, c_id);
 		r_6 = dbt5_sql_execute(query_selectcus2, &result6, "get_cus2");
 		if(r_6==1 && result6.result_set){
@@ -194,8 +238,8 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("get_cus2 fail");
 				throw fail_msg.c_str();
 		}
-
-
+		GETPROFILE(5);
+//EXECUTEPROFILING;
 
 
 		if(!(c_credit[0] == 'G')){
@@ -205,27 +249,36 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 
 
 		if(c_credit[0] == 'G'){
+			//SETPROFILING;
+				GETTIME;
 				sprintf(query_updatecus, PAYMENT_7_GC, pIn->h_amount, c_id, pIn->c_w_id, pIn->c_d_id);
 				r_7 = dbt5_sql_execute(query_updatecus, &result7, "update_cusg");
 				if(!r_7){
 						string fail_msg("update_cusg fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(6);
+		//EXECUTEPROFILING;
 }
 
 
 
 		if(!(c_credit[0] == 'G')){
+		//SETPROFILING;
+				GETTIME;
 				sprintf(query_updatecus2, PAYMENT_7_BC, pIn->h_amount, my_c_data, c_id, pIn->c_w_id, pIn->c_d_id);
 				r_8 = dbt5_sql_execute(query_updatecus2, &result8, "update_cusb");
 				if(!r_8){
 						string fail_msg("update_cusb fail");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(7);
+		//EXECUTEPROFILING;
 }
 
 
-
+//SETPROFILING;
+		GETTIME;
 		sprintf(query_selectdis, PAYMENT_3, pIn->d_id, pIn->w_id);
 		r_3 = dbt5_sql_execute(query_selectdis, &result3, "get_dis");
 		if(r_3==1 && result3.result_set){
@@ -241,18 +294,22 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 				string fail_msg("get_dis fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(2);
+//EXECUTEPROFILING;
 
-
-
+//SETPROFILING;
+		GETTIME;
 		sprintf(query_updatedis, PAYMENT_4, pIn->h_amount, pIn->w_id, pIn->d_id);
 		r_4 = dbt5_sql_execute(query_updatedis, &result4, "update_dis");
 		if(!r_4){
 				string fail_msg("update_dis fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(3);
+//EXECUTEPROFILING;
 
-
-
+//SETPROFILING;
+	GETTIME;
 	sprintf(query_selectwh, PAYMENT_1, pIn->w_id);
 	r_1 = dbt5_sql_execute(query_selectwh, &result1, "get_wh");
 	if(r_1==1 && result1.result_set){
@@ -268,25 +325,30 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 			string fail_msg("get_wh fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(0);
+//EXECUTEPROFILING;
 
-
-
+//SETPROFILING;
+		GETTIME;
 		sprintf(query_inserthis, PAYMENT_8, c_id, pIn->c_d_id, pIn->c_w_id, pIn->d_id, pIn->w_id, pIn->h_amount, w_name, d_name);
 		r_9 = dbt5_sql_execute(query_inserthis, &result9, "insert_his");
 		if(!r_9){
 				string fail_msg("insert_his fail");
 				throw fail_msg.c_str();
 		}
+		GETPROFILE(8);
+//EXECUTEPROFILING;
 
-
-
+//SETPROFILING;
+		GETTIME;
 		sprintf(query_updatewh, PAYMENT_2, pIn->h_amount, pIn->w_id);
 		r_2 = dbt5_sql_execute(query_updatewh, &result2, "update_wh");
 		if(!r_2){
 				string fail_msg("update_wh fail");
 				throw fail_msg.c_str();
 		}
-
+		GETPROFILE(1);
+//EXECUTEPROFILING;
 
 		pOut->w_name.assign(w_name);
 		pOut->d_name.assign(d_name);

@@ -29,6 +29,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	int max_updates = pIn->max_updates;
 	int num_updated = 0;
 	uint64_t t_id = 0;
+	double t_time;
 	string exec_name;
 	size_t is_cash = 0;
 	size_t is_market = 0;
@@ -58,6 +59,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 
 		if(num_updated < max_updates)
 		{
+			GETTIME;
 			sprintf(query1, TRADE_UPDATE_Q1, pIn->trade_id[i]);
 			//CLANG_PROFILE(query1);
 			r1 = dbt5_sql_execute(query1, &result1, "tpce_tu_1");
@@ -69,13 +71,14 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 					string fail_msg("trade update frame 1 query 1 fails");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(0);
 
 		for(int j=0; j<exec_name.length(); j++){
 				if(exec_name[j] == 'X'){
 						exec_name[j] = 'X';
 				}
 		}
-
+		GETTIME;
 		sprintf(query2, TRADE_UPDATE_Q2, exec_name.c_str(), pIn->trade_id[i]);
 		//CLANG_PROFILE(query2);
 		r2 = dbt5_sql_execute(query2, &result2, "tpce_tu_2");
@@ -83,11 +86,11 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			string fail_msg("trade update frame 1 query 2 fails");
 			throw fail_msg.c_str();
 		}
-
+		GETPROFILE(1);
 			num_updated++;
 		}
 
-
+		GETTIME;
 		sprintf(query3, TRADE_UPDATE_Q3, pIn->trade_id[i]);
 		//CLANG_PROFILE(query3);
 		r3 = dbt5_sql_execute(query3, &result3, "tpce_tu_3");
@@ -103,7 +106,9 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			string fail_msg("trade update frame 1 query 3 fails");
 			throw fail_msg.c_str();
 		}
+		GETPROFILE(2);
 
+		GETTIME;
 		sprintf(query4, TRADE_UPDATE_Q4, pIn->trade_id[i]);
 		//CLANG_PROFILE(query4);
 		r4 = dbt5_sql_execute(query4, &result4, "tpce_tu_4");
@@ -120,8 +125,10 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			string fail_msg("trade update frame 1 query 4 fails");
 			throw fail_msg.c_str();
 		}
+		GETPROFILE(3);
 
 		if(is_cash){
+				GETTIME;
 				sprintf(query5, TRADE_UPDATE_Q5, pIn->trade_id[i]);
 				//CLANG_PROFILE(query5);
 				r5 = dbt5_sql_execute(query5, &result5, "tpce_tu_5");
@@ -138,9 +145,10 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 					string fail_msg("trade update frame 1 query 5 fails");
 					throw fail_msg.c_str();
 				}
-
+				GETPROFILE(4);
 		}
 
+		GETTIME;
 		sprintf(query6, TRADE_UPDATE_Q6, pIn->trade_id[i]);
 		//CLANG_PROFILE(query6);
 		r6 = dbt5_sql_execute(query6, &result6, "tpce_tu_6");
@@ -165,7 +173,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			string fail_msg("trade update frame 1 query 6 fails");
 			throw fail_msg.c_str();
 		}
-
+		GETPROFILE(5);
 
 		pOut->trade_info[i].bid_price = bid_price;
 		pOut->trade_info[i].cash_transaction_amount = cash_amount;
@@ -213,9 +221,11 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		strcpy(pOut->trade_info[i].exec_name, exec_name.c_str());
 		strcpy(pOut->trade_info[i].settlement_cash_type, set_cash_type);
 	}
+*/
 
-	*/
+
 	for(int i=0; i<pIn->max_trades; i++){
+	GETTIME;
 	sprintf(query6, TRADE_UPDATE_Q6, pIn->trade_id[i]);
 		r6 = dbt5_sql_execute(query6, &result6, "tpce_tu_6");
 		if(r6==1 && result6.result_set){
@@ -239,6 +249,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			string fail_msg("trade update frame 1 query 6 fails");
 			throw fail_msg.c_str();
 		}
+		GETPROFILE(5);
 
 pOut->trade_info[i].trade_history_dts[0].year = trade_history_dts_year[0];
 pOut->trade_info[i].trade_history_dts[0].month = trade_history_dts_month[0];
@@ -265,6 +276,7 @@ pOut->trade_info[i].trade_history_dts[2].second = trade_history_dts_sec[2];
 
 for(int i=0; i<pIn->max_trades; i++){
 	if(is_cash){
+	GETTIME;
 	sprintf(query5, TRADE_UPDATE_Q5, pIn->trade_id[i]);
 				r5 = dbt5_sql_execute(query5, &result5, "tpce_tu_5");
 				if(r5==1 && result5.result_set){
@@ -280,7 +292,7 @@ for(int i=0; i<pIn->max_trades; i++){
 					string fail_msg("trade update frame 1 query 5 fails");
 					throw fail_msg.c_str();
 				}
-
+		GETPROFILE(4);
 
 }
 
@@ -298,6 +310,7 @@ strcpy(pOut->trade_info[i].cash_transaction_name, cash_name);
 
 
 for(int i=0; i<pIn->max_trades; i++){
+	GETTIME;
 	sprintf(query4, TRADE_UPDATE_Q4, pIn->trade_id[i]);
 		r4 = dbt5_sql_execute(query4, &result4, "tpce_tu_4");
 		if(r4==1 && result4.result_set){
@@ -313,6 +326,7 @@ for(int i=0; i<pIn->max_trades; i++){
 			string fail_msg("trade update frame 1 query 4 fails");
 			throw fail_msg.c_str();
 		}
+		GETPROFILE(3);
 
 pOut->trade_info[i].settlement_amount = settlement_amount;
 pOut->trade_info[i].settlement_cash_due_date.year = set_year;
@@ -328,6 +342,7 @@ strcpy(pOut->trade_info[i].settlement_cash_type, set_cash_type);
 
 
 for(int i=0; i<pIn->max_trades; i++){
+	GETTIME;
 	sprintf(query3, TRADE_UPDATE_Q3, pIn->trade_id[i]);
 		r3 = dbt5_sql_execute(query3, &result3, "tpce_tu_3");
 		if(r3==1 && result3.result_set){
@@ -342,6 +357,7 @@ for(int i=0; i<pIn->max_trades; i++){
 			string fail_msg("trade update frame 1 query 3 fails");
 			throw fail_msg.c_str();
 		}
+		GETPROFILE(2);
 
 pOut->trade_info[i].bid_price = bid_price;
 pOut->trade_info[i].trade_price = trade_price;
@@ -353,6 +369,7 @@ pOut->trade_info[i].is_cash = is_cash;
 
 for(int i=0; i<pIn->max_trades; i++){
 	if(num_updated < max_updates){
+	GETTIME;
 	sprintf(query1, TRADE_UPDATE_Q1, pIn->trade_id[i]);
 			r1 = dbt5_sql_execute(query1, &result1, "tpce_tu_1");
 			if(r1==1 && result1.result_set){
@@ -364,7 +381,7 @@ for(int i=0; i<pIn->max_trades; i++){
 					throw fail_msg.c_str();
 			}
 
-
+	GETPROFILE(0);
 }
 
 if(num_updated < max_updates){
@@ -381,19 +398,21 @@ if(num_updated < max_updates){
 
 }
 if(num_updated < max_updates){
+	GETTIME;
 	sprintf(query2, TRADE_UPDATE_Q2, exec_name.c_str(), pIn->trade_id[i]);
 		r2 = dbt5_sql_execute(query2, &result2, "tpce_tu_2");
 		if(!r2){
 			string fail_msg("trade update frame 1 query 2 fails");
 			throw fail_msg.c_str();
 		}
-
+	GETPROFILE(1);
 
 }
 num_updated++;
 strcpy(pOut->trade_info[i].exec_name, exec_name.c_str());
 
 }
+
 
 	return ;
 }

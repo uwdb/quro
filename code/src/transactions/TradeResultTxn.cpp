@@ -13,55 +13,12 @@ string param_str;
 void CDBConnection::execute(PTradeResultTxnInput pIn,
 		PTradeResultTxnOutput pOut)
 {
-	char query1[1024];
-	char query2[1024];
-	char query3[1024];
-	char query4[1024];
-	char query5[1024];
-	char query6[1024];
-	char query7[1024];
-	char query80[1024];
-	char query81[1024];
-	char query9[1024];
-	char query10[1024];
-	char query11[1024];
-	char query12[1024];
-	char query13[1024];
-	char query14[1024];
-	char query15[1024];
-	char query16[1024];
-	char query17[1024];
-	char query180[1024];
-	char query181[1024];
-	char query19[1024];
-	char query20[1024];
-	char query21[1024];
-	char query22[1024];
-	char query23[1024];
-	char query24[1024];
-	char query25[1024];
-	char query26[1024];
-	char query27[1024];
-	char query28[1024];
-	char query29[1024];
-	char query30[1024];
-	char query31[1024];
-	char query32[1024];
-	char query33[1024];
-	char query34[1024];
-	char query35[1024];
-	char query36[1024];
-	sql_result_t result1, result2, result3, result4, result5, result6, result7, result8, result9, result10;
-	sql_result_t result11, result12, result13, result14, result15, result16, result17, result18, result19, result20;
-	sql_result_t result21, result22, result23, result24, result25, result26, result27, result28, result29, result30;
-	sql_result_t result31, result32, result33, result34, result35, result36;
-	sql_result_t result80, result81, result180, result181;
+
+	char query[1024];
+	sql_result_t result, result_t;
 	int length;
-	int r1, r2, r3, r4, r5, r6, r7, r8, r9, r10;
-	int r11, r12, r13, r14, r15, r16, r17, r18, r19, r20;
-	int r21, r22, r23, r24, r25, r26, r27, r28, r29, r30;
-	int r31, r32, r33, r34, r35, r36;
-	int r80, r81, r180, r181;
+	int r;
+	double t_time;
 
 	long unsigned int trade_id = pIn->trade_id;
 	double trade_price = pIn->trade_price;
@@ -110,78 +67,85 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 
 	int num_rows0 = 0, num_rows1 = 0;
 	int cnt0 = 0, cnt1 = 0;
+	int num_rows = 0;
+	int cnt = 0;
 
-	cout<<"+++++++++ EXECUTE TRADE RESULT!!! +++++++++++++"<<endl;
+/*
+	GETTIME;
+	sprintf(query, TRADE_RESULT1_1, trade_id);
 
-	sprintf(query1, TRADE_RESULT1_1, trade_id);
-	CLANG_PROFILE(query1);
-  r1 = dbt5_sql_execute(query1, &result1, "TRADE_RESULT1_1");
-	if(r1==1 && result1.result_set){
-			dbt5_sql_fetchrow(&result1);
-			acct_id = atol(dbt5_sql_getvalue(&result1, 0, length));
-			strncpy(type_id, dbt5_sql_getvalue(&result1, 1, length), length);
-			strncpy(symbol, dbt5_sql_getvalue(&result1, 2, length), length);
-			trade_qty = atol(dbt5_sql_getvalue(&result1, 3, length));
-			charge = atof(dbt5_sql_getvalue(&result1, 4, length));
-			is_lifo = atoi(dbt5_sql_getvalue(&result1, 5, length));
-			trade_is_cash = atoi(dbt5_sql_getvalue(&result1, 6, length));
-			dbt5_sql_close_cursor(&result1);
+  r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			acct_id = atol(dbt5_sql_getvalue(&result, 0, length));
+			strcpy(type_id, dbt5_sql_getvalue(&result, 1, length));
+			strcpy(symbol, dbt5_sql_getvalue(&result, 2, length));
+			trade_qty = atol(dbt5_sql_getvalue(&result, 3, length));
+			charge = atof(dbt5_sql_getvalue(&result, 4, length));
+			is_lifo = atoi(dbt5_sql_getvalue(&result, 5, length));
+			trade_is_cash = atoi(dbt5_sql_getvalue(&result, 6, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 1");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(22);
 
-	sprintf(query2, TRADE_RESULT1_2, type_id);
-	CLANG_PROFILE(query2);
-	r2 = dbt5_sql_execute(query2, &result2, "TRADE_RESULT1_2");
-	if(r2==1 && result2.result_set){
-			dbt5_sql_fetchrow(&result2);
-			strncpy(type_name, dbt5_sql_getvalue(&result2, 0, length), length);
-			type_is_sell = atoi(dbt5_sql_getvalue(&result2, 1, length));
-			type_is_market = atoi(dbt5_sql_getvalue(&result2, 2, length));
-			dbt5_sql_close_cursor(&result2);
+	GETTIME;
+	sprintf(query, TRADE_RESULT1_2, type_id);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_2");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			strcpy(type_name, dbt5_sql_getvalue(&result, 0, length));
+			type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length));
+			type_is_market = atoi(dbt5_sql_getvalue(&result, 2, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-string fail_msg("query fail");
+string fail_msg("query fail 2");
 throw fail_msg.c_str();
 	}
+	GETPROFILE(23);
 
-	sprintf(query3, TRADE_RESULT1_3, acct_id, symbol);
-	CLANG_PROFILE(query3);
-	r3 = dbt5_sql_execute(query3, &result3, "TRADE_RESULT1_3");
-	if(r3==1 && result3.result_set){
-			dbt5_sql_fetchrow(&result3);
-			hs_qty = atol(dbt5_sql_getvalue(&result3, 0, length));
-			dbt5_sql_close_cursor(&result3);
+	GETTIME;
+	sprintf(query, TRADE_RESULT1_3, acct_id, symbol);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_3");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			hs_qty = atol(dbt5_sql_getvalue(&result, 0, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 3");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(24);
 
-	sprintf(query4, TRADE_RESULT_HELPER);
-	CLANG_PROFILE(query4);
-	r4 = dbt5_sql_execute(query4, &result4, "TRADE_RESULT_HELPER");
-	if(r4==1 && result4.result_set){
-			dbt5_sql_fetchrow(&result4);
-			strncpy(now_dts, dbt5_sql_getvalue(&result4, 0, length), length);
-			dbt5_sql_close_cursor(&result4);
+	GETTIME;
+	sprintf(query, TRADE_RESULT_HELPER);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT_HELPER");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			strcpy(now_dts, dbt5_sql_getvalue(&result, 0, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 4");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(25);
 
-	sprintf(query5, TRADE_RESULT2_1, acct_id);
-	CLANG_PROFILE(query5);
-	r5 = dbt5_sql_execute(query5, &result5, "TRADE_RESULT2_1");
-	if(r5==1 && result5.result_set){
-			dbt5_sql_fetchrow(&result5);
-			broker_id = atol(dbt5_sql_getvalue(&result5, 0, length));
-			cust_id = atol(dbt5_sql_getvalue(&result5, 1, length));
-			tax_status = atoi(dbt5_sql_getvalue(&result5, 2, length));
-			dbt5_sql_close_cursor(&result5);
+	GETTIME;
+	sprintf(query, TRADE_RESULT2_1, acct_id);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_1");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			broker_id = atol(dbt5_sql_getvalue(&result, 0, length));
+			cust_id = atol(dbt5_sql_getvalue(&result, 1, length));
+			tax_status = atoi(dbt5_sql_getvalue(&result, 2, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-		string fail_msg("query fail");
+		string fail_msg("query fail 5");
 		throw fail_msg.c_str();
 	}
+	GETPROFILE(26);
 
 		sscanf(now_dts, "%hd-%hd-%hd %hd:%hd:%hd.%*d",
 			&trade_dts.year,
@@ -193,95 +157,99 @@ throw fail_msg.c_str();
 
 	if(type_is_sell){
 			if(hs_qty == 0){
-					sprintf(query6, TRADE_RESULT2_2a, acct_id, symbol, (-1)*trade_qty);
-					CLANG_PROFILE(query6);
-					r6=dbt5_sql_execute(query6, &result6, "TRADE_RESULT2_2a");
-					if(!r6){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_2a, acct_id, symbol, (-1)*trade_qty);
+					r=dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a");
+					if(!r){
+							string fail_msg("query fail 6");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(27);
 			}else if(hs_qty != trade_qty){
-					sprintf(query7, TRADE_RESULT2_2b, hs_qty-trade_qty, acct_id, symbol);
-					CLANG_PROFILE(query7);
-					r7=dbt5_sql_execute(query7, &result7, "TRADE_RESULT2_2a");
-					if(!r7){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_2b, hs_qty-trade_qty, acct_id, symbol);
+					r=dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a");
+					if(!r){
+							string fail_msg("query fail 7");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(27);
 			}
 
 			needed_qty = trade_qty;
 
 			if(hs_qty > 0){
 					if(is_lifo){
-							sprintf(query80, TRADE_RESULT2_3a, acct_id, symbol);
-							CLANG_PROFILE(query80);
-							r80 = dbt5_sql_execute(query80, &result80, "TRADE_RESULT2_3a");
-							if(r80==1 && result80.result_set){
-									num_rows0 = result80.num_rows;
+							GETTIME;
+							sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+							r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
+									num_rows0 = result.num_rows;
 							}else{
-									string fail_msg("query fail");
+									string fail_msg("query fail 8");
 									throw fail_msg.c_str();
 							}
-							result8 = result80;
+							GETPROFILE(28);
 					}else{
-							sprintf(query81, TRADE_RESULT2_3a, acct_id, symbol);
-							CLANG_PROFILE(query81);
-							r81 = dbt5_sql_execute(query81, &result81, "TRADE_RESULT2_3a");
-							if(r81==1 && result81.result_set){
-									num_rows0 = result81.num_rows;
+							GETTIME;
+							sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+							r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
+									num_rows0 = result.num_rows;
 							}else{
-									string fail_msg("query fail");
+									string fail_msg("query fail 9");
 									throw fail_msg.c_str();
 							}
-							result8 = result81;
+							GETPROFILE(28);
 					}
 					while(needed_qty > 0 && cnt0 < num_rows0){
-							dbt5_sql_fetchrow(&result8);
+							dbt5_sql_fetchrow(&result);
 							cnt0++;
 
-							hold_id = atol(dbt5_sql_getvalue(&result8, 0, length));
-							hold_qty = atol(dbt5_sql_getvalue(&result8, 1, length));
-							hold_price = atof(dbt5_sql_getvalue(&result8, 2, length));
+							hold_id = atol(dbt5_sql_getvalue(&result, 0, length));
+							hold_qty = atol(dbt5_sql_getvalue(&result, 1, length));
+							hold_price = atof(dbt5_sql_getvalue(&result, 2, length));
 
 							if(hold_qty > needed_qty){
-
-									sprintf(query9, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty-needed_qty);
-									CLANG_PROFILE(query9);
-									r9 = dbt5_sql_execute(query9, &result9, "TRADE_RESULT2_4a");
-									if(!r9){
-													string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty-needed_qty);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_4a");
+									if(!r){
+													string fail_msg("query fail 10");
 													throw fail_msg.c_str();
 									}
+									GETPROFILE(29);
 
-									sprintf(query10, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
-									CLANG_PROFILE(query10);
-									r10 = dbt5_sql_execute(query10, &result10, "TRADE_RESULT2_5a");
-									if(!r10){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_5a");
+									if(!r){
+											string fail_msg("query fail 11");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(30);
 
 									buy_value = buy_value + (needed_qty * hold_price);
 									sell_value = sell_value + (needed_qty * trade_price);
 									needed_qty = 0;
 							}else{
-
-									sprintf(query11, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
-									CLANG_PROFILE(query11);
-									r11 = dbt5_sql_execute(query11, &result11, "TRADE_RESULT2_4a");
-									if(!r11){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_4a");
+									if(!r){
+											string fail_msg("query fail 12");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(29);
 
-									sprintf(query12, TRADE_RESULT2_5b, hold_id);
-									CLANG_PROFILE(query12);
-									r12 = dbt5_sql_execute(query12, &result12, "TRADE_RESULT2_5b");
-									if(!r12){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_5b, hold_id);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_5b");
+									if(!r){
+											string fail_msg("query fail 13");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(30);
 
 									buy_value = buy_value + (hold_qty * hold_price);
 									sell_value = sell_value + (hold_qty * trade_price);
@@ -291,117 +259,125 @@ throw fail_msg.c_str();
 			}
 			if(needed_qty > 0){
 
-				sprintf(query13, TRADE_RESULT2_4a, trade_id, trade_id, 0, (-1)*needed_qty);
-				CLANG_PROFILE(query13);
-				r13 = dbt5_sql_execute(query13, &result13, "TRADE_RESULT2_4a");
-				if(!r13){
-						string fail_msg("query fail");
+				GETTIME;
+				sprintf(query, TRADE_RESULT2_4a, trade_id, trade_id, 0, (-1)*needed_qty);
+				r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+				if(!r){
+						string fail_msg("query fail 14");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(31);
 
-				sprintf(query14, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, (-1)*needed_qty);
-				CLANG_PROFILE(query14);
-				r14 = dbt5_sql_execute(query13, &result14, "TRADE_RESULT2_7a");
-				if(!r14){
-						string fail_msg("query fail");
+				GETTIME;
+				sprintf(query, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, (-1)*needed_qty);
+				r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_7a");
+				if(!r){
+						string fail_msg("query fail 15");
 						throw fail_msg.c_str();
 				}
+				GETPROFILE(32);
 			}else if(hs_qty == trade_qty){
-					sprintf(query15, TRADE_RESULT2_7b, acct_id, symbol);
-					CLANG_PROFILE(query15);
-					r15 = dbt5_sql_execute(query15, &result15, "TRADE_RESULT2_7b");
-					if(!r15){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_7b, acct_id, symbol);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_7b");
+					if(!r){
+							string fail_msg("query fail 16");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(33);
 			}
 	}
 	else{
 			if(hs_qty == 0){
- 					sprintf(query16, TRADE_RESULT2_8a, acct_id, symbol, trade_qty);
-					CLANG_PROFILE(query16);
-					r16 = dbt5_sql_execute(query16, &result16, "TRADE_RESULT2_8a");
-					if(!r16){
-							string fail_msg("query fail");
+					GETTIME;
+ 					sprintf(query, TRADE_RESULT2_8a, acct_id, symbol, trade_qty);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_8a");
+					if(!r){
+							string fail_msg("query fail 16");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(32);
 			}else{
- 					sprintf(query17, TRADE_RESULT2_8b, hs_qty+trade_qty, acct_id, symbol);
-					CLANG_PROFILE(query17);
-					r17 = dbt5_sql_execute(query17, &result17, "TRADE_RESULT2_8b");
-					if(!r17){
-							string fail_msg("query fail");
+					GETTIME;
+ 					sprintf(query, TRADE_RESULT2_8b, hs_qty+trade_qty, acct_id, symbol);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_8b");
+					if(!r){
+							string fail_msg("query fail 17");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(32);
 			}
 
 			if(hs_qty < 0){
 					if(is_lifo){
-							sprintf(query180, TRADE_RESULT2_3a, acct_id, symbol);
-							CLANG_PROFILE(query180);
-							r180 = dbt5_sql_execute(query180, &result180, "TRADE_RESULT2_3a");
-							if(r180==1 && result180.result_set){
-									num_rows1 = result180.num_rows;
+							GETTIME;
+							sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+							r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
+									num_rows1 = result.num_rows;
 							}else{
-									string fail_msg("query fail");
+									string fail_msg("query fail 18");
 									throw fail_msg.c_str();
 							}
-							result18 = result180;
+							GETPROFILE(28);
 					}else{
-							sprintf(query181, TRADE_RESULT2_3a, acct_id, symbol);
-							CLANG_PROFILE(query181);
-							r181 = dbt5_sql_execute(query181, &result180, "TRADE_RESULT2_3a");
-							if(r181==1 && result181.result_set){
-									num_rows1 = result181.num_rows;
+							GETTIME;
+							sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+							r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_3a");
+							if(r==1 && result.result_set){
+									num_rows1 = result.num_rows;
 							}else{
-									string fail_msg("query fail");
+									string fail_msg("query fail 19");
 									throw fail_msg.c_str();
 							}
-							result18 = result181;
+							GETPROFILE(28);
 					}
 					while(needed_qty>0 && cnt1<num_rows1){
-							dbt5_sql_fetchrow(&result18);
+							dbt5_sql_fetchrow(&result);
 							cnt1++;
-							hold_id = atol(dbt5_sql_getvalue(&result18, 0, length));
-							hold_qty = atol(dbt5_sql_getvalue(&result18, 1, length));
-							hold_price = atof(dbt5_sql_getvalue(&result18, 2, length));
+							hold_id = atol(dbt5_sql_getvalue(&result, 0, length));
+							hold_qty = atol(dbt5_sql_getvalue(&result, 1, length));
+							hold_price = atof(dbt5_sql_getvalue(&result, 2, length));
 							if(hold_qty > needed_qty){
-									sprintf(query19, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty+needed_qty);
-									CLANG_PROFILE(query19);
-									r19 = dbt5_sql_execute(query19, &result19, "TRADE_RESULT2_4a");
-									if(!r19){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty+needed_qty);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_4a");
+									if(!r){
+											string fail_msg("query fail 20");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(29);
 
-									sprintf(query20, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
-									CLANG_PROFILE(query20);
-									r20 = dbt5_sql_execute(query20, &result20, "TRADE_RESULT2_5a");
-									if(!r20){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_5a");
+									if(!r){
+											string fail_msg("query fail 21");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(30);
 
 									buy_value = buy_value + (needed_qty * hold_price);
 									sell_value = sell_value + (needed_qty * trade_price);
 									needed_qty = 0;
 							}else{
-
-									sprintf(query21, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
-									CLANG_PROFILE(query21);
-									r21 = dbt5_sql_execute(query21, &result21, "TRADE_REUSLT2_4a");
-									if(!r21){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_REUSLT2_4a");
+									if(!r){
+											string fail_msg("query fail 22");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(29);
 
-									sprintf(query22, TRADE_RESULT2_5b, hold_id);
-									CLANG_PROFILE(query22);
-									r22 = dbt5_sql_execute(query22, &result22, "TRADE_RESULT2_5b");
-									if(!r22){
-											string fail_msg("query fail");
+									GETTIME;
+									sprintf(query, TRADE_RESULT2_5b, hold_id);
+									r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_5b");
+									if(!r){
+											string fail_msg("query fail 23");
 											throw fail_msg.c_str();
 									}
+									GETPROFILE(30);
 
 									hold_qty = (-1)*hold_qty;
 									buy_value = buy_value + (hold_qty * hold_price);
@@ -411,123 +387,132 @@ throw fail_msg.c_str();
 					}
 			}
 			if(needed_qty > 0){
-
-					sprintf(query23, TRADE_RESULT2_4a, trade_id, trade_id, 0, needed_qty);
-					CLANG_PROFILE(query23);
-					r23 = dbt5_sql_execute(query23, &result23, "TRADE_RESULT2_4a");
-					if(!r23){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_4a, trade_id, trade_id, 0, needed_qty);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+					if(!r){
+							string fail_msg("query fail 24");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(31);
 
-					sprintf(query24, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, needed_qty);
-					CLANG_PROFILE(query24);
-					r24 = dbt5_sql_execute(query24, &result24, "TRADE_RESULT2_7a");
-					if(!r24){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, needed_qty);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_7a");
+					if(!r){
+							string fail_msg("query fail 25");
 							throw fail_msg.c_str();
 					}
-
+					GETPROFILE(32);
 			}else if((-1)*hs_qty == trade_qty){
-
-					sprintf(query25, TRADE_RESULT2_7b, acct_id, symbol);
-					CLANG_PROFILE(query25);
-					r25 = dbt5_sql_execute(query25, &result25, "TRADE_RESULT2_7b");
-					if(!r25){
-							string fail_msg("query fail");
+					GETTIME;
+					sprintf(query, TRADE_RESULT2_7b, acct_id, symbol);
+					r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_7b");
+					if(!r){
+							string fail_msg("query fail 26");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(33);
 			}
 	}
 
 	if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
-
-			sprintf(query26, TRADE_RESULT3_1, cust_id);
-			CLANG_PROFILE(query26);
-			r26 = dbt5_sql_execute(query26, &result26, "TRADE_RESULT3_1");
-			if(r26==1 && result26.result_set){
-					dbt5_sql_fetchrow(&result26);
-					tax_rate = atof(dbt5_sql_getvalue(&result26, 0, length));
-					dbt5_sql_close_cursor(&result26);
+			GETTIME;
+			sprintf(query, TRADE_RESULT3_1, cust_id);
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT3_1");
+			if(r==1 && result.result_set){
+					dbt5_sql_fetchrow(&result);
+					tax_rate = atof(dbt5_sql_getvalue(&result, 0, length));
+					dbt5_sql_close_cursor(&result);
 			}else{
-					string fail_msg("query fail");
+					string fail_msg("query fail 27");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(34);
 
-			sprintf(query27, TRADE_RESULT3_2, tax_rate*(sell_value - buy_value), trade_id);
-			CLANG_PROFILE(query27);
-			r27 = dbt5_sql_execute(query27, &result27, "TRADE_RESULT3_2");
-			if(!r27){
-					string fail_msg("query fail");
+			GETTIME;
+			sprintf(query, TRADE_RESULT3_2, tax_rate*(sell_value - buy_value), trade_id);
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT3_2");
+			if(!r){
+					string fail_msg("query fail 28");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(35);
 
 			tax_amount = tax_rate*(sell_value - buy_value);
 	}
 
-
-	sprintf(query28, TRADE_RESULT4_1, symbol);
-	CLANG_PROFILE(query28);
-	r28 = dbt5_sql_execute(query28, &result28, "TRADE_RESULT4_1");
-	if(r28==1 && result28.result_set){
-			dbt5_sql_fetchrow(&result28);
-			strncpy(sec_ex_id, dbt5_sql_getvalue(&result28, 0, length), length);
-			strncpy(s_name, dbt5_sql_getvalue(&result28, 1, length), length);
-			dbt5_sql_close_cursor(&result28);
+	GETTIME;
+	sprintf(query, TRADE_RESULT4_1, symbol);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_1");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			strcpy(sec_ex_id, dbt5_sql_getvalue(&result, 0, length));
+			strcpy(s_name, dbt5_sql_getvalue(&result, 1, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 29");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(36);
 
-
-	sprintf(query29, TRADE_RESULT4_2, cust_id);
-	CLANG_PROFILE(query29);
-	r29 = dbt5_sql_execute(query29, &result29, "TRADE_RESULT4_2");
-	if(r29==1 && result29.result_set){
-			dbt5_sql_fetchrow(&result29);
-			cust_tier = atoi(dbt5_sql_getvalue(&result29, 0, length));
-			dbt5_sql_close_cursor(&result29);
+	GETTIME;
+	sprintf(query, TRADE_RESULT4_2, cust_id);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_2");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 30");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(37);
 
-
-	sprintf(query30, TRADE_RESULT4_3, cust_tier, type_id, sec_ex_id, trade_qty, trade_qty);
-	CLANG_PROFILE(query30);
-	r30 = dbt5_sql_execute(query30, &result30, "TRADE_RESULT4_3");
-	if(r30==1 && result30.result_set){
-			dbt5_sql_fetchrow(&result30);
-			comm_rate = atof(dbt5_sql_getvalue(&result30, 0, length));
-			dbt5_sql_close_cursor(&result30);
+	GETTIME;
+	sprintf(query, TRADE_RESULT4_3, cust_tier, type_id, sec_ex_id, trade_qty, trade_qty);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_3");
+	if(r==1 && result.result_set){
+			dbt5_sql_fetchrow(&result);
+			comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
+			dbt5_sql_close_cursor(&result);
 	}else{
-			string fail_msg("query fail");
+			string fail_msg("query fail 31");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(38);
 
 
 	comm_amount = ( comm_rate / 100.00 ) * ( trade_qty * trade_price );
   // round up for correct precision (cents only)
   comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
 
-
-	sprintf(query31, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
-	CLANG_PROFILE(query31);
-	r31 = dbt5_sql_execute(query31, &result31, "TRADE_RESULT5_1");
-	if(!r31){
-			string fail_msg("query fail");
+	GETTIME;
+	sprintf(query, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_1");
+	if(!r){
+			string fail_msg("query fail 32");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(39);
 
-
-	sprintf(query32, TRADE_RESULT5_2, trade_id, now_dts, st_completed_id);
-	CLANG_PROFILE(query32);
-	r32 = dbt5_sql_execute(query32, &result32, "TRADE_RESULT5_2");
-	if(!r32){
-			string fail_msg("query fail");
+	GETTIME;
+	sprintf(query, TRADE_RESULT5_2, trade_id, now_dts, st_completed_id);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_2");
+	if(!r){
+			string fail_msg("query fail 33");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(40);
 
+	sprintf(query, TRADE_RESULT5_3, comm_amount, broker_id);
+	GETTIME;
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_3");
+	if(!r){
+		string fail_msg("query fail 34");
+		throw fail_msg.c_str();
+	}
+	GETPROFILE(45);
 
 	if (type_is_sell)
   {
@@ -561,43 +546,46 @@ throw fail_msg.c_str();
 
 	sprintf(due_dts, "%d-%d-%d %d:%d:%d", due_date.year, due_date.month, due_date.day, due_date.hour, due_date.minute, due_date.second);
 
-
-	sprintf(query33, TRADE_RESULT6_1, trade_id, cash_type, due_dts, se_amount);
-	CLANG_PROFILE(query33);
-	r33 = dbt5_sql_execute(query33, &result33, "TRADE_RESULT6_1");
-	if(!r33){
-			string fail_msg("query fail");
+	GETTIME;
+	sprintf(query, TRADE_RESULT6_1, trade_id, cash_type, due_dts, se_amount);
+	r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_1");
+	if(!r){
+			string fail_msg("query fail 35");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(41);
 
 	if(trade_is_cash){
-			sprintf(query34, TRADE_RESULT6_2, se_amount, acct_id);
-			CLANG_PROFILE(query34);
-			r34 = dbt5_sql_execute(query34, &result34, "TRADE_RESULT6_2");
-			if(!r34){
-					string fail_msg("query fail");
+			GETTIME;
+			sprintf(query, TRADE_RESULT6_2, se_amount, acct_id);
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_2");
+			if(!r){
+					string fail_msg("query fail 36");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(42);
 
-			sprintf(query35, TRADE_RESULT6_3, now_dts, trade_id, se_amount, type_name, trade_qty, s_name);
-			CLANG_PROFILE(query35);
-			r35 = dbt5_sql_execute(query35, &result35, "TRADE_RESULT6_3");
-			if(!r35){
-					string fail_msg("query fail");
+			GETTIME;
+			sprintf(query, TRADE_RESULT6_3, now_dts, trade_id, se_amount, type_name, trade_qty, s_name);
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_3");
+			if(!r){
+					string fail_msg("query fail 37");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(43);
 
-			sprintf(query36, TRADE_RESULT6_4, acct_id);
-			CLANG_PROFILE(query36);
-			r36 = dbt5_sql_execute(query36, &result36, "TRADE_RESULT6_4");
-			if(r36==1 && result36.result_set){
-					dbt5_sql_fetchrow(&result36);
-					acct_bal = atof(dbt5_sql_getvalue(&result36, 0, length));
-					dbt5_sql_close_cursor(&result36);
+			GETTIME;
+			sprintf(query, TRADE_RESULT6_4, acct_id);
+			r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_4");
+			if(r==1 && result.result_set){
+					dbt5_sql_fetchrow(&result);
+					acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));
+					dbt5_sql_close_cursor(&result);
 			}else{
-					string fail_msg("query fail");
+					string fail_msg("query fail 38");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(44);
 
 	}
 
@@ -606,5 +594,1565 @@ throw fail_msg.c_str();
 	pOut->load_unit = cust_id;
 
 	return ;
+*/
+
+	string fail_msg;
+	sprintf(query, TRADE_RESULT_HELPER);
+	char query_24[512];
+	char query_26[512];
+	char query_27[512];
+	char query_29[512];
+	char query_32[512];
+
+QUERY_BEGIN_Q4:
+//conflict index = 399
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT_HELPER");
+
+QUERY_END_Q4:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+strcpy(now_dts, dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 4");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+//sprintf(query, TRADE_RESULT5_2, trade_id, now_dts, st_completed_id);
+//
+//QUERY_BEGIN_Q34:
+////conflict index = 400000
+//r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_2");
+//
+//QUERY_END_Q34:
+//
+//if(!r){
+//	fail_msg.assign("query fail 33");
+//
+//
+//}
+//if(!r){
+//	throw fail_msg.c_str();
+//
+//
+//}
+sprintf(query, TRADE_RESULT1_1, trade_id);
+
+QUERY_BEGIN_Q1:
+//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
+
+QUERY_END_Q1:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+acct_id = atol(dbt5_sql_getvalue(&result, 0, length));
+strcpy(type_id, dbt5_sql_getvalue(&result, 1, length));
+strcpy(symbol, dbt5_sql_getvalue(&result, 2, length));
+trade_qty = atol(dbt5_sql_getvalue(&result, 3, length));
+charge = atof(dbt5_sql_getvalue(&result, 4, length));
+is_lifo = atoi(dbt5_sql_getvalue(&result, 5, length));
+trade_is_cash = atoi(dbt5_sql_getvalue(&result, 6, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 1");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+sprintf(query, TRADE_RESULT1_2, type_id);
+
+QUERY_BEGIN_Q2:
+//conflict index = 1702
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_2");
+
+QUERY_END_Q2:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+strcpy(type_name, dbt5_sql_getvalue(&result, 0, length));
+type_is_sell = atoi(dbt5_sql_getvalue(&result, 1, length));
+type_is_market = atoi(dbt5_sql_getvalue(&result, 2, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 2");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+sprintf(query, TRADE_RESULT4_1, symbol);
+
+QUERY_BEGIN_Q30:
+//conflict index = 4362
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_1");
+
+QUERY_END_Q30:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+strcpy(sec_ex_id, dbt5_sql_getvalue(&result, 0, length));
+strcpy(s_name, dbt5_sql_getvalue(&result, 1, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 29");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+if(trade_is_cash){
+	sprintf(query, TRADE_RESULT6_4, acct_id);
+
+
+}
+
+QUERY_BEGIN_Q38:
+if(trade_is_cash){
+	//conflict index = 4651
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_4");
+
+
+}
+
+QUERY_END_Q38:
+
+if(trade_is_cash){
+	if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+acct_bal = atof(dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+
+
+}
+if(trade_is_cash){
+	if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 37");
+
+
+}
+
+
+}
+if(trade_is_cash){
+	if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+sprintf(query, TRADE_RESULT2_1, acct_id);
+
+QUERY_BEGIN_Q5:
+//conflict index = 4651
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_1");
+
+QUERY_END_Q5:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+broker_id = atol(dbt5_sql_getvalue(&result, 0, length));
+cust_id = atol(dbt5_sql_getvalue(&result, 1, length));
+tax_status = atoi(dbt5_sql_getvalue(&result, 2, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 5");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+sprintf(query, TRADE_RESULT1_3, acct_id, symbol);
+
+QUERY_BEGIN_Q3:
+//conflict index = 4678
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_3");
+
+QUERY_END_Q3:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+hs_qty = atol(dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 3");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+if(type_is_sell){
+	if(hs_qty == 0){
+	sprintf(query, TRADE_RESULT2_2a, acct_id, symbol, (-1)*trade_qty);
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q6:
+if(type_is_sell){
+	if(hs_qty == 0){
+	//conflict index = 4678
+r=dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a");
+
+
+}
+
+
+}
+
+QUERY_END_Q6:
+
+if(type_is_sell){
+	if(hs_qty == 0){
+	if(!r){
+	fail_msg.assign("query fail 6");
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty == 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty == 0){
+	sprintf(query, TRADE_RESULT2_8a, acct_id, symbol, trade_qty);
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q17:
+if(!(type_is_sell)){
+	if(hs_qty == 0){
+	//conflict index = 4678
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_8a");
+
+
+}
+
+
+}
+
+QUERY_END_Q17:
+
+if(!(type_is_sell)){
+	if(hs_qty == 0){
+	if(!r){
+	fail_msg.assign("query fail 16");
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty == 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(!(is_lifo)){
+	sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q9:
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(!(is_lifo)){
+	//conflict index = 4944
+r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q9:
+
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(!(is_lifo)){
+	if(r==1 && result_t.result_set){
+	num_rows = result_t.num_rows;
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(!(is_lifo)){
+	if(!(r==1 && result_t.result_set)){
+	fail_msg.assign("query fail 9");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(!(is_lifo)){
+	if(!(r==1 && result_t.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(!(is_lifo)){
+	sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q20:
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(!(is_lifo)){
+	//conflict index = 4944
+r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q20:
+
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(!(is_lifo)){
+	if(r==1 && result_t.result_set){
+	num_rows = result_t.num_rows;
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(!(is_lifo)){
+	if(!(r==1 && result_t.result_set)){
+	fail_msg.assign("query fail 19");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(!(is_lifo)){
+	if(!(r==1 && result_t.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(is_lifo){
+	sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q19:
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(is_lifo){
+	//conflict index = 4944
+r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q19:
+
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(is_lifo){
+	if(r==1 && result_t.result_set){
+	num_rows = result_t.num_rows;
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(is_lifo){
+	if(!(r==1 && result_t.result_set)){
+	fail_msg.assign("query fail 18");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	if(is_lifo){
+	if(!(r==1 && result_t.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(is_lifo){
+	sprintf(query, TRADE_RESULT2_3a, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q8:
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(is_lifo){
+	//conflict index = 4944
+r = dbt5_sql_execute(query, &result_t, "TRADE_RESULT2_3a");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q8:
+
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(is_lifo){
+	if(r==1 && result_t.result_set){
+	num_rows = result_t.num_rows;
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(is_lifo){
+	if(!(r==1 && result_t.result_set)){
+	fail_msg.assign("query fail 8");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	if(is_lifo){
+	if(!(r==1 && result_t.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+sprintf(query, TRADE_RESULT4_2, cust_id);
+
+QUERY_BEGIN_Q31:
+//conflict index = 11428
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_2");
+
+QUERY_END_Q31:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+cust_tier = atoi(dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 30");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+if(!(type_is_sell)){
+	if(!(hs_qty == 0)){
+	sprintf(query, TRADE_RESULT2_8b, hs_qty+trade_qty, acct_id, symbol);
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q18:
+if(!(type_is_sell)){
+	if(!(hs_qty == 0)){
+	//conflict index = 14678
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_8b");
+
+
+}
+
+
+}
+
+QUERY_END_Q18:
+
+if(!(type_is_sell)){
+	if(!(hs_qty == 0)){
+	if(!r){
+	fail_msg.assign("query fail 17");
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(!(hs_qty == 0)){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(!(hs_qty == 0)){
+	if(hs_qty != trade_qty){
+	sprintf(query, TRADE_RESULT2_2b, hs_qty-trade_qty, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q7:
+if(type_is_sell){
+	if(!(hs_qty == 0)){
+	if(hs_qty != trade_qty){
+	//conflict index = 14678
+r=dbt5_sql_execute(query, &result, "TRADE_RESULT2_2a");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q7:
+
+if(type_is_sell){
+	if(!(hs_qty == 0)){
+	if(hs_qty != trade_qty){
+	if(!r){
+	fail_msg.assign("query fail 7");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(!(hs_qty == 0)){
+	if(hs_qty != trade_qty){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+sprintf(query, TRADE_RESULT4_3, cust_tier, type_id, sec_ex_id, trade_qty, trade_qty);
+
+QUERY_BEGIN_Q32:
+//conflict index = 125000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT4_3");
+
+QUERY_END_Q32:
+
+if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+comm_rate = atof(dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 31");
+
+
+}
+if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+comm_amount = ( comm_rate / 100.00 ) * ( trade_qty * trade_price );
+comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
+comm_amount = (double)((int)(100.00 * comm_amount + 0.5)) / 100.00;
+if(type_is_sell){
+	se_amount = trade_qty * trade_price
+                                        - charge
+                                        - comm_amount;
+
+
+}
+if(!(type_is_sell)){
+	se_amount = -1 * ( trade_qty * trade_price
+                                                + charge
+                                                + comm_amount);
+
+
+}
+
+if(trade_is_cash){
+	sprintf(query, TRADE_RESULT6_3, now_dts, trade_id, se_amount, type_name, trade_qty, s_name);
+
+
+}
+
+QUERY_BEGIN_Q37:
+if(trade_is_cash){
+	//conflict index = 1632
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_3");
+
+
+}
+
+QUERY_END_Q37:
+
+if(trade_is_cash){
+	if(!r){
+	fail_msg.assign("query fail 36");
+
+
+}
+
+
+}
+if(trade_is_cash){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+if(trade_is_cash){
+	sprintf(cash_type, "Cash Account");
+
+
+}
+if(!(trade_is_cash)){
+	sprintf(cash_type, "Margin");
+
+
+}
+sprintf(due_dts, "%d-%d-%d %d:%d:%d", due_date.year, due_date.month, due_date.day, due_date.hour, due_date.minute, due_date.second);
+sprintf(query, TRADE_RESULT6_1, trade_id, cash_type, due_dts, se_amount);
+
+QUERY_BEGIN_Q35:
+//conflict index = 1701
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_1");
+
+QUERY_END_Q35:
+
+if(!r){
+	fail_msg.assign("query fail 34");
+
+
+}
+if(!r){
+	throw fail_msg.c_str();
+
+
+}
+if(trade_is_cash){
+	sprintf(query, TRADE_RESULT6_2, se_amount, acct_id);
+
+
+}
+
+QUERY_BEGIN_Q36:
+if(trade_is_cash){
+	//conflict index = 14651
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT6_2");
+
+
+}
+
+QUERY_END_Q36:
+
+if(trade_is_cash){
+	if(!r){
+	fail_msg.assign("query fail 35");
+
+
+}
+
+
+}
+if(trade_is_cash){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(hs_qty < 0){
+	while(needed_qty>0 && cnt<num_rows){
+	dbt5_sql_fetchrow(&result_t);
+
+cnt++;
+hold_id = atol(dbt5_sql_getvalue(&result_t, 0, length));
+hold_qty = atol(dbt5_sql_getvalue(&result_t, 1, length));
+hold_price = atof(dbt5_sql_getvalue(&result_t, 2, length));
+if(hold_qty > needed_qty){
+	sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty+needed_qty);
+
+//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+if(!r){
+	fail_msg.assign("query fail 20");
+
+throw fail_msg.c_str();
+
+}
+sprintf(query, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
+//conflict index = 14944
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_5a");
+if(!r){
+	fail_msg.assign("query fail 21");
+
+throw fail_msg.c_str();
+
+}
+buy_value = buy_value + (needed_qty * hold_price);
+sell_value = sell_value + (needed_qty * trade_price);
+needed_qty = 0;
+
+}
+if(!(hold_qty > needed_qty)){
+	sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
+
+//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_REUSLT2_4a");
+if(!r){
+	fail_msg.assign("query fail 22");
+
+throw fail_msg.c_str();
+
+}
+sprintf(query, TRADE_RESULT2_5b, hold_id);
+//conflict index = 4944
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_5b");
+if(!r){
+	fail_msg.assign("query fail 23");
+
+throw fail_msg.c_str();
+
+}
+hold_qty = (-1)*hold_qty;
+buy_value = buy_value + (hold_qty * hold_price);
+sell_value = sell_value + (hold_qty * trade_price);
+needed_qty = needed_qty - hold_qty;
+
+}
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	sprintf(query, TRADE_RESULT2_4a, trade_id, trade_id, 0, needed_qty);
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	sprintf(query_24, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, needed_qty);
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(!(needed_qty > 0)){
+	if((-1)*hs_qty == trade_qty){
+	sprintf(query_26, TRADE_RESULT2_7b, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q27:
+if(!(type_is_sell)){
+	if(!(needed_qty > 0)){
+	if((-1)*hs_qty == trade_qty){
+	//conflict index = 4678
+r = dbt5_sql_execute(query_26, &result, "TRADE_RESULT2_7b");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q27:
+
+if(!(type_is_sell)){
+	if(!(needed_qty > 0)){
+	if((-1)*hs_qty == trade_qty){
+	if(!r){
+	fail_msg.assign("query fail 26");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(!(needed_qty > 0)){
+	if((-1)*hs_qty == trade_qty){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q26:
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	//conflict index = 4944
+r = dbt5_sql_execute(query_24, &result, "TRADE_RESULT2_7a");
+
+
+}
+
+
+}
+
+QUERY_END_Q26:
+
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	if(!r){
+	fail_msg.assign("query fail 25");
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q25:
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+
+
+}
+
+
+}
+
+QUERY_END_Q25:
+
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	if(!r){
+	fail_msg.assign("query fail 24");
+
+
+}
+
+
+}
+
+
+}
+if(!(type_is_sell)){
+	if(needed_qty > 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	needed_qty = trade_qty;
+
+
+}
+if(type_is_sell){
+	if(hs_qty > 0){
+	while(needed_qty > 0 && cnt < num_rows){
+	dbt5_sql_fetchrow(&result_t);
+
+cnt++;
+hold_id = atol(dbt5_sql_getvalue(&result_t, 0, length));
+hold_qty = atol(dbt5_sql_getvalue(&result_t, 1, length));
+hold_price = atof(dbt5_sql_getvalue(&result_t, 2, length));
+if(hold_qty > needed_qty){
+	sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, hold_qty-needed_qty);
+
+//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+if(!r){
+	fail_msg.assign("query fail 10");
+
+throw fail_msg.c_str();
+
+}
+sprintf(query, TRADE_RESULT2_5a, hold_qty-needed_qty, hold_id);
+//conflict index = 14944
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_5a");
+if(!r){
+	fail_msg.assign("query fail 11");
+
+throw fail_msg.c_str();
+
+}
+buy_value = buy_value + (needed_qty * hold_price);
+sell_value = sell_value + (needed_qty * trade_price);
+needed_qty = 0;
+
+}
+if(!(hold_qty > needed_qty)){
+	sprintf(query, TRADE_RESULT2_4a, hold_id, trade_id, hold_qty, 0);
+
+//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+if(!r){
+	fail_msg.assign("query fail 12");
+
+throw fail_msg.c_str();
+
+}
+sprintf(query, TRADE_RESULT2_5b, hold_id);
+//conflict index = 4944
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_5b");
+if(!r){
+	fail_msg.assign("query fail 13");
+
+throw fail_msg.c_str();
+
+}
+buy_value = buy_value + (hold_qty * hold_price);
+sell_value = sell_value + (hold_qty * trade_price);
+needed_qty = needed_qty - hold_qty;
+
+}
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(needed_qty > 0){
+	sprintf(query, TRADE_RESULT2_4a, trade_id, trade_id, 0, (-1)*needed_qty);
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(needed_qty > 0){
+	sprintf(query_27, TRADE_RESULT2_7a, trade_id, acct_id, symbol, now_dts, trade_price, (-1)*needed_qty);
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(!(needed_qty > 0)){
+	if(hs_qty == trade_qty){
+	sprintf(query_29, TRADE_RESULT2_7b, acct_id, symbol);
+
+
+}
+
+
+}
+
+
+}
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	sprintf(query_32, TRADE_RESULT3_1, cust_id);
+
+
+}
+
+QUERY_BEGIN_Q28:
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	//conflict index = 1702
+r = dbt5_sql_execute(query_32, &result, "TRADE_RESULT3_1");
+
+
+}
+
+QUERY_END_Q28:
+
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	if(r==1 && result.result_set){
+	dbt5_sql_fetchrow(&result);
+
+tax_rate = atof(dbt5_sql_getvalue(&result, 0, length));
+dbt5_sql_close_cursor(&result);
+
+}
+
+
+}
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	if(!(r==1 && result.result_set)){
+	fail_msg.assign("query fail 27");
+
+
+}
+
+
+}
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	if(!(r==1 && result.result_set)){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q16:
+if(type_is_sell){
+	if(!(needed_qty > 0)){
+	if(hs_qty == trade_qty){
+	//conflict index = 4678
+r = dbt5_sql_execute(query_29, &result, "TRADE_RESULT2_7b");
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_END_Q16:
+
+if(type_is_sell){
+	if(!(needed_qty > 0)){
+	if(hs_qty == trade_qty){
+	if(!r){
+	fail_msg.assign("query fail 16");
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(!(needed_qty > 0)){
+	if(hs_qty == trade_qty){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q15:
+if(type_is_sell){
+	if(needed_qty > 0){
+	//conflict index = 4944
+r = dbt5_sql_execute(query_27, &result, "TRADE_RESULT2_7a");
+
+
+}
+
+
+}
+
+QUERY_END_Q15:
+
+if(type_is_sell){
+	if(needed_qty > 0){
+	if(!r){
+	fail_msg.assign("query fail 15");
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(needed_qty > 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+
+QUERY_BEGIN_Q14:
+if(type_is_sell){
+	if(needed_qty > 0){
+	//conflict index = 500000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT2_4a");
+
+
+}
+
+
+}
+
+QUERY_END_Q14:
+
+if(type_is_sell){
+	if(needed_qty > 0){
+	if(!r){
+	fail_msg.assign("query fail 14");
+
+
+}
+
+
+}
+
+
+}
+if(type_is_sell){
+	if(needed_qty > 0){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+
+
+}
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	sprintf(query, TRADE_RESULT3_2, tax_rate*(sell_value - buy_value), trade_id);
+
+
+}
+
+QUERY_BEGIN_Q29:
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	//conflict index = 510000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT3_2");
+
+
+}
+
+QUERY_END_Q29:
+
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	if(!r){
+	fail_msg.assign("query fail 28");
+
+
+}
+
+
+}
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+
+}
+sprintf(query, TRADE_RESULT5_1, comm_amount, now_dts, st_completed_id, trade_price, trade_id);
+
+QUERY_BEGIN_Q33:
+//conflict index = 510000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_1");
+
+QUERY_END_Q33:
+
+if(!r){
+	fail_msg.assign("query fail 32");
+
+
+}
+if(!r){
+	throw fail_msg.c_str();
+
+
+}
+sprintf(query, TRADE_RESULT5_2, trade_id, now_dts, st_completed_id);
+
+QUERY_BEGIN_Q34:
+//conflict index = 400000
+r = dbt5_sql_execute(query, &result, "TRADE_RESULT5_2");
+
+QUERY_END_Q34:
+
+if(!r){
+	fail_msg.assign("query fail 33");
+
+
+}
+if(!r){
+	throw fail_msg.c_str();
+
+
+}
+
+sscanf(now_dts, "%hd-%hd-%hd %hd:%hd:%hd.%*d",
+			&trade_dts.year,
+			&trade_dts.month,
+			&trade_dts.day,
+			&trade_dts.hour,
+			&trade_dts.minute,
+			&trade_dts.second);
+if((tax_status == 1 || tax_status == 2) && sell_value > buy_value){
+	tax_amount = tax_rate*(sell_value - buy_value);
+
+
+}
+if(tax_status == 1){
+	se_amount -= tax_amount;
+
+
+}
+due_date_time.Set(trade_dts.year, trade_dts.month, trade_dts.day, trade_dts.hour, trade_dts.minute, trade_dts.second, 0);
+due_date_time.Add(2, 0);
+due_date_time.SetHMS(0,0,0,0);
+due_date_time.GetTimeStamp(&due_date);
+pOut->acct_id = acct_id;
+pOut->acct_bal = acct_bal;
+pOut->load_unit = cust_id;
+return;
+
 }
 #endif

@@ -71,6 +71,7 @@ void CDBConnection::execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut
 	BIDDING_UPDATE_USER;
 
 	BIDDING_INSERT_REC;
+
 /*
 
 	sprintf(query, GET_USER, pIn->user_id);

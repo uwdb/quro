@@ -49,12 +49,27 @@ void signal_kill_handler(int signum){
 	}*/
 	timeval t2;
 	gettimeofday(&t2, NULL);
+	cout<<dec;
 	for(int i=0; i<connectionCnt; i++){
 			CDBConnection* ptr = (CDBConnection*)pDBClist[i];
 			double timerange = difftimeval(t2, t_start_values[i]);
 			cout<<"txn cnt for connection "<<i<<": commit "<<ptr->txn_cnt<<", abort "<<ptr->abort_cnt<<", timerange = "<<timerange<<", txn_time = "<<ptr->txn_time<<endl;
 //				cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<endl;
 	}
+#ifdef TIMEPROFILE
+	for(int i=0; i<connectionCnt; i++){
+		CDBConnection *ptr = (CDBConnection*)pDBClist[i];
+		int j = 0;
+		while(j<46 /*&& ptr->_time[j] !=0*/){
+			if(ptr->_time[j]!=0)cout<<"connection "<<i<<": "<<"query "<<j<<" execute_cnt = "<<ptr->_cnt[j]<<", average time "<<(ptr->_time[j]/(double)ptr->_cnt[j])<<", var = "<<(ptr->_var[j]/(double)ptr->_cnt[j])<<endl;
+			if(j==21)
+			cout<<"- - - - - - - - - - - - "<<endl;
+			j++;
+		}
+		cout<<"================================"<<endl;
+	}
+#endif
+
 	exit(signum);
 }
 
@@ -202,8 +217,8 @@ loop:
 							&(pMessage->TxnInput.TradeOrderTxnInput), tradeOrder);
 					break;
 				case TRADE_RESULT:
-//					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
-//							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
+					//iRet = pThrParam->pBrokerageHouse->RunTradeResult(
+					//		&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
 					break;
 				//case TRADE_STATUS:
 				//	iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
@@ -250,6 +265,7 @@ loop:
 				//		szTransactionName[pMessage->TxnType] << "; "<<str<<endl;
 				//pThrParam->pBrokerageHouse->logErrorMessage(msg.str());
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
+				//cout<<"query fail:"<<str<<endl;
 
 				commit = false;
 				abort_cnt++;

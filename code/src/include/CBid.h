@@ -11,9 +11,11 @@ public:
 		TMsgDriverBid request;
 		fast_random r;
 		TBiddingTxnInput biddingInput;
+		int total_user_num;
+		int total_item_num;
 
 		CBID(char* addr, const int iListenPort, ofstream* pflog, ofstream* pfmix,
-			mutex* pLogLock, mutex* pMixLock);
+			mutex* pLogLock, mutex* pMixLock, int iScaleFactor);
 
 
 		void GenerateBiddingInput();

@@ -2,9 +2,8 @@
 MYSQL=~/mysql-bin/bin/mysql
 DB_NAME=tpcc
 
-TPCC_DATA=~/dbt2/tmp/dbt2-w16
-DB_PATH=~/dbt2/tmp/dbt2-w16
-
+TPCC_DATA=~/dbt2/tmp/dbt2-w4
+DB_PATH=~/dbt2/tmp/dbt2-w4
 command_exec()
 {
     if [ -n "$VERBOSE" ]; then

@@ -343,6 +343,9 @@ void CDateTime::Set(INT32 year, INT32 month, INT32 day)
 
 void CDateTime::Set(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec)
 {
+		if(!IsValid(year, month, day, hour, minute, second, msec)){
+			cout<<year<<", "<<month<<", "<<day<<", "<<hour<<", "<<minute<<", "<<second<<", "<<msec<<endl;
+		}
     assert( IsValid( year, month, day, hour, minute, second, msec ) );
 
     m_dayno = YMDtoDayno(year, month, day);

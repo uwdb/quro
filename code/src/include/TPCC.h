@@ -4,6 +4,8 @@
 #define PROFILE_EACH_QUERY
 #define CAL_RESP_TIME
 #define TABLE_PROFILE
+//#define TIMEBREAK
+#define TIMEPROFILE
 #include <fstream>
 using namespace std;
 
@@ -59,5 +61,50 @@ typedef struct TThreadParameter
 	int t_id;
 	char outputDir[256];
 } *PThreadParameter;
+
+#ifdef TIMEBREAK
+#define SETPROFILING \
+sprintf(query, "SET profiling = 1"); \
+	dbt5_sql_execute(query, &result, "PROFILE");
+#else
+#define SETPROFILING
+
+#endif
+
+#ifdef TIMEBREAK
+#define EXECUTEPROFILING \
+sprintf(query, "show profile"); \
+if(dbt5_sql_execute(query, &result, "PROF") && result.result_set){ \
+	int num_rows = result.num_rows; \
+	q_cnt++; \
+	for(int k=0; k<num_rows; k++){ \
+		dbt5_sql_fetchrow(&result); \
+		char* val; \
+		val = dbt5_sql_getvalue(&result, 0, length); \
+		string f(val); \
+		double time = atof(dbt5_sql_getvalue(&result, 3, length)); \
+		if(tb.find(f) != tb.end()) \
+			tb[f] = tb[f] + time; \
+		else \
+			tb[f] = time; \
+	} \
+}
+#else
+#define EXECUTEPROFILING
+
+#ifdef TIMEPROFILE
+#define GETTIME \
+gettimeofday(&t1, NULL);
+#define GETPROFILE(f) \
+gettimeofday(&t2, NULL); \
+t_time = difftimeval(t2, t1); \
+_time[f] += t_time; \
+_cnt[f] ++;
+#else
+#define GETTIME
+#define GETPROFILE(f)
+#endif
+
+#endif
 
 #endif

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+usage()
+{
+		echo "Usage:"
+		echo "Options:"
+		echo "		-r <bool>"
+		echo "			Rebuild db, regenerate seats_data"
+		echo "		-d <dbname>"
+		echo "			Database name, default is seats"
+		echo " 		-s <scale factor>"
+		echo "			Currently corrupted option, default is 1"
+}
+
+REBUILD_DB=0
+DB_NAME=bid
+
+while getops "r:d:s:" OPT; do
+		case ${OPT} in
+		r)
+			REBUILD_DB=${OPTARG}
+			;;
+		d)
+			DB_NAME=${OPTARG}
+			;;
+		esac
+done
+
+if [ "${REBUID_DB}" -eq 1 ]; then
+		g++ bid_datagen.cpp -o datagen;
+		./datagen
+fi
+
+./bid-mysql-create-db || exit 1
+echo "finish creating db"
+
+./bid-mysql-create-tables || exit 1
+echo "finish creating tables"
+
+./bid-mysql-load-data || exit 1
+echo "finish loading data"

@@ -38,7 +38,10 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 	char query8[1024];
 	char query9[1024];
 	char query10[1024];
+	char query[256];
 
+	double t_time;
+	sql_result_t result;
 	sql_result_t result1, result2, result3, result4, result5, result6, result7, result8, result9, result10;
 	int length;
 	int r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0, r6 = 0, r7 = 0, r8 = 0, r9 = 0, r10 = 0;
@@ -73,6 +76,8 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 		ol_quantity[i1] = pIn->order_line[i1].ol_quantity;
 	}
 /*
+	SETPROFILING;
+	GETTIME;
 	sprintf(query1, NEW_ORDER_1, w_id);
 //	CLANG_PROFILE(query1);
 	r1 = dbt5_sql_execute(query1, &result1, "get wh");
@@ -84,7 +89,11 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("get wh fail");
 			throw fail_msg.c_str();
 	}
+	EXECUTEPROFILING;
+	GETPROFILE(0);
 
+	SETPROFILING;
+	GETTIME;
 	sprintf(query2, NEW_ORDER_2, w_id, d_id);
 //	CLANG_PROFILE(query2);
 	r2 = dbt5_sql_execute(query2, &result2, "get dis");
@@ -98,7 +107,11 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("get dis fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(1);
+	EXECUTEPROFILING;
 
+	SETPROFILING;
+	GETTIME;
 	sprintf(query3, NEW_ORDER_3, w_id, d_id);
 //	CLANG_PROFILE(query3);
 	r3 = dbt5_sql_execute(query3, &result3, "update dis");
@@ -106,7 +119,11 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("update dis fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(2);
+	EXECUTEPROFILING;
 
+	SETPROFILING;
+	GETTIME;
 	sprintf(query4, NEW_ORDER_4, w_id, d_id, c_id);
 //	CLANG_PROFILE(query4);
 	r4 = dbt5_sql_execute(query4, &result4, "get cus");
@@ -120,7 +137,11 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("get cus fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(3);
+	EXECUTEPROFILING;
 
+	SETPROFILING;
+	GETTIME;
 	sprintf(query5, NEW_ORDER_5, d_next_o_id, w_id, d_id);
 //	CLANG_PROFILE(query5);
 	r5 = dbt5_sql_execute(query5, &result5, "insert neworder");
@@ -128,7 +149,11 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("insert neworder fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(4);
+	EXECUTEPROFILING;
 
+	SETPROFILING;
+	GETTIME;
 	sprintf(query6, NEW_ORDER_6, d_next_o_id, d_id, w_id, c_id, o_ol_cnt, o_all_local);
 //	CLANG_PROFILE(query6);
 	r6 = dbt5_sql_execute(query6, &result6, "insert orders");
@@ -136,9 +161,13 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("insert orders fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(5);
+	EXECUTEPROFILING;
 
 	for(i=0; i<o_ol_cnt; i++){
 			if(ol_i_id[i] != 0){
+					SETPROFILING;
+					GETTIME;
 					sprintf(query7, NEW_ORDER_7, ol_i_id[i]);
 //					CLANG_PROFILE(query7);
 					r7 = dbt5_sql_execute(query7, &result7, "get item");
@@ -152,11 +181,15 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 							string fail_msg("get item");
 							throw fail_msg.c_str();
 					}
+					GETPROFILE(6);
+					EXECUTEPROFILING;
 			}else{
 					force_fail.assign("item fail");
 					throw force_fail.c_str();
 			}
 			ol_amount[i] = i_price[i] * ol_quantity[i];
+			SETPROFILING;
+			GETTIME;
 			sprintf(query8, NEW_ORDER_8, s_dist[d_id - 1], ol_i_id[i], w_id);
 //			CLANG_PROFILE(query8);
 			r8 = dbt5_sql_execute(query8, &result8, "get stock");
@@ -170,20 +203,28 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 					string fail_msg("get stock fail");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(7);
+			EXECUTEPROFILING;
 
+			SETPROFILING;
 			order_amount += ol_amount[i];
 			if(s_quantity[i] > ol_quantity[i] + 10){
 					sprintf(query9, NEW_ORDER_9, ol_quantity[i], ol_i_id[i], w_id);
 			}else{
 					sprintf(query9, NEW_ORDER_9, ol_quantity[i]-91, ol_i_id[i], w_id);
 			}
+			GETTIME;
 //			CLANG_PROFILE(query9);
 			r9 = dbt5_sql_execute(query9, &result9, "update stock");
 			if(!r9){
 					string fail_msg("update stock fail");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(8);
+			EXECUTEPROFILING;
 
+			SETPROFILING;
+			GETTIME;
 			sprintf(query10, NEW_ORDER_10, d_next_o_id, d_id, w_id, i+1, ol_i_id[i],
                   ol_supply_w_id[i], ol_quantity[i], ol_amount[i], my_s_dist[i].c_str() );
 //			CLANG_PROFILE(query10);
@@ -192,13 +233,16 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 					string fail_msg("insert orderline fail");
 					throw fail_msg.c_str();
 			}
-
+			GETPROFILE(9);
+			EXECUTEPROFILING;
 	}
 
 */
 
 	for(i=0; i<o_ol_cnt; i++){
 			if(ol_i_id[i] != 0){
+					SETPROFILING;
+					GETTIME;
 					sprintf(query7, NEW_ORDER_7, ol_i_id[i]);
 					r7 = dbt5_sql_execute(query7, &result7, "get item");
 					if(r7 == 1 && result7.result_set){
@@ -211,7 +255,8 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 							string fail_msg("get item");
 							throw fail_msg.c_str();
 					}
-
+					GETPROFILE(6);
+					EXECUTEPROFILING;
 
 			}
 	}
@@ -239,7 +284,8 @@ for(i=0; i<o_ol_cnt; i++){
 }
 
 
-
+SETPROFILING;
+GETTIME;
 sprintf(query4, NEW_ORDER_4, w_id, d_id, c_id);
 	r4 = dbt5_sql_execute(query4, &result4, "get cus");
 	if(r4 == 1 && result4.result_set){
@@ -252,8 +298,12 @@ sprintf(query4, NEW_ORDER_4, w_id, d_id, c_id);
 			string fail_msg("get cus fail");
 			throw fail_msg.c_str();
 	}
+	GETPROFILE(3);
+	EXECUTEPROFILING;
 
 for(i=0; i<o_ol_cnt; i++){
+SETPROFILING;
+	GETTIME;
 	sprintf(query8, NEW_ORDER_8, s_dist[d_id - 1], ol_i_id[i], w_id);
 			r8 = dbt5_sql_execute(query8, &result8, "get stock");
 			if(r8 == 1 && result8.result_set){
@@ -266,9 +316,13 @@ for(i=0; i<o_ol_cnt; i++){
 					string fail_msg("get stock fail");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(7);
+EXECUTEPROFILING;
 }
 
 for(i=0; i<o_ol_cnt; i++){
+	SETPROFILING;
+	GETTIME;
 	if(s_quantity[i] > ol_quantity[i] + 10){
 					sprintf(query9, NEW_ORDER_9, ol_quantity[i], ol_i_id[i], w_id);
 			}
@@ -282,10 +336,13 @@ if(!(s_quantity[i] > ol_quantity[i] + 10)){
 					string fail_msg("update stock fail");
 					throw fail_msg.c_str();
 			}
+			GETPROFILE(8);
+			EXECUTEPROFILING;
 }
 
 
-
+SETPROFILING;
+GETTIME;
 sprintf(query2, NEW_ORDER_2, w_id, d_id);
 	r2 = dbt5_sql_execute(query2, &result2, "get dis");
 	if(r2 == 1 && result2.result_set){
@@ -298,7 +355,8 @@ sprintf(query2, NEW_ORDER_2, w_id, d_id);
 			string fail_msg("get dis fail");
 			throw fail_msg.c_str();
 	}
-
+GETPROFILE(1);
+EXECUTEPROFILING;
 
 
 for(i=0; i<o_ol_cnt; i++){
@@ -315,7 +373,8 @@ for(i=0; i<o_ol_cnt; i++){
 //					string fail_msg("get stock fail");
 //					throw fail_msg.c_str();
 //			}
-
+SETPROFILING;
+GETTIME;
 sprintf(query10, NEW_ORDER_10, d_next_o_id, d_id, w_id, i+1, ol_i_id[i],
                   ol_supply_w_id[i], ol_quantity[i], ol_amount[i], my_s_dist[i].c_str() );
 			r10 = dbt5_sql_execute(query10, &result10, "insert orderline");
@@ -323,7 +382,8 @@ sprintf(query10, NEW_ORDER_10, d_next_o_id, d_id, w_id, i+1, ol_i_id[i],
 					string fail_msg("insert orderline fail");
 					throw fail_msg.c_str();
 			}
-
+GETPROFILE(9);
+EXECUTEPROFILING;
 }
 
 
@@ -355,34 +415,41 @@ for(i=0; i<o_ol_cnt; i++){
 
 
 
-
+SETPROFILING;
+GETTIME;
 sprintf(query6, NEW_ORDER_6, d_next_o_id, d_id, w_id, c_id, o_ol_cnt, o_all_local);
 	r6 = dbt5_sql_execute(query6, &result6, "insert orders");
 	if(!r6){
 			string fail_msg("insert orders fail");
 			throw fail_msg.c_str();
 	}
+GETPROFILE(5);
+EXECUTEPROFILING;
 
-
-
+SETPROFILING;
+GETTIME;
 sprintf(query5, NEW_ORDER_5, d_next_o_id, w_id, d_id);
 	r5 = dbt5_sql_execute(query5, &result5, "insert neworder");
 	if(!r5){
 			string fail_msg("insert neworder fail");
 			throw fail_msg.c_str();
 	}
+GETPROFILE(4);
+EXECUTEPROFILING;
 
-
-
+SETPROFILING;
+GETTIME;
 sprintf(query3, NEW_ORDER_3, w_id, d_id);
 	r3 = dbt5_sql_execute(query3, &result3, "update dis");
 	if(!r3){
 			string fail_msg("update dis fail");
 			throw fail_msg.c_str();
 	}
+GETPROFILE(2);
+EXECUTEPROFILING;
 
-
-
+SETPROFILING;
+GETTIME;
 sprintf(query1, NEW_ORDER_1, w_id);
 	r1 = dbt5_sql_execute(query1, &result1, "get wh");
 	if(r1 == 1 && result1.result_set){
@@ -393,6 +460,9 @@ sprintf(query1, NEW_ORDER_1, w_id);
 			string fail_msg("get wh fail");
 			throw fail_msg.c_str();
 	}
+GETPROFILE(0);
+EXECUTEPROFILING;
+
 
 	pOut->status = CBaseTxnErr::SUCCESS;
 

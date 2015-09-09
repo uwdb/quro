@@ -74,7 +74,7 @@ CCustomer::CCustomer(char *szInDir, TIdent iConfiguredCustomerCount,
 {
 	char filename[iMaxPath + 1];
 	m_pBID = new CBID(szBHaddr, iBHlistenPort, &m_fLog, m_fMix,
-			&m_LogLock, m_MixLock);
+			&m_LogLock, m_MixLock, iScaleFactor);
 	snprintf(filename, iMaxPath, "%s/Customer_Error_%lld.log", outputDirectory,
 			(long long) pthread_self());
 	m_fLog.open(filename, ios::out);

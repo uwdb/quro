@@ -17,6 +17,7 @@ using namespace std;
 
 #define CAL_RESP_TIME
 #define PROFILE_EACH_QUERY
+//#define TIMEPROFILE
 
 #include "locking.h"
 #include "TxnHarnessStructs.h"
@@ -153,5 +154,19 @@ typedef struct TThreadParameter
 	int t_id;
 	char outputDir[256];
 } *PThreadParameter;
+
+#ifdef TIMEPROFILE
+#define GETTIME \
+gettimeofday(&t1, NULL);
+#define GETPROFILE(f) \
+gettimeofday(&t2, NULL); \
+t_time = difftimeval(t2, t1); \
+_time[f] += t_time; \
+_cnt[f] ++; \
+_var[f] += ((t_time-(_time[f]/(double)_cnt[f]))*(t_time-(_time[f]/(double)_cnt[f])));
+#else
+#define GETTIME
+#define GETPROFILE(f)
+#endif
 
 #endif // BROKERAGE_HOUSE_H

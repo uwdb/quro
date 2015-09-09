@@ -135,6 +135,7 @@ bool CBaseInterface::talkToSUT(PMsgDriverBrokerage pRequest)
 	//log response time
 	logResponseTime(Reply.iStatus, pRequest->TxnType, TxnTime.MSec() / 1000.0);
 #endif
+
 	if (Reply.iStatus == CBaseTxnErr::SUCCESS)
 		return true;
 	return false;

@@ -34,7 +34,6 @@ bool CSendToMarket::SendToMarket(TTradeRequest &trade_mes)
 		// send Trade Request to MEE
 #ifdef NO_MEE_FOR_TRADERESULT
 		m_pCMEE->SubmitTradeRequest(&trade_mes);
-//		cout<<"CSendToMarket: send request successfully"<<endl;
 #else
 		m_Socket->dbt5Send(reinterpret_cast<void *>(&trade_mes),
 				sizeof(TTradeRequest));

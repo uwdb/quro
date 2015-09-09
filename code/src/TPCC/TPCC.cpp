@@ -22,6 +22,24 @@ void signal_kill_handler(int signum){
 			cout<<"txn cnt for connection "<<i<<": commit "<<ptr->txn_cnt<<", abort "<<ptr->abort_cnt<<", timerange = "<<timerange<<", txn_time = "<<ptr->txn_time<<endl;
 //				cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<endl;
 	}
+#ifdef TIMEBREAK
+	for(int i=0; i<connectionCnt; i++){
+		CDBConnection* ptr = (CDBConnection*)pDBClist[i];
+		for(map<string, double>::iterator it = ptr->tb.begin(); it != ptr->tb.end(); it++){
+				cout<<"connection "<<i<<": "<<it->first<<" "<<(it->second/(double)(ptr->q_cnt))<<endl;
+		}
+	}
+#endif
+#ifdef TIMEPROFILE
+	for(int i=0; i<connectionCnt; i++){
+		CDBConnection *ptr = (CDBConnection*)pDBClist[i];
+		int j = 0;
+		while(j<100 && ptr->_time[j] !=0){
+			cout<<"connection "<<i<<": "<<"query "<<j<<", cnt = "<<ptr->_cnt[j]<<", average time "<<(ptr->_time[j]/(double)ptr->_cnt[j])<<endl;
+			j++;
+		}
+	}
+#endif
 	exit(signum);
 }
 

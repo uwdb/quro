@@ -245,7 +245,7 @@ public:
 	}else{ \
 				ADD_FAIL_QUERY_NODE(1, 1, 0); \
 				RETURN_ERROR("trade result frame1 query 1 fails..."); \
-	} 
+	}
 
 #define TRADE_RESULT_F1Q2 sprintf(query, TRADE_RESULT1_2, type_id); \
 	GETTIME; \
@@ -261,7 +261,7 @@ public:
 	}else{ \
 			ADD_FAIL_QUERY_NODE(1, 2, 0); \
 			FAIL_MSG("trade result frame1 query 2 fails"); \
-	} 
+	}
 
 #define TRADE_RESULT_F1Q3 sprintf(query, TRADE_RESULT1_3, acct_id, symbol); \
 	GETTIME; \
@@ -324,7 +324,7 @@ public:
 							}else{ \
 									ADD_FAIL_QUERY_NODE(2, 4, 0); \
 									FAIL_MSG("trade result frame2 query 4 fails"); \
-							} 
+							}
 
 #define TRADE_RESULT_F2Q5 sprintf(query, TRADE_RESULT2_3b, acct_id, symbol); \
 							GETTIME;  \
@@ -407,7 +407,7 @@ public:
 							ADD_FAIL_QUERY_NODE(2, 13, 0); \
 							FAIL_MSG("trade result frame2 query 13 fails"); \
 					} \
-					ADD_QUERY_NODE(2, 13, 1); 
+					ADD_QUERY_NODE(2, 13, 1);
 
 #define TRADE_RESULT_F2Q14 sprintf(query, TRADE_RESULT2_8b, hs_qty+trade_qty, acct_id, symbol); \
 					GETTIME; \
@@ -463,7 +463,7 @@ public:
 											FAIL_MSG("trade result frame2 query 19 fails"); \
 									} \
 									ADD_QUERY_NODE(2, 19, 1);
-									
+
 #define TRADE_RESULT_F2Q20 sprintf(query, TRADE_RESULT2_5b, hold_id); \
 									GETTIME; \
 									if(!dbt5_sql_execute(query, &result, "TRADE_RESULT2_5b")){ \
@@ -588,7 +588,7 @@ public:
 					FAIL_MSG("trade result frame6 query 2 fails"); \
 			} \
 			ADD_QUERY_NODE(6, 2, 1);
- 
+
 #define TRADE_RESULT_F6Q3 sprintf(query, TRADE_RESULT6_3, now_dts, trade_id, se_amount, type_name, trade_qty, s_name); \
 			GETTIME; \
 			if(!dbt5_sql_execute(query, &result, "TRADE_RESULT6_3")){ \
