@@ -1,0 +1,33 @@
+#!/bin/bash
+
+MYSQL=mysql
+DB_NAME=smallbank
+
+${MYSQL} ${DB_NAME} -e "
+CREATE TABLE ACCOUNTS (
+    custid      BIGINT      NOT NULL,
+    name        VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_accounts PRIMARY KEY (custid),
+);
+"
+
+${MYSQL} ${DB_NAME} -e "
+CREATE INDEX IDX_ACCOUNTS_NAME ON ACCOUNTS (name);
+"
+
+${MYSQL} ${DB_NAME} -e "
+CREATE TABLE SAVINGS (
+    custid      BIGINT      NOT NULL,
+    bal         FLOAT       NOT NULL,
+    CONSTRAINT pk_savings PRIMARY KEY (custid),
+    FOREIGN KEY (custid) REFERENCES ACCOUNTS (custid)
+);
+"
+${MYSQL} ${DB_NAME} -e "
+CREATE TABLE CHECKING (
+    custid      BIGINT      NOT NULL,
+    bal         FLOAT       NOT NULL,
+    CONSTRAINT pk_checking PRIMARY KEY (custid),
+    FOREIGN KEY (custid) REFERENCES ACCOUNTS (custid)
+);
+"
