@@ -718,6 +718,10 @@ public:
 #endif
 									}
 							}
+							for(int i=0; i<tempQ.size(); i++){
+									cout<<"----q"<<i<<"--------"<<endl;
+									cout<<tempQ[i]->insert_code<<endl;
+							}
 #ifdef GENERATE_ILP_INPUT
 							ofstream outfile("queryinfo.txt");
 							int query_cnt = 0;
@@ -742,6 +746,67 @@ public:
 															outfile<<query_index[tempQ[k]]<<" "<<query_index[tempQ[i]]<<endl;
 									}
 							}
+#endif
+#ifdef GENERATE_LARGE_ILP_INPUT
+						ofstream outfile("queryinfo.txt");
+						outfile<<tempQ.size()<<endl;
+						set<condBlock*> cond_block_set;
+						for(int i=0; i<tempQ.size(); i++){
+								for(int j=0; j<tempQ[i]->cond_blocks.size(); j++)
+									cond_block_set.insert(tempQ[i]->cond_blocks[j]);
+						}
+						outfile<<"#statements:"<<(cond_block_set.size()+tempQ.size())<<endl;
+						for(int i=0; i<tempQ.size(); i++){
+								if(tempQ[i]->type == QUERY)
+									outfile<<tempQ[i]->conflict_index<<" ";
+								else
+									outfile<<"1 ";
+						}
+						outfile<<endl;
+						for(int i=0; i<tempQ.size(); i++){
+							set<codeBlock*> p_set;
+							for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+									if(tempQ[i]->def_stmts.find(*it) != tempQ[i]->def_stmts.end()){
+											for(set<codeBlock*>::iterator cit = tempQ[i]->def_stmts[*it].begin(); cit != tempQ[i]->def_stmts[*it].end(); cit++)
+												p_set.insert((*cit)->finalcBlock);
+									}
+							}
+							for(set<codeBlock*>::iterator it = p_set.begin(); it != p_set.end(); it++){
+									for(int k=0; k<i; k++)
+											if(tempQ[k] == *it)
+												outfile<<k<<" "<<i<<endl;
+							}
+						}
+						for(int i=0; i<tempQ.size(); i++){
+							for(set<const VarDecl*>::iterator it = tempQ[i]->uses.begin(); it != tempQ[i]->uses.end(); it++){
+								if(tempQ[i]->def_stmts.find(*it) != tempQ[i]->def_stmts.end()){
+										int j = -1;
+										for(set<codeBlock*>::iterator cit = tempQ[i]->def_stmts[*it].begin(); cit != tempQ[i]->def_stmts[*it].end(); cit++){
+												j=-1;
+												for(int x=0; x<tempQ.size(); x++)
+													if((*cit)->finalcBlock == tempQ[x])
+														j=x;
+												if(j>=i)continue;
+												if(j==-1){
+														cout<<"block "<<tempQ[i]->index<<" parent "<<(*cit)->index<<endl;
+												}
+												assert(j!=-1);
+												//i: use j's define, now find k
+												for(int x=0; x<tempQ.size(); x++){
+														if(x==i || x==j)continue;
+														if(tempQ[x]->defs.find(*it) != tempQ[x]->defs.end()){
+																outfile<<j<<" "<<i<<" "<<x<<endl;
+														}
+												}
+										}
+								}else{
+										for(int j=i+1; j<tempQ.size(); j++){
+												if(tempQ[j]->def_stmts.find(*it) != tempQ[j]->def_stmts.end())
+															outfile<<i<<" "<<j<<endl; 
+										}
+								}
+							}
+						}
 #endif
 							//Code to sort queries; should be ILP
 							sort(temp_query_seq.begin(), temp_query_seq.end(), qBlockCmp1);	

@@ -1094,8 +1094,8 @@ int getConflictIndex(int row_num, OPERATION op){
 	int pri_index = 4000000/row_num;
 	if(op == UPDATE)
 		pri_index += 10000;
-	if(op == INSERT)
-		pri_index = 10;
+//	if(op == INSERT)
+//		pri_index = 10;
 	return pri_index;
 }
 

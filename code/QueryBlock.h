@@ -17,6 +17,7 @@
 //#define ONLY_FISSION
 #define SORT_QUERIES
 #define GENERATE_ILP_INPUT
+//#define GENERATE_LARGE_ILP_INPUT
 
 #include <vector>
 #include <set>
