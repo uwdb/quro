@@ -47,6 +47,7 @@ void CDBConnection::execute(const TUpdateReservationTxnInput* pIn, TUpdateReserv
 		dbt5_sql_fetchrow(&result);
 
 		r_id = atol(dbt5_sql_getvalue(&result, 0, length));
+		dbt5_sql_close_cursor(&result);
 	}else{
 		string fail_msg("check seats failed");
 		throw fail_msg.c_str();
@@ -58,7 +59,7 @@ void CDBConnection::execute(const TUpdateReservationTxnInput* pIn, TUpdateReserv
 		dbt5_sql_fetchrow(&result);
 
 		new_r_id = atol(dbt5_sql_getvalue(&result, 0, length));
-
+		dbt5_sql_close_cursor(&result);
 	}else{
 		string fail_msg("check customer failed");
 		throw fail_msg.c_str();

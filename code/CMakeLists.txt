@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 #PROJECT(dbt5 CXX)
-SET(WORKLOAD_TPCE 1)
+#SET(WORKLOAD_TPCE 1)
 #SET(WORKLOAD_SEATS 1)
 #SET(WORKLOAD_BID 1)
 #SET(WORKLOAD_TPCC 1)
@@ -170,8 +170,10 @@ ELSEIF (WORKLOAD_BID)
 ELSEIF (WORKLOAD_TPCC)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
-									${TXN}/NewOrderTxn.cpp
-									${TXN}/PaymentTxn.cpp)
+#									${TXN}/NewOrderTxn.cpp
+#									${TXN}/PaymentTxn.cpp)
+									${TXN}/Storeproc_neworder.cpp
+									${TXN}/Storeproc_payment.cpp)
 ENDIF (WORKLOAD_TPCE)
 #
 # Files to build.
