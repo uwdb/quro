@@ -170,8 +170,10 @@ ELSEIF (WORKLOAD_BID)
 ELSEIF (WORKLOAD_TPCC)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
-									${TXN}/NewOrderTxn.cpp
-									${TXN}/PaymentTxn.cpp)
+#									${TXN}/NewOrderTxn.cpp
+#									${TXN}/PaymentTxn.cpp)
+									${TXN}/Storeproc_neworder.cpp
+									${TXN}/Storeproc_payment.cpp)
 ENDIF (WORKLOAD_TPCE)
 #
 # Files to build.

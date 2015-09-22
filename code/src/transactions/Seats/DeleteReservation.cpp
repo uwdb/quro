@@ -35,6 +35,8 @@ void CDBConnection::execute(const TDeleteReservationTxnInput* pIn, TDeleteReserv
 	sprintf(query, DR_GET_FLIGHT, f_id);
 	r = dbt5_sql_execute(query, &result, "DR_GET_FLIGHT");
 	if(r==1 && result.result_set){
+		dbt5_sql_fetchrow(&result);
+		dbt5_sql_close_cursor(&result);
 	}else{
 		string fail_msg("get flight fails"):
 		throw fail_msg.c_str();
@@ -46,6 +48,7 @@ void CDBConnection::execute(const TDeleteReservationTxnInput* pIn, TDeleteReserv
 		if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
 			c_id = atol(dbt5_sql_getvalue(&result, 0, length));
+			dbt5_sql_close_cursor(&result);
 		}else{
 			string fail_msg("get cust by id fails");
 			throw fail_msg.c_str();
@@ -57,6 +60,7 @@ void CDBConnection::execute(const TDeleteReservationTxnInput* pIn, TDeleteReserv
 			dbt5_sql_fetchrow(&result);
 			c_id = atol(dbt5_sql_getvalue(&result, 0, length));
 			ff_al_id = atol(dbt5_sql_getvalue(&result, 1, length));
+			dbt5_sql_close_cursor(&result);
 		}else{
 			string fail_msg("get cust by number fails");
 			throw fail_msg.c_str();
@@ -71,6 +75,7 @@ void CDBConnection::execute(const TDeleteReservationTxnInput* pIn, TDeleteReserv
 		seats_left = atol(dbt5_sql_getvalue(&result, 7, length));
 		r_id = atol(dbt5_sql_getvalue(&result, 8, legnth));
 		r_price = atof(dbt5_sql_getvalue(&result, 9, length));
+		dbt5_sql_close_cursor(&result);
 	}else{
 		string fail_msg("get customer reservation fails");
 		throw fail_msg.c_str();
