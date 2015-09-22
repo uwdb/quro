@@ -1,5 +1,5 @@
 #!/bin/bash
-MYSQL=~/mysql-bin/bin/mysql
+MYSQL=mysql
 DB_NAME=tpcc
 
 TPCC_DATA=~/dbt2/tmp/dbt2-w4
