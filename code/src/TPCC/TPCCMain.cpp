@@ -12,6 +12,7 @@
 
 #include "TPCC.h"
 #include "DBT5Consts.h"
+#include "global_consts.h"
 
 // Establish defaults for command line option
 int iListenPort = iBrokerageHousePort;
@@ -20,7 +21,7 @@ char szHost[iMaxHostname + 1] = "";
 char szDBName[iMaxDBName + 1] = "";
 char szDBPort[iMaxPort + 1] = "";
 char szUser[25] = "root";
-char szSocket[256] = "/var/run/mysqld/mysqld.sock";
+char szSocket[256] = DB_SOCKET;
 char szPass[25] = "";
 char outputDirectory[iMaxPath + 1] = ".";
 

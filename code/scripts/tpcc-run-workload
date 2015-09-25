@@ -57,6 +57,7 @@ USE_OPROFILE=0
 USE_READPROFILE=0
 USE_LINUX_PERF_EVENTS=0
 PACING_DELAY=0
+EXEC_BIN_DIR=/home/congy/bin
 
 while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
 	case $opt in
@@ -193,7 +194,7 @@ echo "Results can be found in: ${OUTPUT_DIR}"
 
 echo
 echo "1. Starting TPCC server"
-TPCCMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+${EXEC_BIN_DIR}/TPCCMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
 		-o ${TPCC_OUTPUT_DIR} > ${TPCC_OUTPUT_DIR}/tpcc.out 2>&1 &
 
 do_sleep ${USERS} 
@@ -201,7 +202,7 @@ do_sleep ${USERS}
 echo
 echo "3. Starting Customer driver: ${USERS} user(s)"
 echo "   1 user starting every ${SLEEPY} milliseconds..."
-DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+${EXEC_BIN_DIR}/DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
 		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
 		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
 		-i ${EGENDIR}/flat_in \

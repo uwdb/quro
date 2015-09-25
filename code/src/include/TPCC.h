@@ -3,9 +3,9 @@
 
 #define PROFILE_EACH_QUERY
 #define CAL_RESP_TIME
-#define TABLE_PROFILE
+//#define TABLE_PROFILE
 //#define TIMEBREAK
-#define TIMEPROFILE
+//#define TIMEPROFILE
 #include <fstream>
 using namespace std;
 
@@ -40,6 +40,12 @@ private:
 	int RunNewOrder(TNewOrderTxnInput* pTxnInput,
 									CTPCCDB &tpcc);
 	int RunPayment(TPaymentTxnInput* pTxnInput,
+									CTPCCDB &tpcc);
+	int RunDelivery(TDeliveryTxnInput* pTxnInput,
+									CTPCCDB &tpcc);
+	int RunOrderstatus(TOrderstatusTxnInput* pTxnInput,
+									CTPCCDB &tpcc);
+	int RunStocklevel(TStocklevelTxnInput* pTxnInput,
 									CTPCCDB &tpcc);
 
 	friend void *workerThread(void *);

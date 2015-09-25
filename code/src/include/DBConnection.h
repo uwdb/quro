@@ -248,6 +248,9 @@ public:
 #elif WORKLOAD_TPCC
 	void execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pOut);
 	void execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut);
+	void execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pOut);
+	void execute(const TStocklevelTxnInput* pIn, TStocklevelTxnOutput* pOut);
+	void execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutput* pOut);
 #endif // WORKLOAD_TPCE
 
 #ifdef WORKLOAD_TPCE

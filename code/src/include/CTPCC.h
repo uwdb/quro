@@ -12,6 +12,9 @@ public:
 		TMsgDriverTPCC request;
 		TNewOrderTxnInput noInput;
 		TPaymentTxnInput pmtInput;
+		TDeliveryTxnInput deliveryInput;
+		TOrderstatusTxnInput orderstatusInput;
+		TStocklevelTxnInput stocklevelInput;
 		fast_random r;
 		int table_cardinality_warehouses;
 
@@ -20,9 +23,15 @@ public:
 
 		void GenerateNewOrderInput();
 		void GeneratePaymentInput();
+		void GenerateDeliveryInput();
+		void GenerateStocklevelInput();
+		void GenerateOrderstatusInput();
 
 		bool NewOrder(TNewOrderTxnInput* pTxnInput);
 		bool Payment(TPaymentTxnInput* pTxnInput);
+		bool Delivery(TDeliveryTxnInput* pTxnInput);
+		bool Stocklevel(TStocklevelTxnInput* pTxnInput);
+		bool Orderstatus(TOrderstatusTxnInput* pTxnInput);
 
 		void DoTxn();
 };

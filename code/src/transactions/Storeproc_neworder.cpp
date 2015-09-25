@@ -21,8 +21,10 @@ void CTPCCDB::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput *pOut){
 
 void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pOut){
 	char stmt[512];
-  int rc;
+  int r;
 	sql_result_t result;
+	int rollback;
+	int length;
 
 	/* Create the query and execute it. */
 	sprintf(stmt,
@@ -30,7 +32,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
                                  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,\
                                  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,\
                           %d, %d, @rc)",
-		pIn->w_id, data->d_id, data->c_id, data->o_all_local,
+		pIn->w_id, pIn->d_id, pIn->c_id, pIn->o_all_local,
 		pIn->o_ol_cnt,
 		pIn->order_line[0].ol_i_id,
 		pIn->order_line[0].ol_supply_w_id,
@@ -79,16 +81,16 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 		pIn->order_line[14].ol_quantity);
 
 
-		r = dbt5_sql_execute(stmt, sql_result, "NEW_ORDER_SP");
+		r = dbt5_sql_execute(stmt, &result, "NEW_ORDER_SP");
 		if(!r){
 				string fail_msg("execution fails");
 				throw fail_msg.c_str();
 		}
 
-		r = dbt5_sql_execute("select @rc", sql_result, "NEW_ORDER_SP_RC");
+		r = dbt5_sql_execute("select @rc", &result, "NEW_ORDER_SP_RC");
 		if(r==1){
 			dbt5_sql_fetchrow(&result);
-			int rollback = atoi(dbt5_sql_getvalue(&result, 0, length));
+			rollback = atoi(dbt5_sql_getvalue(&result, 0, length));
 			if(rollback){
 				string fail_msg("rollback");
 				throw fail_msg.c_str();

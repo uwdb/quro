@@ -2,7 +2,7 @@
 #MYSQL="${HOME}/mysql-bin/bin/mysql"
 MYSQL=mysql
 DB_HOST=localhost
-DB_SOCKET="/usr/local/var/mysqld/mysqld.sock"
+#DB_SOCKET="/usr/local/var/mysqld/mysqld.sock"
 DB_NAME=seats
 DB_USER=root
 

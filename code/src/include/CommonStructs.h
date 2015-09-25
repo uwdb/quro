@@ -138,6 +138,7 @@ typedef struct TUpdateReservationTxnOutput
 		int status;
 };
 
+
 typedef struct TMsgDriverSeats
 {
 		eTxnType TxnType;
@@ -197,7 +198,10 @@ enum eTxnType
 {
 		NULL_TXN = -1,
 		NEWORDER,
-		PAYMENT
+		PAYMENT,
+		DELIVERY,
+		STOCKLEVEL,
+		ORDERSTATUS
 };
 struct OrderLine{
 	int ol_i_id;
@@ -225,6 +229,27 @@ typedef struct TPaymentTxnInput
 	double h_amount;
 };
 
+typedef struct TDeliveryTxnInput
+{
+		long unsigned int w_id;
+		long unsigned int o_carrier_id;
+};
+
+typedef struct TOrderstatusTxnInput
+{
+		long unsigned int c_id;
+		long unsigned int c_w_id;
+		long unsigned int c_d_id;
+		char c_last[200];
+};
+
+typedef struct TStocklevelTxnInput
+{
+		long unsigned int w_id;
+		long unsigned int d_id;
+		long unsigned int threshold;
+};
+
 typedef struct TNewOrderTxnOutput
 {
 		string w_tax;
@@ -243,6 +268,16 @@ typedef struct TPaymentTxnOutput
 		int status;
 };
 
+typedef struct TDeliveryTxnOutput{
+		int status;
+};
+typedef struct TOrderstatusTxnOutput{
+		int status;
+};
+typedef struct TStocklevelTxnOutput{
+		int status;
+};
+
 typedef struct TMsgDriverTPCC
 {
 		eTxnType TxnType;
@@ -250,6 +285,9 @@ typedef struct TMsgDriverTPCC
 		{
 				TNewOrderTxnInput neworderTxnInput;
 				TPaymentTxnInput paymentTxnInput;
+				TDeliveryTxnInput deliveryTxnInput;
+				TOrderstatusTxnInput orderstatusTxnInput;
+				TStocklevelTxnInput stocklevelTxnInput;
 		}TxnInput;
 } *PMsgDriverTPCC;
 

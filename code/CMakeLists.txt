@@ -9,6 +9,8 @@ SET(WORKLOAD_TPCC 1)
 # Defining binaries so to minimized typoes.
 #
 
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-rdynamic -lpthread -lmysqlclient")
+
 SET(MYSQL_LIB /usr/lib/x86_64-linux-gnu)
 SET(MYSQL_INCLUDE /usr/include/mysql)
 #SET(HOME /afs/csail.mit.edu/u/c/congy)
@@ -170,8 +172,14 @@ ELSEIF (WORKLOAD_BID)
 ELSEIF (WORKLOAD_TPCC)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
+#									${TXN}/StocklevelTxn.cpp
+#									${TXN}/DeliveryTxn.cpp
+#									${TXN}/OrderstatusTxn.cpp
 #									${TXN}/NewOrderTxn.cpp
 #									${TXN}/PaymentTxn.cpp)
+									${TXN}/Storeproc_stocklevel.cpp
+									${TXN}/Storeproc_orderstatus.cpp
+									${TXN}/Storeproc_delivery.cpp
 									${TXN}/Storeproc_neworder.cpp
 									${TXN}/Storeproc_payment.cpp)
 ENDIF (WORKLOAD_TPCE)
@@ -388,24 +396,24 @@ IF (WORKLOAD_TPCE)
                  scripts/dbt5-plot-transaction-rate
                  scripts/dbt5-generate-report
                  ${DB_SCRIPTS}
-        DESTINATION "/bin")
+        DESTINATION "/home/congy/bin")
 ELSEIF (WORKLOAD_SEATS)		
 		INSTALL(PROGRAMS ${DBT5_SEATS}
                  ${DBT5_DRIVER}
                  scripts/seats-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/bin")
+        DESTINATION "/home/congy/bin")
 ELSEIF (WORKLOAD_BID)		
 		INSTALL(PROGRAMS ${DBT5_BID}
                  ${DBT5_DRIVER}
                  scripts/bid-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/bin")
+        DESTINATION "/home/congy/bin")
 ELSEIF (WORKLOAD_TPCC)		
 		INSTALL(PROGRAMS ${DBT5_TPCC}
                  ${DBT5_DRIVER}
                  scripts/tpcc-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/bin")
+        DESTINATION "/home/congy/bin")
 
 ENDIF (WORKLOAD_TPCE)

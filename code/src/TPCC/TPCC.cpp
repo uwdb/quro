@@ -52,7 +52,6 @@ try {
 
 		CSocket sockDrv;
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
-		cout<<"client sock = "<<pThrParam->iSockfd<<endl;
 
 		PMsgDriverTPCC pMessage = new TMsgDriverTPCC;
 		memset(pMessage, 0, sizeof(TMsgDriverTPCC)); // zero the structure
@@ -110,6 +109,15 @@ try {
 					case PAYMENT:
 						iRet = pThrParam->pTPCC->RunPayment(&pMessage->TxnInput.paymentTxnInput, tpccDB);
 						break;
+					case DELIVERY:
+						iRet = pThrParam->pTPCC->RunDelivery(&pMessage->TxnInput.deliveryTxnInput, tpccDB);
+						break;
+					case STOCKLEVEL:
+						iRet = pThrParam->pTPCC->RunStocklevel(&pMessage->TxnInput.stocklevelTxnInput, tpccDB);
+						break;
+					case ORDERSTATUS:
+						iRet = pThrParam->pTPCC->RunOrderstatus(&pMessage->TxnInput.orderstatusTxnInput, tpccDB);
+						break;
 					default:
 						pDBConnection->outfile<<"Wrong txn type!"<<endl;
 						iRet = ERR_TYPE_WRONGTXN;
@@ -118,6 +126,7 @@ try {
 				pDBConnection->txn_cnt = txn_cnt;
 			}catch (const char *str) {
 			pDBConnection->rollback();
+
 //#ifdef CAL_RESP_TIME
 //			gettimeofday(&t2, NULL);
 //			exec_time = difftimeval(t2, t1);
@@ -127,7 +136,7 @@ try {
 //#endif
 //			pDBConnection->outfile.flush();
 //#endif
-//				pDBConnection->outfile<<"error: "<<str<<endl;
+//				cout<<"error: "<<str<<endl;
 
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
@@ -257,6 +266,29 @@ int TPCCRunner::RunPayment(TPaymentTxnInput* pTxnInput, CTPCCDB &tpcc){
 	return tpccOutput.status;
 }
 
+int TPCCRunner::RunDelivery(TDeliveryTxnInput* pTxnInput, CTPCCDB &tpcc){
+	TDeliveryTxnOutput tpccOutput;
+	
+	tpcc.DoDelivery(pTxnInput, &tpccOutput);
+	
+	return tpccOutput.status;
+}
+
+int TPCCRunner::RunStocklevel(TStocklevelTxnInput* pTxnInput, CTPCCDB &tpcc){
+	TStocklevelTxnOutput tpccOutput;
+		
+	tpcc.DoStocklevel(pTxnInput, &tpccOutput);
+
+	return tpccOutput.status;
+}
+
+int TPCCRunner::RunOrderstatus(TOrderstatusTxnInput* pTxnInput, CTPCCDB &tpcc){
+	TOrderstatusTxnOutput tpccOutput;
+
+	tpcc.DoOrderstatus(pTxnInput, &tpccOutput);
+	
+	return tpccOutput.status;
+}
 // Listener
 void TPCCRunner::startListener(void)
 {

@@ -3182,7 +3182,7 @@ int CDBConnection::dbt5_sql_execute(char * query, sql_result_t * sql_result,
 
   if (mysql_query(dbc, query))
   {
-    //LOG_ERROR_MESSAGE("%s: %s\nmysql reports: %d %s",query_name, query,
+    //printf("%s: %s\nmysql reports: %d %s",query_name, query,
     //                        mysql_errno(dbc), mysql_error(dbc));
     return 0;
   }

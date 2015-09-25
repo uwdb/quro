@@ -1,9 +1,9 @@
 #!/bin/bash
 #REORDERN="reorder"
 #ORIGN="orig"
-TXN="tpcc2"
+TXN="tpcc"
 TXNNAME="payment"
-TYPEN="reorder"
+TYPEN="orig"
 
 #TXN="tpce"
 #TXNNAME="tradeupdate_1024t"
@@ -18,7 +18,7 @@ USER=32
 run_benchmark()
 {
 	#USERS="8 16 32 64 128"
-	WH="1 2 4 8 16 32"
+	WH="1 2 8 16 32"
 	#WH="2"
 	#ITEMN="1 4 8 16 32 64"
 	#USERS="128"

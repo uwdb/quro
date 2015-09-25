@@ -26,7 +26,8 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	sql_result_t result;
 	r = dbt5_sql_execute(stmt, &result, "PAYMENT proc");
 	if(!r){
-		string fail_msg("payment sp fails");
+		string fail_msg("payment sp fails\n");
+		fail_msg.append(stmt);
 		throw fail_msg.c_str();
 	}
 	return ;

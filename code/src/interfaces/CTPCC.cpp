@@ -61,6 +61,40 @@ bool CTPCC::Payment(TPaymentTxnInput* pTxnInput){
 
 }
 
+bool CTPCC::Delivery(TDeliveryTxnInput* pTxnInput){
+		memset(&request, 0, sizeof(struct TMsgDriverTPCC));
+
+		request.TxnType = DELIVERY;
+	memcpy(&(request.TxnInput.deliveryTxnInput), pTxnInput,
+			sizeof(request.TxnInput.deliveryTxnInput));
+
+	return talkToSUT(&request);
+
+}
+
+bool CTPCC::Stocklevel(TStocklevelTxnInput* pTxnInput){
+		memset(&request, 0, sizeof(struct TMsgDriverTPCC));
+
+		request.TxnType = STOCKLEVEL;
+	memcpy(&(request.TxnInput.stocklevelTxnInput), pTxnInput,
+			sizeof(request.TxnInput.stocklevelTxnInput));
+
+	return talkToSUT(&request);
+
+}
+
+bool CTPCC::Orderstatus(TOrderstatusTxnInput* pTxnInput){
+		memset(&request, 0, sizeof(struct TMsgDriverTPCC));
+
+		request.TxnType = ORDERSTATUS;
+	memcpy(&(request.TxnInput.orderstatusTxnInput), pTxnInput,
+			sizeof(request.TxnInput.orderstatusTxnInput));
+
+	return talkToSUT(&request);
+
+}
+
+
 void CTPCC::GenerateNewOrderInput(){
 	int w_id = rand()%table_cardinality_warehouses + 1;
 	int i;
@@ -93,6 +127,27 @@ void CTPCC::GenerateNewOrderInput(){
 		noInput.order_line[noInput.o_ol_cnt - 1].ol_i_id = 0;
 	}
 
+}
+void CTPCC::GenerateDeliveryInput(){
+	deliveryInput.w_id = rand()%table_cardinality_warehouses + 1;
+	deliveryInput.o_carrier_id = get_random(r, O_CARRIER_ID_MAX) + 1;
+}
+
+void CTPCC::GenerateStocklevelInput(){
+	stocklevelInput.w_id = rand()%table_cardinality_warehouses + 1;
+	stocklevelInput.d_id = get_random(r, D_ID_MAX) + 1;
+	stocklevelInput.threshold = get_random(r, 11) + 10;
+}
+
+void CTPCC::GenerateOrderstatusInput(){
+	orderstatusInput.c_w_id = rand()%table_cardinality_warehouses + 1;
+	orderstatusInput.c_d_id = get_random(r, D_ID_MAX) + 1;
+	if(get_random(r, 100)< 60){
+		orderstatusInput.c_id = C_ID_UNKNOWN;
+		get_c_last(orderstatusInput.c_last, get_nurand(r, 255, 0, 999));
+	}else{
+		orderstatusInput.c_id = get_nurand(r, 1023, 1, 3000);
+	}
 }
 
 void CTPCC::GeneratePaymentInput(){
@@ -151,4 +206,27 @@ void CTPCC::DoTxn(){
 					GeneratePaymentInput();
 					Payment(&pmtInput);
 		}
+
+		else if(rnd < PAYMENT_PERC
+									+ NEW_ORDER_PERC
+									+ DELIVERY_PERC){
+					GenerateDeliveryInput();
+					Delivery(&deliveryInput);
+		}
+		else if(rnd < PAYMENT_PERC
+									+ NEW_ORDER_PERC
+									+ DELIVERY_PERC
+									+ STOCKLEVEL_PERC){
+					GenerateStocklevelInput();
+					Stocklevel(&stocklevelInput);
+		}
+		else if(rnd < PAYMENT_PERC
+									+ NEW_ORDER_PERC
+									+ DELIVERY_PERC
+									+ STOCKLEVEL_PERC
+									+ ORDERSTATUS_PERC){
+					GenerateOrderstatusInput();
+					Orderstatus(&orderstatusInput);
+		}
+
 }

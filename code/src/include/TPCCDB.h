@@ -10,8 +10,14 @@ public:
 		CTPCCDB(CDBConnection *pDBConn): CTxnBaseDB(pDBConn) {};
 		void DoNewOrder(TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pOut);
 		void DoPayment(TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut);
+		void DoDelivery(TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pOut);
+		void DoStocklevel(TStocklevelTxnInput* pIn, TStocklevelTxnOutput* pOut);
+		void DoOrderstatus(TOrderstatusTxnInput* pIn, TOrderstatusTxnOutput* pOut);
 		void execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pOut);
 		void execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut);
+		void execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pOut);
+		void execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutput* pOut);
+		void execute(const TStocklevelTxnInput* pIn, TStocklevelTxnOutput* pOut);
 };
 
 #define PAYMENT_1 \
@@ -131,6 +137,105 @@ public:
 	"                        ol_i_id, ol_supply_w_id, ol_delivery_d,\n" \
 	"                        ol_quantity, ol_amount, ol_dist_info)\n" \
 	"VALUES (%d, %d, %d, %d, %d, %d, NULL, %d, %f, '%s')"
+
+
+#define DELIVERY_1 \
+	"SELECT no_o_id\n" \
+	"FROM new_order\n" \
+	"WHERE no_w_id = %d\n" \
+	"  AND no_d_id = %d"
+
+#define DELIVERY_2 \
+	"DELETE FROM new_order\n" \
+	"WHERE no_o_id = %d\n" \
+	"  AND no_w_id = %d\n" \
+	"  AND no_d_id = %d"
+
+#define DELIVERY_3 \
+	"SELECT o_c_id\n" \
+	"FROM orders\n" \
+	"WHERE o_id = %d\n" \
+	"  AND o_w_id = %d\n" \
+	"  AND o_d_id = %d"
+
+#define DELIVERY_4 \
+	"UPDATE orders\n" \
+	"SET o_carrier_id = %d\n" \
+	"WHERE o_id = %d\n" \
+	"  AND o_w_id = %d\n" \
+	"  AND o_d_id = %d"
+
+#define DELIVERY_5 \
+	"UPDATE order_line\n" \
+	"SET ol_delivery_d = current_timestamp\n" \
+	"WHERE ol_o_id = %d\n" \
+	"  AND ol_w_id = %d\n" \
+	"  AND ol_d_id = %d"
+
+#define DELIVERY_6 \
+	"SELECT SUM(ol_amount * ol_quantity)\n" \
+	"FROM order_line\n" \
+	"WHERE ol_o_id = %d\n" \
+	"  AND ol_w_id = %d\n" \
+	"  AND ol_d_id = %d"
+
+#define DELIVERY_7 \
+	"UPDATE customer\n" \
+	"SET c_delivery_cnt = c_delivery_cnt + 1,\n" \
+	"    c_balance = c_balance + %d\n" \
+	"WHERE c_id = %d\n" \
+	"  AND c_w_id = %d\n" \
+	"  AND c_d_id = %d"
+
+#define ORDER_STATUS_1 \
+	"SELECT c_id\n" \
+	"FROM customer\n" \
+	"WHERE c_w_id = %d\n" \
+	"  AND c_d_id = %d\n" \
+	"  AND c_last = '%s'\n" \
+	"ORDER BY c_first ASC"
+
+#define ORDER_STATUS_2 \
+	"SELECT c_first, c_middle, c_last, c_balance\n" \
+	"FROM customer\n" \
+	"WHERE c_w_id = %d\n" \
+	"  AND c_d_id = %d\n" \
+	"  AND c_id = %d"
+
+#define ORDER_STATUS_3 \
+	"SELECT o_id, o_carrier_id, o_entry_d, o_ol_cnt\n" \
+	"FROM orders\n" \
+	"WHERE o_w_id = %d\n" \
+	"  AND o_d_id = %d \n" \
+	"  AND o_c_id = %d\n" \
+	"ORDER BY o_id DESC"
+
+#define ORDER_STATUS_4 \
+	"SELECT ol_i_id, ol_supply_w_id, ol_quantity, ol_amount,\n" \
+	"       ol_delivery_d\n" \
+	"FROM order_line\n" \
+	"WHERE ol_w_id = %d\n" \
+	"  AND ol_d_id = %d\n" \
+	"  AND ol_o_id = %d"
+
+#define STOCK_LEVEL_1 \
+	"SELECT d_next_o_id\n" \
+	"FROM district\n" \
+	"WHERE d_w_id = %d\n" \
+	"AND d_id = %d"
+
+#define STOCK_LEVEL_2 \
+	"SELECT count(*)\n" \
+	"FROM order_line, stock, district\n" \
+	"WHERE d_id = %d\n" \
+	"  AND d_w_id = %d\n" \
+	"  AND d_id = ol_d_id\n" \
+	"  AND d_w_id = ol_w_id\n" \
+	"  AND ol_i_id = s_i_id\n" \
+	"  AND ol_w_id = s_w_id\n" \
+	"  AND s_quantity < %d\n" \
+	"  AND ol_o_id BETWEEN (%d)\n" \
+	"		  AND (%d)"
 
 
 #endif
