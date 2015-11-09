@@ -1090,6 +1090,36 @@ void splitByBlank(vector<string>& vec, string str){
 	vec.push_back(s1);
 }
 
+void check_constraint_info(vector<string>& words, vector<string>& table_names, OPERATION op){
+	int cur_pos = query_words_list.size();
+/*
+	for(int i=0; i<constraints_info.size(); i++){
+		if(table_names.find(constraints_info[i][2]) != table_names.end()){
+				for(int j=0; j<cur_pos; j++){
+				//the other table name matches
+				//column name matches
+						if(query_table_names[j].find(constraints_info[i][0]) != query_table_names[j].end()
+								&& query_words_list[j].find(constraints_info[i][1]) != query_words_list[j].end()){
+								//If both are select queries, then FK is safe
+								if(query_operations[j]==SELECT && op==SELECT)continue;
+								cout<<"ADD CONSTRAINTS ON TABLE:"<<endl;
+								cout<<"QUERY "<<cur_pos<<" depend on QUERY "<<j<<endl;
+								cout<<"\t--- constraints: "<<constraints_info[i][0]<<"."<<constraints_info[i][1]<<" ## "<<constraints_info[i][2]<<"."<<constraints_info[i][3]<<endl;
+						}
+				}			
+		}
+	}
+
+	query_words_list.push_back(words);
+	query_words_list.push_back(table_names);
+	query_operations.push_back(op);
+*/
+}
+
+void read_constraint_info(){
+	
+}
+
 int getConflictIndex(int row_num, OPERATION op){
 	int pri_index = 4000000/row_num;
 	if(op == UPDATE)

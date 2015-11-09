@@ -44,6 +44,12 @@ stack<condBlock*> stack_cond_blocks;
 
 map<string, TABLE_DESC> tables;
 
+vector<vector<string> > query_words_list;
+vector<vector<string> > query_table_names;
+vector<OPERATION> query_operations;
+vector<vector<string> > constraints_info;
+
+
 char OPERATION_str[4][8] = {"INSERT", "DELETE", "UPDATE", "SELECT"};
 
 class myVisitor : public RecursiveASTVisitor<myVisitor> {

@@ -13,10 +13,14 @@
 #include "clang/AST/DeclCXX.h"
 
 //#define DEBUG
+//Enable DEBUG_CFG to print debugging info
 //#define DEBUG_CFG
+//deprecated
 //#define ONLY_FISSION
 #define SORT_QUERIES
+//with ILP optimization
 #define GENERATE_ILP_INPUT
+//without ILP optimization
 //#define GENERATE_LARGE_ILP_INPUT
 
 #include <vector>
@@ -248,10 +252,28 @@ string generateAssignment(const VarDecl* var, string before, string end);
 bool reorderBufCmp(reorderBufferUnit r1, reorderBufferUnit r2);
 
 extern vector<queryBlock*> query_blocks;
+inline bool regular_char(char a){
+		if(a >= 'a' && a <= 'z')
+			return true;
+		if(a=='_')
+			return true;
+		if(a >= 'A' && a <= 'Z')
+			return true;
+		return false;
+}
+
 void splitByBlank(vector<string>& vec, string str);
 int getConflictIndex(int row_num, OPERATION op);
 void setDependencies();
 extern map<string, TABLE_DESC> tables;
 void readConflictInfo();
+//Add constraints on table itself: FK, view, trigger
+//Here we only handle FK. 
+extern vector<vector<string> > query_words_list;
+extern vector<vector<string> > query_table_names;
+extern vector<OPERATION> query_operations;
+extern vector<vector<string> > constraints_info;
+void check_constraint_info(vector<string>& words, vector<string>& table_names, OPERATION op);
+void read_constraint_info();
 
-#endif
+#endif /* QUERY_BLOCK_H */
