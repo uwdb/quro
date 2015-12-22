@@ -253,6 +253,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	RC rc = RCOK;
 	uint64_t key;
 	itemid_t * item;
+	itemid_t * wh_item;
 	INDEX * index;
 	
 	bool remote = query->remote;
@@ -270,9 +271,9 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	key = w_id;
 	index = _wl->i_warehouse; 
 //	rc = index->index_read(key, item, wh_to_part(w_id));
-	item = index_read(index, key, wh_to_part(w_id));
-	assert(item != NULL);
-	row_t * r_wh = ((row_t *)item->location);
+	wh_item = index_read(index, key, wh_to_part(w_id));
+	assert(wh_item != NULL);
+	row_t * r_wh = ((row_t *)wh_item->location);
 	row_t * r_wh_local = get_row(r_wh, RD);
 	if (r_wh_local == NULL) {
 		return finish(Abort);
@@ -281,8 +282,8 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	r_wh_local->get_value(W_TAX, w_tax); 
 	key = custKey(c_id, d_id, w_id);
 	index = _wl->i_customer_id;
-	item = index_read(index, key, wh_to_part(w_id));
-	assert(item != NULL);
+	wh_item = index_read(index, key, wh_to_part(w_id));
+	assert(wh_item != NULL);
 //	rc = index->index_read(key, item, wh_to_part(w_id));
 //	assert(rc == RCOK);
  	
@@ -310,7 +311,7 @@ RC tpcc_txn_man::run_new_order(tpcc_query * query) {
 	o_id ++;
 	r_dist_local->set_value(D_NEXT_O_ID, o_id);
 
-	row_t * r_cust = (row_t *) item->location;
+	row_t * r_cust = (row_t *) wh_item->location;
 	row_t * r_cust_local = get_row(r_cust, RD);
 	if (r_cust_local == NULL) {
 		return finish(Abort); 

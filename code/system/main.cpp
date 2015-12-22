@@ -9,11 +9,19 @@
 #include "plock.h"
 #include "occ.h"
 #include "vll.h"
+#include <sys/time.h>
+#include <signal.h>
 
 void * f(void *);
 
 // TODO the following global variables are HACK
 thread_t * m_thds;
+
+void signal_kill_handler(int signum){
+	printf("SIGNAL KILL HANDLER!\n");
+	stats.print();
+	exit(signum);
+}
 
 // defined in parser.cpp
 void parser(int argc, char * argv[]);
@@ -86,6 +94,7 @@ int main(int argc, char* argv[])
 	pthread_barrier_init( &warmup_bar, NULL, g_thread_cnt );
 
 	// spawn and run txns again.
+	printf("before spawning threads\n");
 	int64_t starttime = get_server_clock();
 	for (uint32_t i = 0; i < thd_cnt - 1; i++) {
 		uint64_t vid = i;
@@ -107,6 +116,8 @@ int main(int argc, char* argv[])
 }
 
 void * f(void * id) {
+	signal(SIGTERM, signal_kill_handler);
+	signal(SIGKILL, signal_kill_handler);
 	uint64_t tid = (uint64_t)id;
 	m_thds[tid].run();
 	return NULL;
