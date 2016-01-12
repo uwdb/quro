@@ -37,7 +37,7 @@ $ ./bid_datagen
 3. To configure the experiment:
 The configuration for each experiment, such as the mix of different types of transactions, are set in header files like src/include/BENCHMARK_const.h.
 To use the reordered implementation, add
-#define QURO
+>> #define QURO
 to the BENCHMARK_const.h file.
 Then recompile.
 
