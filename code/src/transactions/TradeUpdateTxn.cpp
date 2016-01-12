@@ -1,5 +1,6 @@
 #include "DBConnection.h"
 #include "TradeUpdateDB.h"
+#include "TPCE_const.h"
 
 #ifndef DB_PGSQL
 
@@ -54,7 +55,8 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 	bool findX;
 
 
-/*
+#ifndef QURO
+
 	for(int i=0; i<pIn->max_trades; i++){
 
 		if(num_updated < max_updates)
@@ -73,11 +75,12 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 			}
 			GETPROFILE(0);
 
-		for(int j=0; j<exec_name.length(); j++){
+			for(int j=0; j<exec_name.length(); j++){
 				if(exec_name[j] == 'X'){
 						exec_name[j] = 'X';
 				}
 		}
+
 		GETTIME;
 		sprintf(query2, TRADE_UPDATE_Q2, exec_name.c_str(), pIn->trade_id[i]);
 		//CLANG_PROFILE(query2);
@@ -89,6 +92,7 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		GETPROFILE(1);
 			num_updated++;
 		}
+
 
 		GETTIME;
 		sprintf(query3, TRADE_UPDATE_Q3, pIn->trade_id[i]);
@@ -220,8 +224,10 @@ void CDBConnection::execute(const TTradeUpdateFrame1Input *pIn,
 		strcpy(pOut->trade_info[i].cash_transaction_name, cash_name);
 		strcpy(pOut->trade_info[i].exec_name, exec_name.c_str());
 		strcpy(pOut->trade_info[i].settlement_cash_type, set_cash_type);
+
 	}
-*/
+
+#else
 
 
 	for(int i=0; i<pIn->max_trades; i++){
@@ -412,7 +418,7 @@ num_updated++;
 strcpy(pOut->trade_info[i].exec_name, exec_name.c_str());
 
 }
-
+#endif
 
 	return ;
 }

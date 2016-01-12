@@ -54,12 +54,13 @@ namespace TPCE {
 
 class CTradeOrderDBInterface {
     public:
-        virtual void DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn, TTradeOrderFrame1Output *pOut) = 0;
-        virtual void DoTradeOrderFrame2(const TTradeOrderFrame2Input *pIn, TTradeOrderFrame2Output *pOut) = 0;
-        virtual void DoTradeOrderFrame3(const TTradeOrderFrame3Input *pIn, TTradeOrderFrame3Output *pOut) = 0;
-        virtual void DoTradeOrderFrame4(const TTradeOrderFrame4Input *pIn, TTradeOrderFrame4Output *pOut) = 0;
-        virtual void DoTradeOrderFrame5(void                                                            ) = 0;
-        virtual void DoTradeOrderFrame6(void                                                            ) = 0;
+				virtual void DoTradeOrderFrame(PTradeOrderTxnInput pIn, PTradeOrderIntermediate, PTradeOrderTxnOutput pOut) = 0;
+       // virtual void DoTradeOrderFrame1(const TTradeOrderFrame1Input *pIn, TTradeOrderFrame1Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame2(const TTradeOrderFrame2Input *pIn, TTradeOrderFrame2Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame3(const TTradeOrderFrame3Input *pIn, TTradeOrderFrame3Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame4(const TTradeOrderFrame4Input *pIn, TTradeOrderFrame4Output *pOut) = 0;
+       // virtual void DoTradeOrderFrame5(void                                                            ) = 0;
+       // virtual void DoTradeOrderFrame6(void                                                            ) = 0;
         virtual ~CTradeOrderDBInterface  () { }
 };
 
@@ -114,12 +115,12 @@ class CTradeUpdateDBInterface {
 
 class CTradeResultDBInterface {
     public:
-        virtual void DoTradeResultFrame1(const TTradeResultFrame1Input *pIn, TTradeResultFrame1Output *pOut) = 0;
-        virtual void DoTradeResultFrame2(const TTradeResultFrame2Input *pIn, TTradeResultFrame2Output *pOut) = 0;
-        virtual void DoTradeResultFrame3(const TTradeResultFrame3Input *pIn, TTradeResultFrame3Output *pOut) = 0;
-        virtual void DoTradeResultFrame4(const TTradeResultFrame4Input *pIn, TTradeResultFrame4Output *pOut) = 0;
-        virtual void DoTradeResultFrame5(const TTradeResultFrame5Input *pIn                                ) = 0;
-        virtual void DoTradeResultFrame6(const TTradeResultFrame6Input *pIn, TTradeResultFrame6Output *pOut) = 0;
+        virtual void DoTradeResultFrame(PTradeResultTxnInput pIn, PTradeResultTxnOutput pOut) = 0;
+//				virtual void DoTradeResultFrame2(const TTradeResultFrame2Input *pIn, TTradeResultFrame2Output *pOut) = 0;
+//        virtual void DoTradeResultFrame3(const TTradeResultFrame3Input *pIn, TTradeResultFrame3Output *pOut) = 0;
+//        virtual void DoTradeResultFrame4(const TTradeResultFrame4Input *pIn, TTradeResultFrame4Output *pOut) = 0;
+//        virtual void DoTradeResultFrame5(const TTradeResultFrame5Input *pIn                                ) = 0;
+//        virtual void DoTradeResultFrame6(const TTradeResultFrame6Input *pIn, TTradeResultFrame6Output *pOut) = 0;
         virtual ~CTradeResultDBInterface  () { }
 };
 

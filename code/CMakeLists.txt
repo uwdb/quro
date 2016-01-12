@@ -1,9 +1,10 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+SET(WORKLOAD_TPCC 1)
+#CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 #PROJECT(dbt5 CXX)
 #SET(WORKLOAD_TPCE 1)
 #SET(WORKLOAD_SEATS 1)
 #SET(WORKLOAD_BID 1)
-SET(WORKLOAD_TPCC 1)
+#SET(WORKLOAD_TPCC 1)
 #SET(DEF_REORDER 1)
 #
 # Defining binaries so to minimized typoes.
@@ -13,7 +14,7 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-rdynamic -lpthread -lmysqlclient")
 
 SET(MYSQL_LIB /usr/lib/x86_64-linux-gnu)
 SET(MYSQL_INCLUDE /usr/include/mysql)
-#SET(HOME /afs/csail.mit.edu/u/c/congy)
+#SET(HOME /afs/csail.mit.edu/u/c/quro)
 SET(DBT5_SEATS bin/SeatsMain)
 SET(DBT5_TPCC bin/TPCCMain)
 SET(DBT5_BID bin/BidMain)
@@ -102,13 +103,8 @@ ENDIF (WORKLOAD_TPCE)
 #
 # Defining commonly used paths.
 #
-#IF (DEF_REORDER)
-	SET(EGENINC egen_reorder/inc)
-	SET(EGENSRC egen_reorder/src)
-#ELSE (NOT DEFINED DEF_REORDER)
-#	SET(EGENINC egen/inc)
-#	SET(EGENSRC egen/src)
-#ENDIF (DEF_REORDER)
+SET(EGENINC egen/inc)
+SET(EGENSRC egen/src)
 SET(TXN src/transactions)
 SET(INTF src/interfaces)
 
@@ -172,16 +168,16 @@ ELSEIF (WORKLOAD_BID)
 ELSEIF (WORKLOAD_TPCC)
 			SET(TXN_SOURCE ${TXN}/pgsql/DBConnection.cpp
 									${TXN}/TxnBaseDB.cpp
-#									${TXN}/StocklevelTxn.cpp
-#									${TXN}/DeliveryTxn.cpp
-#									${TXN}/OrderstatusTxn.cpp
-#									${TXN}/NewOrderTxn.cpp
-#									${TXN}/PaymentTxn.cpp)
-									${TXN}/Storeproc_stocklevel.cpp
-									${TXN}/Storeproc_orderstatus.cpp
-									${TXN}/Storeproc_delivery.cpp
-									${TXN}/Storeproc_neworder.cpp
-									${TXN}/Storeproc_payment.cpp)
+									${TXN}/StocklevelTxn.cpp
+									${TXN}/DeliveryTxn.cpp
+									${TXN}/OrderstatusTxn.cpp
+									${TXN}/NewOrderTxn.cpp
+									${TXN}/PaymentTxn.cpp)
+#									${TXN}/Storeproc_stocklevel.cpp
+#									${TXN}/Storeproc_orderstatus.cpp
+#									${TXN}/Storeproc_delivery.cpp
+#									${TXN}/Storeproc_neworder.cpp
+#									${TXN}/Storeproc_payment.cpp)
 ENDIF (WORKLOAD_TPCE)
 #
 # Files to build.
@@ -192,7 +188,7 @@ IF (WORKLOAD_TPCE)
                ${EGENSRC}/locking.cpp
                ${INTF}/CSocket.cpp
                ${INTF}/TxnHarnessSendToMarket.cpp
-			   ${EGENSRC}/ReadRowFunctions.cpp
+	       ${EGENSRC}/ReadRowFunctions.cpp
                ${EGENSRC}/BaseLogger.cpp
                ${EGENSRC}/EGenLogFormatterTab.cpp
                ${EGENSRC}/EGenVersion.cpp
@@ -207,7 +203,7 @@ IF (WORKLOAD_TPCE)
                ${EGENSRC}/MEE.cpp
                ${EGENSRC}/locking.cpp
                ${EGENSRC}/InputFlatFilesStructure.cpp
-			   ${INTF}/MEESUT.cpp
+	       ${INTF}/MEESUT.cpp
                ${INTF}/BaseInterface.cpp
                ${TXN_SOURCE}
                ${BH}/BrokerageHouseMain.cpp
@@ -375,8 +371,8 @@ ELSEIF (WORKLOAD_BID)
 		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
 ELSEIF (WORKLOAD_TPCC)
 		SET_TARGET_PROPERTIES(${DBT5_TPCC} PROPERTIES LINK_FLAGS
-				"-L${MYSQL_LIB} ${DB_LIBS} -lpthread")
-		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-lpthread -L${MYSQL_LIB}")
+				"-L${MYSQL_LIB} ${DB_LIBS} -lpthread -lmysqlclient")
+		SET_TARGET_PROPERTIES(${DBT5_DRIVER} PROPERTIES LINK_FLAGS "-L${MYSQL_LIB} -lpthread -lmysqlclient")
 ENDIF (WORKLOAD_TPCE)
 #SET_TARGET_PROPERTIES(${DBT5_TEST_TXN} PROPERTIES LINK_FLAGS
 #        "${DB_LIBS} -lpthread")
@@ -396,24 +392,24 @@ IF (WORKLOAD_TPCE)
                  scripts/dbt5-plot-transaction-rate
                  scripts/dbt5-generate-report
                  ${DB_SCRIPTS}
-        DESTINATION "/home/congy/bin")
+        DESTINATION "/home/quro/bin")
 ELSEIF (WORKLOAD_SEATS)		
 		INSTALL(PROGRAMS ${DBT5_SEATS}
                  ${DBT5_DRIVER}
                  scripts/seats-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/congy/bin")
+        DESTINATION "/home/quro/bin")
 ELSEIF (WORKLOAD_BID)		
 		INSTALL(PROGRAMS ${DBT5_BID}
                  ${DBT5_DRIVER}
                  scripts/bid-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/congy/bin")
+        DESTINATION "/home/quro/bin")
 ELSEIF (WORKLOAD_TPCC)		
 		INSTALL(PROGRAMS ${DBT5_TPCC}
                  ${DBT5_DRIVER}
                  scripts/tpcc-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/congy/bin")
+        DESTINATION "/home/quro/bin")
 
 ENDIF (WORKLOAD_TPCE)

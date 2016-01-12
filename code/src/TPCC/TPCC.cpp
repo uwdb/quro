@@ -22,6 +22,16 @@ void signal_kill_handler(int signum){
 			cout<<"txn cnt for connection "<<i<<": commit "<<ptr->txn_cnt<<", abort "<<ptr->abort_cnt<<", timerange = "<<timerange<<", txn_time = "<<ptr->txn_time<<endl;
 //				cout<<"txn cnt for connection "<<i<<": "<<ptr->txn_cnt<<endl;
 	}
+#ifdef TYPEBREAK
+	for(int i=0; i<connectionCnt; i++){
+		CDBConnection* ptr = (CDBConnection*)pDBClist[i];
+		int j=0;
+		while(j<10 && ptr->_type_time[j] != 0){
+			cout<<"connection "<<i<<": "<<"txn "<<j<<", cnt = "<<ptr->_type_cnt[j]<<endl;
+			j++;
+		} 
+	}
+#endif
 #ifdef TIMEBREAK
 	for(int i=0; i<connectionCnt; i++){
 		CDBConnection* ptr = (CDBConnection*)pDBClist[i];
@@ -136,7 +146,7 @@ try {
 //#endif
 //			pDBConnection->outfile.flush();
 //#endif
-//				cout<<"error: "<<str<<endl;
+				//cout<<"error: "<<str<<endl;
 
 				iRet = CBaseTxnErr::EXPECTED_ROLLBACK;
 
@@ -315,7 +325,6 @@ void TPCCRunner::startListener(void)
 			strcpy(pThrParam->outputDir, outputDir);
 			t_cnt++;
 			connectionCnt = t_cnt;
-			cout<<"TPCC Listener connection_cnt = "<<t_cnt<<endl;
 			assert(connectionCnt < 1024);
 			// call entry point
 			entryWorkerThread(reinterpret_cast<void *>(pThrParam));

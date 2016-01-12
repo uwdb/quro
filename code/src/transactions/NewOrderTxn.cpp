@@ -75,7 +75,10 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 		ol_supply_w_id[i1] = pIn->order_line[i1].ol_supply_w_id;
 		ol_quantity[i1] = pIn->order_line[i1].ol_quantity;
 	}
-/*
+
+	TIME_VAR
+	TXN_BEGIN;
+#ifndef QURO
 	SETPROFILING;
 	GETTIME;
 	sprintf(query1, NEW_ORDER_1, w_id);
@@ -89,8 +92,9 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			string fail_msg("get wh fail");
 			throw fail_msg.c_str();
 	}
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 	GETPROFILE(0);
+
 
 	SETPROFILING;
 	GETTIME;
@@ -108,7 +112,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(1);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 	SETPROFILING;
 	GETTIME;
@@ -120,7 +124,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(2);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 	SETPROFILING;
 	GETTIME;
@@ -138,7 +142,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(3);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 	SETPROFILING;
 	GETTIME;
@@ -150,7 +154,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(4);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 	SETPROFILING;
 	GETTIME;
@@ -162,7 +166,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(5);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 	for(i=0; i<o_ol_cnt; i++){
 			if(ol_i_id[i] != 0){
@@ -182,7 +186,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 							throw fail_msg.c_str();
 					}
 					GETPROFILE(6);
-					EXECUTEPROFILING;
+					//EXECUTEPROFILING;
 			}else{
 					force_fail.assign("item fail");
 					throw force_fail.c_str();
@@ -204,7 +208,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 					throw fail_msg.c_str();
 			}
 			GETPROFILE(7);
-			EXECUTEPROFILING;
+			//EXECUTEPROFILING;
 
 			SETPROFILING;
 			order_amount += ol_amount[i];
@@ -221,7 +225,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 					throw fail_msg.c_str();
 			}
 			GETPROFILE(8);
-			EXECUTEPROFILING;
+			//EXECUTEPROFILING;
 
 			SETPROFILING;
 			GETTIME;
@@ -234,10 +238,10 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 					throw fail_msg.c_str();
 			}
 			GETPROFILE(9);
-			EXECUTEPROFILING;
+			//EXECUTEPROFILING;
 	}
 
-*/
+#else
 
 	for(i=0; i<o_ol_cnt; i++){
 			if(ol_i_id[i] != 0){
@@ -256,7 +260,7 @@ void CDBConnection::execute(const TNewOrderTxnInput* pIn, TNewOrderTxnOutput* pO
 							throw fail_msg.c_str();
 					}
 					GETPROFILE(6);
-					EXECUTEPROFILING;
+					//EXECUTEPROFILING;
 
 			}
 	}
@@ -299,7 +303,7 @@ sprintf(query4, NEW_ORDER_4, w_id, d_id, c_id);
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(3);
-	EXECUTEPROFILING;
+	//EXECUTEPROFILING;
 
 for(i=0; i<o_ol_cnt; i++){
 SETPROFILING;
@@ -317,7 +321,7 @@ SETPROFILING;
 					throw fail_msg.c_str();
 			}
 			GETPROFILE(7);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 }
 
 for(i=0; i<o_ol_cnt; i++){
@@ -337,7 +341,7 @@ if(!(s_quantity[i] > ol_quantity[i] + 10)){
 					throw fail_msg.c_str();
 			}
 			GETPROFILE(8);
-			EXECUTEPROFILING;
+			//EXECUTEPROFILING;
 }
 
 
@@ -356,7 +360,7 @@ sprintf(query2, NEW_ORDER_2, w_id, d_id);
 			throw fail_msg.c_str();
 	}
 GETPROFILE(1);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 
 
 for(i=0; i<o_ol_cnt; i++){
@@ -383,7 +387,7 @@ sprintf(query10, NEW_ORDER_10, d_next_o_id, d_id, w_id, i+1, ol_i_id[i],
 					throw fail_msg.c_str();
 			}
 GETPROFILE(9);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 }
 
 
@@ -424,7 +428,7 @@ sprintf(query6, NEW_ORDER_6, d_next_o_id, d_id, w_id, c_id, o_ol_cnt, o_all_loca
 			throw fail_msg.c_str();
 	}
 GETPROFILE(5);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 
 SETPROFILING;
 GETTIME;
@@ -435,7 +439,7 @@ sprintf(query5, NEW_ORDER_5, d_next_o_id, w_id, d_id);
 			throw fail_msg.c_str();
 	}
 GETPROFILE(4);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 
 SETPROFILING;
 GETTIME;
@@ -446,7 +450,7 @@ sprintf(query3, NEW_ORDER_3, w_id, d_id);
 			throw fail_msg.c_str();
 	}
 GETPROFILE(2);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 
 SETPROFILING;
 GETTIME;
@@ -461,10 +465,11 @@ sprintf(query1, NEW_ORDER_1, w_id);
 			throw fail_msg.c_str();
 	}
 GETPROFILE(0);
-EXECUTEPROFILING;
+//EXECUTEPROFILING;
 
-
+#endif
 	pOut->status = CBaseTxnErr::SUCCESS;
+	TXN_END(0);
 
 	return ;
 

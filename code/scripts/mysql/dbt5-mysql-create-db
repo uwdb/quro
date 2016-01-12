@@ -1,8 +1,6 @@
 #!/bin/bash
-MYSQL="${HOME}/mysql-bin/bin/mysql"
-#MYSQL=mysql
+MYSQL=mysql
 DB_HOST=localhost
-#DB_SOCKET="/usr/local/var/mysqld/mysqld.sock"
 DB_NAME=dbt5
 DB_USER=root
 

@@ -57,7 +57,9 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	int c_id;
 	char my_c_data[1000];
 
-/*
+	TIME_VAR;
+	TXN_BEGIN;
+#ifndef QURO
 	sprintf(query_selectwh, PAYMENT_1, pIn->w_id);
 	GETTIME;
 //	CLANG_PROFILE(query_selectwh);
@@ -90,6 +92,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 		}
 		GETPROFILE(1);
 	//EXECUTEPROFILING;
+
 
 
 	//SETPROFILING;
@@ -200,7 +203,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 		GETPROFILE(8);
 	//EXECUTEPROFILING;
 
-*/
+#else
 	if(!(pIn->c_id == 0)){
 			c_id = pIn->c_id;
 	}
@@ -355,7 +358,8 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 		pOut->c_credit.assign(c_credit);
 
 		pOut->status = CBaseTxnErr::SUCCESS;
-
+#endif
+	TXN_END(1);
 
 	return ;
 }

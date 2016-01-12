@@ -26,16 +26,17 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
 	int my_c_id = 0;
 	char c_first[200];
 	char c_middle[200];
-	float my_c_balance;
 	float c_balance;
 	int o_id;
-	char o_carrier_id[100];
+	int o_carrier_id;
 	int ol_i_id[15];
 	int ol_supply_w_id[15];
 	int ol_quantity[15];
 	int ol_amount[15];
 	int ol_delivery_d[15];
 
+	TIME_VAR;
+	TXN_BEGIN;
 
 	if (c_id == 0) 
         {
@@ -69,7 +70,7 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
         else{
           my_c_id = c_id;
 				}
-
+/*
 				sprintf(query, ORDER_STATUS_2, c_w_id, c_d_id, my_c_id);
 
         r = dbt5_sql_execute(query, &result, "ORDER_STATUS_2");
@@ -80,7 +81,7 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
           strcpy(c_first, dbt5_sql_getvalue(&result, 0, length)); //C_FIRST C_MIDDLE MY_C_BALANCE C_BALANCE
           strcpy(c_middle, dbt5_sql_getvalue(&result, 1, length));
           
-					my_c_balance = atof(dbt5_sql_getvalue(&result, 2, length));
+					strcpy(c_last, dbt5_sql_getvalue(&result, 2, length));
           
 					c_balance = atof(dbt5_sql_getvalue(&result, 3, length));
 
@@ -91,7 +92,7 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
 					string fail_msg("order status 2 fail");
 					throw fail_msg.c_str();
         }
-
+*/
 	sprintf(query, ORDER_STATUS_3, c_w_id, c_d_id, my_c_id);
 
        	r = dbt5_sql_execute(query, &result, "ORDER_STATUS_3");
@@ -101,7 +102,7 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
 
           o_id = atol(dbt5_sql_getvalue(&result, 0, length)); //O_ID O_CARRIER_ID O_ENTRY_D O_OL_CNT
 
-          strcpy(o_carrier_id, dbt5_sql_getvalue(&result, 1, length));
+          //o_carrier_id = atol(dbt5_sql_getvalue(&result, 1, length));
 
           dbt5_sql_close_cursor(&result);
         }
@@ -117,7 +118,7 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
 				if(r==1  && result.result_set)
         {
           int i= 0;
-          while (i<15 && dbt5_sql_fetchrow(&result))
+          while (i<15 && dbt5_sql_fetchrow(&result) && result.result_set)
           { 
             ol_i_id[i]= atol(dbt5_sql_getvalue(&result, 0, length));
             ol_supply_w_id[i]= atol(dbt5_sql_getvalue(&result, 1, length));
@@ -134,6 +135,29 @@ void CDBConnection::execute(const TOrderstatusTxnInput* pIn, TOrderstatusTxnOutp
 					throw fail_msg.c_str();
         }
 
+		sprintf(query, ORDER_STATUS_2, c_w_id, c_d_id, my_c_id);
+
+        r = dbt5_sql_execute(query, &result, "ORDER_STATUS_2");
+				if(r==1 && result.result_set)
+        {
+          dbt5_sql_fetchrow(&result);
+          
+          strcpy(c_first, dbt5_sql_getvalue(&result, 0, length)); //C_FIRST C_MIDDLE MY_C_BALANCE C_BALANCE
+          strcpy(c_middle, dbt5_sql_getvalue(&result, 1, length));
+          
+					strcpy(c_last, dbt5_sql_getvalue(&result, 2, length));
+          
+					c_balance = atof(dbt5_sql_getvalue(&result, 3, length));
+
+          dbt5_sql_close_cursor(&result);
+        }
+        else //error
+        {
+					string fail_msg("order status 2 fail");
+					throw fail_msg.c_str();
+        }
+
+	TXN_END(2);
 		return ;
 }
 

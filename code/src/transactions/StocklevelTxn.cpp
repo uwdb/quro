@@ -25,6 +25,9 @@ void CDBConnection::execute(const TStocklevelTxnInput* pIn, TStocklevelTxnOutput
 	int d_next_o_id = 0;
 	int low_stock = 0;
 
+	TIME_VAR;
+	TXN_BEGIN;
+#ifndef QURO
 	sprintf(query, STOCK_LEVEL_1, w_id, d_id);
 	r = dbt5_sql_execute(query, &result, "STOCK_LEVEL_1");
 
@@ -50,9 +53,37 @@ void CDBConnection::execute(const TStocklevelTxnInput* pIn, TStocklevelTxnOutput
         string fail_msg("stock level 2 fail");
 				throw fail_msg.c_str();
 		}
-	
+#else
+	sprintf(query, STOCK_LEVEL_1, w_id, d_id);
+	r = dbt5_sql_execute(query, &result, "STOCK_LEVEL_1");
+
+	if(r==1 && result.result_set){
+		dbt5_sql_fetchrow(&result);
+		d_next_o_id = atol(dbt5_sql_getvalue(&result, 0, length));
+		dbt5_sql_close_cursor(&result);
+	}else{
+		string fail_msg;
+		fail_msg.assign("stock level 1 fail\n");
+		throw fail_msg.c_str();
+	}
+	sprintf(query, STOCK_LEVEL_2, d_id, w_id, threshold, d_next_o_id - 20,
+		d_next_o_id - 1);
+
+    r = dbt5_sql_execute(query, &result, "STOCK_LEVEL_2");
+		if(r==1 && result.result_set){
+     		dbt5_sql_fetchrow(&result);
+
+       	low_stock = atoi(dbt5_sql_getvalue(&result, 0, length)); //LOW_STOCK
+        dbt5_sql_close_cursor(&result);
+    }else{
+        string fail_msg("stock level 2 fail");
+				throw fail_msg.c_str();
+		}
+
+#endif
 	pOut->status = CBaseTxnErr::SUCCESS;
 
+	TXN_END(3);
 		return ;
 }
 

@@ -69,6 +69,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 
 		sprintf(exec_name, "%s %s", pIn->exec_f_name, pIn->exec_l_name);
 
+#ifndef QURO
 		GETTIME;
 		sprintf(query, SQLTOF1_1, pIn->acct_id);
 		r = dbt5_sql_execute(query, &result, "TRADE_ORDER_1");
@@ -437,7 +438,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			throw fail_msg.c_str();
 		}
 
-/*
+
 		sprintf(query, SQLTOF4_1, next_t_id, status_id, pIn->trade_type_id, is_cash, symbol, pIn->trade_qty, requested_price, pIn->acct_id, exec_name, charge_amount, comm_amount, pIn->is_lifo);
 	r = dbt5_sql_execute(query, &result, "TRADE_ORDER_18");
 	if(!r){
@@ -445,7 +446,7 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 			throw fail_msg.c_str();
 	}
 	GETPROFILE(19);
-*/
+
 
 		if(type_is_market == 0){
 			GETTIME;
@@ -499,9 +500,9 @@ void CDBConnection::execute(PTradeOrderTxnInput pIn,
 
 		return ;
 
+#else
 
 
-/*
 //=============================================
 //=============================================
 //=============================================
@@ -1641,6 +1642,6 @@ pInter->charge = charge_amount;
 pInter->acct_id = acct_id;
 
 return;
-*/
+#endif
 }
 #endif

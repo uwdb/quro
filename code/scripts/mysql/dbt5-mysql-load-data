@@ -1,13 +1,12 @@
 #!/bin/bash
 
-#MYSQL=mysql
-MYSQL=$HOME/mysql-bin/bin/mysql
+MYSQL=mysql
 DB_NAME=dbt5
 
 #USER_FLAGS="-u root"
 USER_FLAGS=""
 
-EGENFLATOUT=~/results_link/DBT5_EGEN
+EGENFLATOUT=~/DBT5_EGEN_DATA
 #EGENFLATOUT=~/results/EGEN_FLATOUT
 
 #  2.2.6.10 SECTOR (SC_)

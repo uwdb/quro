@@ -19,6 +19,8 @@
 #include "TxnHarnessStructs.h"
 #include "TxnHarnessSendToMarket.h"
 
+#define GET_ALL_CONSTRAINTS
+
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -172,6 +174,10 @@ public:
 	int _cnt[100];
 	double _var[100];
 #endif
+#ifdef TYPEBREAK
+	double _type_time[100];
+	double _type_cnt[100];
+#endif
 #ifdef PROFILE_EACH_QUERY
 	p_query queries[200];
 //	size_t q_cnt;
@@ -221,7 +227,12 @@ public:
 #ifdef REORDER
 	void execute(PTradeResultTxnInput, PTradeResultTxnOutput);
   void execute(PTradeOrderTxnInput, PTradeOrderIntermediate, PTradeOrderTxnOutput);
+//	void execute(const TCustomerPositionInput*, TCustomerPositionOutput*);
 #else
+//	void execute(const TCustomerPositionFrame1Input *,
+//TCustomerPositionFrame1Output *);
+//	void execute(const TCustomerPositionFrame2Input *,
+//TCustomerPositionFrame2Output *);
 	void execute(const TTradeOrderFrame1Input *, TTradeOrderFrame1Output *);
 	void execute(const TTradeOrderFrame2Input *, TTradeOrderFrame2Output *);
 	void execute(const TTradeOrderFrame3Input *, TTradeOrderFrame3Output *);
@@ -261,6 +272,9 @@ public:
 	void setBidRunner(BidRunner *);
 #elif WORKLOAD_TPCC
 	void setTPCCRunner(TPCCRunner *);
+#endif
+#ifdef GET_ALL_CONSTRAINTS
+ 	void get_all_constraints(char* dbname);	
 #endif
 	void logErrorMessage(const char* c, ...);
 	void reconnect();

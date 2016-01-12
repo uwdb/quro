@@ -819,8 +819,8 @@ public:
         dft.MarketWatchMixLevel         =   0;
         dft.SecurityDetailMixLevel      =   0;
         dft.TradeLookupMixLevel         =   0;
-        dft.TradeOrderMixLevel          =   100;
-        dft.TradeStatusMixLevel         =   0;
+        dft.TradeOrderMixLevel          =   0;
+        dft.TradeStatusMixLevel         =   100;
         dft.TradeUpdateMixLevel         =   0;
 
     }

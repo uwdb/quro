@@ -23,18 +23,21 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 	int r;
 	int length;
 	int ol_amount;
-	int o_c_id;
-	int no_o_id;
-/*
+	int o_c_id[10] = {0};
+	int no_o_id[10] = {0};
+
+	TIME_VAR;
+	TXN_BEGIN;
+
 		for (d_id = 1; d_id <= 10; d_id++){
-			no_o_id = 0;
+			no_o_id[d_id-1] = 0;
       sprintf(query, DELIVERY_1, w_id, d_id);
 			
       r = dbt5_sql_execute(query, &result, "DELIVERY_1");
 			if(r==1 && result.result_set)
       { 
         dbt5_sql_fetchrow(&result);
-        no_o_id = atol(dbt5_sql_getvalue(&result, 0, length));  //NO_O_ID
+        no_o_id[d_id-1] = atol(dbt5_sql_getvalue(&result, 0, length));  //NO_O_ID
         dbt5_sql_close_cursor(&result);
       }
       else
@@ -42,9 +45,9 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
         continue;
       }
 
-      if (no_o_id>0)
+      if (no_o_id[d_id-1]>0)
       {
-        sprintf(query, DELIVERY_2, no_o_id, w_id, d_id);
+        sprintf(query, DELIVERY_2, no_o_id[d_id-1], w_id, d_id);
 
        	r = dbt5_sql_execute(query, &result, "DELIVERY_2");
 				if(!r)
@@ -53,16 +56,16 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 					throw fail_msg.c_str();
         }
 
-        sprintf(query, DELIVERY_3, no_o_id, w_id, d_id);
+        sprintf(query, DELIVERY_3, no_o_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_3");
 				if(r==1 && result.result_set)
         { 
           dbt5_sql_fetchrow(&result);
-          o_c_id = atol(dbt5_sql_getvalue(&result, 0, length));  //O_C_ID 
+          o_c_id[d_id-1] = atol(dbt5_sql_getvalue(&result, 0, length));  //O_C_ID 
           dbt5_sql_close_cursor(&result);
           
-          if (!o_c_id)
+          if (!o_c_id[d_id-1])
           {
 							string fail_msg("delivery error 2");
 							throw fail_msg.c_str();
@@ -74,7 +77,7 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 						throw fail_msg.c_str();
         }
 
-        sprintf(query, DELIVERY_4, o_carrier_id, no_o_id, w_id, d_id);
+        sprintf(query, DELIVERY_4, o_carrier_id, no_o_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_4");
         if(!r){
@@ -82,7 +85,7 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 					throw fail_msg.c_str();
         }
 
-        sprintf(query, DELIVERY_5, no_o_id, w_id, d_id);
+        sprintf(query, DELIVERY_5, no_o_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_5");
 				if(!r){
@@ -90,7 +93,7 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 					throw fail_msg.c_str();
         }
 
-        sprintf(query, DELIVERY_6, no_o_id, w_id, d_id);
+        sprintf(query, DELIVERY_6, no_o_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_6");
 				if(r==1 && result.result_set)
@@ -110,8 +113,11 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 						string fail_msg("delivery 6 fails");
 						throw fail_msg.c_str();
         }
-
-        snprintf(query, 250,  DELIVERY_7, ol_amount, o_c_id, w_id, d_id);
+			}
+	}
+	for (d_id = 1; d_id <= 10; d_id++){
+		if(no_o_id[d_id-1] > 0){
+        snprintf(query, 250,  DELIVERY_7, ol_amount, o_c_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_7");
         if(!r){
@@ -120,45 +126,36 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 				}
       }
     }
-*/
+/*
 
 	for (d_id = 1; d_id <= 10; d_id++){
-			no_o_id = 0;
+			no_o_id[d_id-1] = 0;
       sprintf(query, DELIVERY_1, w_id, d_id);
 			
       r = dbt5_sql_execute(query, &result, "DELIVERY_1");
 			if(r==1 && result.result_set)
       { 
         dbt5_sql_fetchrow(&result);
-        no_o_id = atol(dbt5_sql_getvalue(&result, 0, length));  //NO_O_ID
+        no_o_id[d_id-1] = atol(dbt5_sql_getvalue(&result, 0, length));  //NO_O_ID
         dbt5_sql_close_cursor(&result);
       }
       else
       { 
         continue;
       }
-
-      if (no_o_id>0)
-      {
-        sprintf(query, DELIVERY_2, no_o_id, w_id, d_id);
-
-       	r = dbt5_sql_execute(query, &result, "DELIVERY_2");
-				if(!r)
-        {
-          string fail_msg("delivery 2 fails");
-					throw fail_msg.c_str();
-        }
-
-        sprintf(query, DELIVERY_3, no_o_id, w_id, d_id);
+	}
+	for (d_id = 1; d_id <= 10; d_id++){
+			if (no_o_id[d_id-1] > 0){
+        sprintf(query, DELIVERY_3, no_o_id[d_id-1], w_id, d_id);
 
         r = dbt5_sql_execute(query, &result, "DELIVERY_3");
 				if(r==1 && result.result_set)
         { 
           dbt5_sql_fetchrow(&result);
-          o_c_id = atol(dbt5_sql_getvalue(&result, 0, length));  //O_C_ID 
+          o_c_id[d_id-1] = atol(dbt5_sql_getvalue(&result, 0, length));  //O_C_ID 
           dbt5_sql_close_cursor(&result);
           
-          if (!o_c_id)
+          if (!o_c_id[d_id-1])
           {
 							string fail_msg("delivery error 2");
 							throw fail_msg.c_str();
@@ -169,26 +166,11 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
 						string fail_msg("delivery 3 fails");
 						throw fail_msg.c_str();
         }
-
-        sprintf(query, DELIVERY_4, o_carrier_id, no_o_id, w_id, d_id);
-
-        r = dbt5_sql_execute(query, &result, "DELIVERY_4");
-        if(!r){
-          string fail_msg("delivery 4 fails");
-					throw fail_msg.c_str();
-        }
-
-        sprintf(query, DELIVERY_5, no_o_id, w_id, d_id);
-
-        r = dbt5_sql_execute(query, &result, "DELIVERY_5");
-				if(!r){
-          string fail_msg("delivery 5 fails");
-					throw fail_msg.c_str();
-        }
-
-        sprintf(query, DELIVERY_6, no_o_id, w_id, d_id);
-
-        r = dbt5_sql_execute(query, &result, "DELIVERY_6");
+			}
+	}
+	for (d_id = 1; d_id <= 10; d_id++){
+			if (no_o_id[d_id-1] > 0){
+				r = dbt5_sql_execute(query, &result, "DELIVERY_6");
 				if(r==1 && result.result_set)
         { 
           dbt5_sql_fetchrow(&result);
@@ -200,23 +182,66 @@ void CDBConnection::execute(const TDeliveryTxnInput* pIn, TDeliveryTxnOutput* pO
             string fail_msg("delivery error 3");
 						throw fail_msg.c_str();
           }
-        }
-        else //error
+        }else //error
         {
 						string fail_msg("delivery 6 fails");
 						throw fail_msg.c_str();
         }
+			}
+	}
 
-        snprintf(query, 250,  DELIVERY_7, ol_amount, o_c_id, w_id, d_id);
+	for(d_id = 1; d_id <= 10; d_id++){	
+      if (no_o_id[d_id-1]>0)
+      {
+        sprintf(query, DELIVERY_2, no_o_id[d_id-1], w_id, d_id);
 
+       	r = dbt5_sql_execute(query, &result, "DELIVERY_2");
+				if(!r)
+        {
+          string fail_msg("delivery 2 fails");
+					throw fail_msg.c_str();
+        }
+			}
+	}
+
+	for (d_id = 1; d_id <= 10; d_id++){
+			if(no_o_id[d_id-1] > 0){
+        
+				sprintf(query, DELIVERY_4, o_carrier_id, no_o_id[d_id-1], w_id, d_id);
+
+        r = dbt5_sql_execute(query, &result, "DELIVERY_4");
+        if(!r){
+          string fail_msg("delivery 4 fails");
+					throw fail_msg.c_str();
+        }
+			}
+	}
+	for (d_id = 1; d_id <= 10; d_id++){
+			if(no_o_id[d_id-1] > 0){
+        sprintf(query, DELIVERY_5, no_o_id[d_id-1], w_id, d_id);
+
+        r = dbt5_sql_execute(query, &result, "DELIVERY_5");
+				if(!r){
+          string fail_msg("delivery 5 fails");
+					throw fail_msg.c_str();
+        }
+			}
+	}
+
+	for (d_id = 1; d_id <= 10; d_id++){
+			if(no_o_id[d_id-1] > 0){
+
+        snprintf(query, 250,  DELIVERY_7, ol_amount, o_c_id[d_id-1], w_id, d_id);
+        
         r = dbt5_sql_execute(query, &result, "DELIVERY_7");
         if(!r){
         	string fail_msg("delivery 7 fails");
 					throw fail_msg.c_str();
 				}
       }
-    }
-
+   }
+*/
+	TXN_END(4);
 
 	pOut->status = CBaseTxnErr::SUCCESS;
 

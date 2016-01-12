@@ -5,11 +5,13 @@
 
 #define TOTAL_USER_NUM 10000
 #define TOTAL_ITEM_NUM 1
-#define SCALEFACTOR 128
+#define SCALEFACTOR 64
 #define INITIAL_PRICE 10
+char filepath[100] = "/home/quro/BID_DATA";
 using namespace std;
+
 string get_random_string(int length){
-	char c[1000] = {0};
+	char c[1024] = {0};
 	int len = length/2 + rand()%(length/2);
 	for(int i=0; i<len; i++){
 		c[i] = rand()%26+'a';
@@ -17,10 +19,9 @@ string get_random_string(int length){
 	string s(c);
 	return s;
 }
-char filepath[100] = "/data/sanchez/results/silo/results/BID_DATA";
 int main()
 {
-	double bid_price[TOTAL_ITEM_NUM*SCALEFACTOR] = {0};
+	double bid_price[TOTAL_ITEM_NUM*SCALEFACTOR+1] = {0};
 	char filename[200] = {0};
 	sprintf(filename, "%s/User.txt", filepath);
 	ofstream outfile(filename);

@@ -35,6 +35,7 @@
  */
 
 #include "../inc/CETxnInputGenerator.h"
+#include "../../src/include/TPCE_const.h"
 
 using namespace TPCE;
 
@@ -402,7 +403,8 @@ TTrade CCETxnInputGenerator::GenerateNonUniformTradeID( INT32 AValue, INT32 SVal
 {
     TTrade TradeId;
 
-    TradeId = m_rnd.NURnd( 1, m_iMaxActivePrePopulatedTradeID, AValue, SValue );
+    //TradeId = m_rnd.NURnd( 1, m_iMaxActivePrePopulatedTradeID, AValue, SValue );
+    TradeId = m_rnd.NURnd( 1, TRADEUPDATE_TRADE_NUM, AValue, SValue);
 
     // Skip over trade id's that were skipped over during load time.
     if ( m_Holdings.IsAbortedTrade(TradeId) )
@@ -936,8 +938,9 @@ void CCETxnInputGenerator::GenerateTradeOrderInput(TTradeOrderTxnInput &TxnReq, 
     TxnReq.requested_price = m_rnd.RndDoubleIncrRange(fMinSecPrice, fMaxSecPrice, 0.01);
 
     // Determine whether Market or Limit order
-    bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
-
+    //bMarket = m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.market);
+    bMarket = true;
+	
     //Determine whether Buy or Sell trade
     if (m_rnd.RndPercent(m_pDriverCETxnSettings->TO_settings.cur.buy_orders))
     {

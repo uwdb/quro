@@ -6,6 +6,7 @@
 //#define TABLE_PROFILE
 //#define TIMEBREAK
 //#define TIMEPROFILE
+//#define TYPEBREAK
 #include <fstream>
 using namespace std;
 
@@ -75,6 +76,21 @@ sprintf(query, "SET profiling = 1"); \
 #else
 #define SETPROFILING
 
+#endif
+
+#ifdef TYPEBREAK
+#define TIME_VAR timeval t_start1, t_end1; double type_t_time=0.0;
+#define TXN_BEGIN \
+gettimeofday(&t_start1, NULL);
+#define TXN_END(f) \
+gettimeofday(&t_end1, NULL); \
+type_t_time = difftimeval(t_end1, t_start1); \
+_type_time[f] += type_t_time; \
+_type_cnt[f] ++;
+#else 
+#define TIME_VAR
+#define TXN_BEGIN
+#define TXN_END(f)
 #endif
 
 #ifdef TIMEBREAK

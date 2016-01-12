@@ -35,7 +35,6 @@ try {
 
 		CSocket sockDrv;
 		sockDrv.setSocketFd(pThrParam->iSockfd); // client socket
-		cout<<"client sock = "<<pThrParam->iSockfd<<endl;
 
 		PMsgDriverBid pMessage = new TMsgDriverBid;
 		memset(pMessage, 0, sizeof(TMsgDriverBid)); // zero the structure

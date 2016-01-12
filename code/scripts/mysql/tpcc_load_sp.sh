@@ -47,7 +47,7 @@ command_exec()
 
 load_sp()
 {
-  PROCEDURES="delivery new_order new_order_2 order_status payment stock_level"
+  PROCEDURES="delivery new_order new_order_2 order_status payment payment_2 stock_level"
 
   for PROCEDURE in $PROCEDURES ; do
 
@@ -64,10 +64,10 @@ DB_PASSWORD=""
 PATH_SP=""
 DB_NAME=""
 
-MYSQL="/usr/bin/mysql"
+MYSQL=/usr/bin/mysql
 DB_HOST="localhost"
-#DB_SOCKET="/tmp/mysql.sock"
-DB_USER=$USER
+DB_SOCKET="/home/quro/mysqld/mysqld.sock"
+DB_USER=root
 #DB_PORT="3306"
 PATH_SP=../../storedproc/mysql
 

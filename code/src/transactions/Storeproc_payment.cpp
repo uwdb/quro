@@ -18,7 +18,7 @@ void CDBConnection::execute(const TPaymentTxnInput* pIn, TPaymentTxnOutput* pOut
 	char stmt[512];
 
 	/* Create the query and execute it. */
-	sprintf(stmt, "call payment(%d, %d, %d, %d, %d, '%s', %f)",
+	sprintf(stmt, "call payment_2(%d, %d, %d, %d, %d, '%s', %f)",
 		pIn->w_id, pIn->d_id, pIn->c_id, pIn->c_w_id, pIn->c_d_id,
 		pIn->c_last, pIn->h_amount);
 

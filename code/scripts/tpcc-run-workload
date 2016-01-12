@@ -57,7 +57,7 @@ USE_OPROFILE=0
 USE_READPROFILE=0
 USE_LINUX_PERF_EVENTS=0
 PACING_DELAY=0
-EXEC_BIN_DIR=/home/congy/bin
+EXEC_BIN_DIR=/home/quro/dbt5/bin
 
 while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
 	case $opt in

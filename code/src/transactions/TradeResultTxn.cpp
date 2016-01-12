@@ -70,10 +70,10 @@ void CDBConnection::execute(PTradeResultTxnInput pIn,
 	int num_rows = 0;
 	int cnt = 0;
 
-/*
+
 	GETTIME;
 	sprintf(query, TRADE_RESULT1_1, trade_id);
-
+#ifdef QURO
   r = dbt5_sql_execute(query, &result, "TRADE_RESULT1_1");
 	if(r==1 && result.result_set){
 			dbt5_sql_fetchrow(&result);
@@ -594,7 +594,7 @@ throw fail_msg.c_str();
 	pOut->load_unit = cust_id;
 
 	return ;
-*/
+#else
 
 	string fail_msg;
 	sprintf(query, TRADE_RESULT_HELPER);
@@ -2153,6 +2153,6 @@ pOut->acct_id = acct_id;
 pOut->acct_bal = acct_bal;
 pOut->load_unit = cust_id;
 return;
-
+#endif
 }
 #endif

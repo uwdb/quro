@@ -24,6 +24,7 @@
 #include "TradeResultDB.h"
 #include "TradeStatusDB.h"
 #include "TradeUpdateDB.h"
+#include "TPCE_const.h"
 
 #include <signal.h>
 #include <sys/time.h>
@@ -212,23 +213,36 @@ loop:
 					iRet = pThrParam->pBrokerageHouse->RunTradeLookup(
 							&(pMessage->TxnInput.TradeLookupTxnInput), tradeLookup);
 					break;*/
+#ifdef TRADEORDER
 				case TRADE_ORDER:
 					iRet = pThrParam->pBrokerageHouse->RunTradeOrder(
 							&(pMessage->TxnInput.TradeOrderTxnInput), tradeOrder);
 					break;
-				case TRADE_RESULT:
-					//iRet = pThrParam->pBrokerageHouse->RunTradeResult(
-					//		&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
+#endif
+#ifdef TRADEMIX
+				case TRADE_ORDER:
+					iRet = pThrParam->pBrokerageHouse->RunTradeOrder(
+							&(pMessage->TxnInput.TradeOrderTxnInput), tradeOrder);
 					break;
-				//case TRADE_STATUS:
-				//	iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
-				//			&(pMessage->TxnInput.TradeStatusTxnInput),
-				//			tradeStatus);
-				//	break;
+
+				case TRADE_RESULT:
+					iRet = pThrParam->pBrokerageHouse->RunTradeResult(
+							&(pMessage->TxnInput.TradeResultTxnInput), tradeResult);
+					break;
+#endif
+#ifdef TRADESTATUS
+				case TRADE_STATUS:
+					iRet = pThrParam->pBrokerageHouse->RunTradeStatus(
+							&(pMessage->TxnInput.TradeStatusTxnInput),
+							tradeStatus);
+					break;
+#endif
+#ifdef TRADEUPDATE
 				case TRADE_UPDATE:
 					iRet = pThrParam->pBrokerageHouse->RunTradeUpdate(
 							&(pMessage->TxnInput.TradeUpdateTxnInput), tradeUpdate);
 					break;
+#endif
 				/*case DATA_MAINTENANCE:
 					iRet = pThrParam->pBrokerageHouse->RunDataMaintenance(
 							&(pMessage->TxnInput.DataMaintenanceTxnInput),

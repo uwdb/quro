@@ -35,7 +35,7 @@
  */
 
 #include "../inc/CETxnInputGenerator.h"
-#define TBASE 128
+#define TBASE 1
 
 using namespace TPCE;
 
@@ -404,7 +404,7 @@ TTrade CCETxnInputGenerator::GenerateNonUniformTradeID( INT32 AValue, INT32 SVal
     TTrade TradeId;
 
     //TradeId = m_rnd.NURnd( 1, m_iMaxActivePrePopulatedTradeID, AValue, SValue );
-		TradeId = m_rnd.NURnd( TBASE, TBASE+4096, AValue, SValue );
+		TradeId = m_rnd.NURnd( TBASE, TBASE+1024, AValue, SValue );
 
 
     // Skip over trade id's that were skipped over during load time.

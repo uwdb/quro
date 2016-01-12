@@ -30,7 +30,7 @@ void CDBConnection::execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut
 	double cur_price;
 	double bid_price;
 
-
+#ifndef QURO
 	sprintf(query, SELECT_ITEM, pIn->item_id);
 	//CLANG_PROFILE;
 	r = dbt5_sql_execute(query, &result, "GET_ITEM");
@@ -72,7 +72,7 @@ void CDBConnection::execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut
 
 	BIDDING_INSERT_REC;
 
-/*
+#else
 
 	sprintf(query, GET_USER, pIn->user_id);
 	//CLANG_PROFILE;
@@ -107,7 +107,8 @@ void CDBConnection::execute(const TBiddingTxnInput* pIn, TBiddingTxnOutput* pOut
 	if(bid_price > cur_price){
 		BIDDING_UPDATE_ITEM;
 	}
-*/
+#endif
+
 }
 
 

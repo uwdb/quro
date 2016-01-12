@@ -157,6 +157,10 @@ CDBConnection::CDBConnection(TPCCRunner *_tpcc, char *_mysql_dbname, char *_mysq
 	memset(_time, 0, sizeof(double)*100);
 	memset(_cnt, 0, sizeof(int)*100);
 #endif
+#ifdef TYPEBREAK
+	memset(_type_time, 0, sizeof(double)*100);
+	memset(_type_cnt, 0, sizeof(int)*100);
+#endif
 }
 #endif
 
@@ -195,7 +199,6 @@ void CDBConnection::connect()
 		dbc=mysql_init(NULL);
 
 		LOG_ERROR_MESSAGE("in connect, finish init");
-		cout<<"DBC = "<<dbc<<endl;
     //FIXME: change atoi() to strtol() and check for errors
     if (!mysql_real_connect(dbc, mysql_host, mysql_user, mysql_pass, mysql_dbname, atoi(mysql_port_t), mysql_socket_t, 0))
     {
@@ -219,7 +222,9 @@ void CDBConnection::connect()
                          mysql_error(dbc));
 			assert(false);
     }
-
+#ifdef GET_ALL_CONSTRAINTS
+	get_all_constraints(mysql_dbname);
+#endif
 #endif
 
 }
@@ -3375,6 +3380,51 @@ string returnTableName(char* query){
 		return empty;
 }
 
+#ifdef GET_ALL_CONSTRAINTS
+void CDBConnection::get_all_constraints(char* dbname){
+		char query[1024];
+		int r;
+		int length;
+		sql_result_t result;
+		ofstream outfile("/home/congy/results_link/constraints.txt");
+
+		sprintf(query, "show tables");
+		r = dbt5_sql_execute(query, &result, "SHOW_TABLES");
+		if(r==1 && result.result_set){
+				int num_rows = result.num_rows;
+				sql_result_t result_t;
+				for(int i=0; i<num_rows; i++){
+						dbt5_sql_fetchrow(&result);
+						char table_name[100];
+						strcpy(table_name, dbt5_sql_getvalue(&result,  0, length));
+						sprintf(query, "select TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where REFERENCED_TABLE_NAME = '%s'", table_name);
+						//outfile<<query<<endl;
+						int r_t = dbt5_sql_execute(query, &result_t, "FK constraint");
+						if(r_t==1 && result_t.result_set){
+								int num_rows_t = result_t.num_rows;
+								for(int j=0; j<num_rows_t; j++){
+										dbt5_sql_fetchrow(&result_t);
+										outfile<<dbt5_sql_getvalue(&result_t, 0, length)<<"\t";
+										outfile<<dbt5_sql_getvalue(&result_t, 1, length)<<"\t";
+										outfile<<dbt5_sql_getvalue(&result_t, 2, length)<<"\t";
+										outfile<<dbt5_sql_getvalue(&result_t, 3, length)<<endl;
+								}
+								dbt5_sql_close_cursor(&result_t);
+						}
+				}
+		}
+		sprintf(query, "SHOW FULL TABLES IN %s WHERE TABLE_TYPE LIKE 'VIEW'", dbname);
+		r = dbt5_sql_execute(query, &result, "GET_VIEW");
+		if(r==1 && result.result_set){
+				int num_rows = result.num_rows;
+				for(int i=0; i<num_rows; i++){
+						dbt5_sql_fetchrow(&result);
+						outfile<<"VIEW: "<<dbt5_sql_getvalue(&result, 0, length)<<endl;
+				}
+		}
+		outfile.close();	
+}
+#endif
 /*double difftimeval(timeval rt1, timeval rt0)
 {
 	return (rt1.tv_sec - rt0.tv_sec) +

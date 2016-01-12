@@ -24,4 +24,4 @@ echo "finish creating tables"
 ./tpcc-mysql-load-data || exit 1
 echo "finish loading data"
 
-./tpcc_load_sp.sh -u root -d tpcc -s /home/congy/mysqld/mysqld.sock
+./tpcc_load_sp.sh -u root -d tpcc -s /home/quro/mysqld/mysqld.sock
