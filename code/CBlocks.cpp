@@ -22,6 +22,8 @@
 #include <fstream>
 #include <iostream>
 #include <string.h>
+#include <cerrno>
+#include <system_error>
 using namespace std;
 using namespace clang::driver;
 using namespace clang::tooling;
@@ -39,6 +41,7 @@ vector<codeBlock*> code_blocks;
 vector<condBlock*> cond_blocks;
 
 map<Stmt*, int> stmt_to_index;
+	double cur_price;
 
 stack<condBlock*> stack_cond_blocks;
 
@@ -96,8 +99,10 @@ public:
 		bool myTraverseStmt(Stmt* st){
 				SourceManager& M = astContext->getSourceManager();
 				Stmt* cur_stmt = st;
-				if(st == NULL)
+				if(st == NULL){
+						cout<<"check st = null"<<endl;
 						return false;
+				}
 				if(CompoundStmt* cst = dyn_cast<CompoundStmt>(cur_stmt)){
 							for(CompoundStmt::const_body_iterator it = cst->body_begin(); it != cst->body_end(); it++){
 									myTraverseStmt(*it);
@@ -217,15 +222,15 @@ public:
 											this_table_name = table_names[k];
 											this_conflict_index = getConflictIndex(tables[table_names[k]].num_rows, op);
 											stmt_to_index[st] = this_conflict_index;
-/*
-											if(this_conflict_index > cur_query_block->conflict_index){
-													cur_query_block->conflict_index = this_conflict_index;
-													cur_query_block->query_name.assign("QUERY_");
-													cur_query_block->query_name.append(OPERATION_str[cur_query_block->op]);
-													cur_query_block->query_name.append(table_names[k]);
-													cur_query_block->table_name = table_names[k];
-											}
-*/
+
+//											if(this_conflict_index > cur_query_block->conflict_index){
+//													cur_query_block->conflict_index = this_conflict_index;
+//													cur_query_block->query_name.assign("QUERY_");
+//													cur_query_block->query_name.append(OPERATION_str[cur_query_block->op]);
+//													cur_query_block->query_name.append(table_names[k]);
+//													cur_query_block->table_name = table_names[k];
+//											}
+
 										}
 #ifdef DEBUG
 											cout<<"Is_query "<<is_query<<endl;
@@ -238,15 +243,17 @@ public:
 
 					//if(Expr* expr = dyn_cast<Expr>(st)){
 					Stmt* expr = st;
-							if(defuses.find(expr)==defuses.end()){
-									defuseSets temp_set;
-									defuses[expr] = temp_set; 
-							}
-							analyzeStmts(expr, defuses[expr].uses, defuses[expr].defs, M);
 #ifdef DEBUG
 							cout<<"anayzeStmt:"<<endl;
 							printSourceRange(expr->getLocStart(), expr->getLocEnd(), M);
 #endif
+
+							if(defuses.find(expr)==defuses.end()){
+									defuseSets temp_set;
+									defuses[expr] = temp_set; 
+							}
+
+							analyzeStmts(expr, defuses[expr].uses, defuses[expr].defs, M);
 							while((!expr_stack.empty()) && rangeIsWithin(expr->getLocStart(), expr->getLocEnd(), expr_stack.top()->getLocStart(), expr_stack.top()->getLocEnd(), M)==false ){
 										Stmt* temp_st = expr_stack.top();
 										expr_stack.pop();
@@ -289,7 +296,6 @@ public:
 									}
 									cout<<endl;
 							}
-							cout<<"finish first pass!"<<endl;
 #endif
 					}
 			}
@@ -373,7 +379,7 @@ public:
 									//Remove the stmts in the code_block range
 									vector<codeBlock*>::iterator it = code_blocks.begin();
 									while(it!=code_blocks.end()){
-											if(rangeIsWithin((*it)->begin, (*it)->end, sr_begin, sr_end, M) /*|| (*it)->stmt == sprintf_stmt*/){
+											if(rangeIsWithin((*it)->begin, (*it)->end, sr_begin, sr_end, M) ){
 #ifdef DEBUG
 													cout<<"remove code block:";
 													printSourceRange((*it)->begin, (*it)->end, M);
@@ -413,7 +419,7 @@ public:
 											temp_sta.pop();
 									}
 									SourceRange qblock_sr(sr_begin, sr_end);
-									assert(sprintf_stmt != NULL);
+									//assert(sprintf_stmt != NULL);
 									//SourceRange sprintf_sr(sprintf_stmt->getLocStart(), sprintf_stmt->getLocEnd().getLocWithOffset(1));
 									char c_index_str[100] = {0};
 									q_block->conflict_index = this_conflict_index;
@@ -444,6 +450,10 @@ public:
 			SourceManager& M = astContext->getSourceManager();
 			BeforeThanCompare<SourceLocation> Compare(M);
 			bool stmt_processed = false;
+#ifdef DEBUG
+			cout<<"Visit stmt: second_pass = "<<second_pass<<", stmt = "<<st<<endl;
+#endif
+
 			if(second_pass && in_execute_function){
 					if(IfStmt* if_stmt = dyn_cast<IfStmt>(st)){
 					if(inAnyQuery(if_stmt->getLocStart(), if_stmt->getLocEnd(), M)==false){
@@ -460,7 +470,6 @@ public:
 							cond_blocks.push_back(if_block);
 
 							if_block->uses = defuses[if_stmt->getCond()].uses;
-
 							//TODO: this should be a while loop: 
 							//			if(){} else if(){} else{}
 							if(if_stmt->getElse()){
@@ -1265,17 +1274,20 @@ public:
 						visitor->TraverseDecl(D); // recursively visit each AST node in Decl "D"
 						visitor->in_execute_function = true;
 						visitor->myTraverseStmt(FD->getBody());
-
+					if(FD->getBody()){
 						AnalysisDeclContext* adCtxt = Mgr->getAnalysisDeclContext(D);
 						myLiveVariables *liveV = myLiveVariables::create(*adCtxt, myCI->getASTContext().getSourceManager());
 						if(liveV==nullptr){
 						}else{
 						//liveV->dumpBlockLiveness(myCI->getASTContext().getSourceManager());
 						}
-
 						visitor->in_execute_function = true;
 						visitor->myTraverseReturnStmt(FD->getBody());
-
+					}
+					errno=0;
+  				std::error_code EC(errno,std::generic_category());
+					raw_fd_ostream OutputFile("output.cpp", EC, sys::fs::F_None);
+					rewriter.getEditBuffer(rewriter.getSourceMgr().getMainFileID()).write(OutputFile);
 				}
 			}
 		}
@@ -1363,8 +1375,7 @@ int main(int argc, const char **argv) {
   FrontendActionFactory *fea = newFrontendActionFactory<myAnalysisAction>().release(); 
 	
 		int result = Tool.run(fea);
-		
-		rewriter.getEditBuffer(rewriter.getSourceMgr().getMainFileID()).write(errs());
+		//rewriter.getEditBuffer(rewriter.getSourceMgr().getMainFileID()).write(errs());
 		// print out the rewritten source code ("rewriter" is a global var.)
 		return result;
 

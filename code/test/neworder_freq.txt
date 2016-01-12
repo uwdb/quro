@@ -1,0 +1,8 @@
+warehouse 4
+district 40
+customer 12000
+new_order 123400
+orders 231400
+stock 40000
+item 10000
+order_line 120940

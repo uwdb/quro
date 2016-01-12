@@ -207,6 +207,7 @@ public:
   void runOnAllBlocks(Observer &obs);
   
   static myLiveVariables *create(AnalysisDeclContext &analysisContext, SourceManager& M) {
+cout<<"Before compute liveness" <<endl;
     return computeLiveness(analysisContext, true, M);
   }
   

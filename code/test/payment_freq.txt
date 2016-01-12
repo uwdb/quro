@@ -1,0 +1,4 @@
+warehouse 4
+district 40
+history 12000
+customer 2000

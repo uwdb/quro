@@ -1121,7 +1121,7 @@ void read_constraint_info(){
 }
 
 int getConflictIndex(int row_num, OPERATION op){
-	int pri_index = 4000000/row_num;
+	int pri_index = (int)(4000000.0/(double)row_num);
 	if(op == UPDATE)
 		pri_index += 10000;
 //	if(op == INSERT)
@@ -1160,6 +1160,7 @@ void readConflictInfo(){
 		cout<<"TABLE "<<tbl.name<<"'s num_rows = "<<tbl.num_rows<<endl;
 #endif
 	}
+	cout<<"finish reading table!"<<endl;
 }
 
 bool qBlockCmp1(codeBlock* q1, codeBlock* q2){

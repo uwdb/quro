@@ -313,15 +313,21 @@ void TransferFunctions::VisitBinaryOperator(BinaryOperator *B) {
 }
 
 void TransferFunctions::VisitBlockExpr(BlockExpr *BE) {
-  AnalysisDeclContext::referenced_decls_iterator I, E;
-  std::tie(I, E) =
-    LV.analysisContext.getReferencedBlockVars(BE->getBlockDecl());
-  for ( ; I != E ; ++I) {
-    const VarDecl *VD = *I;
-    if (isAlwaysAlive(VD))
-      continue;
-    val.liveDecls = LV.DSetFact.add(val.liveDecls, VD);
-  }
+	for (const VarDecl *VD :
+        LV.analysisContext.getReferencedBlockVars(BE->getBlockDecl())) {
+     if (isAlwaysAlive(VD))
+       continue;
+     val.liveDecls = LV.DSetFact.add(val.liveDecls, VD);
+   }
+//  AnalysisDeclContext::referenced_decls_iterator I, E;
+//  std::tie(I, E) = 
+//    LV.analysisContext.getReferencedBlockVars(BE->getBlockDecl());
+//  for ( ; I != E ; ++I) {
+//    const VarDecl *VD = *I;
+//    if (isAlwaysAlive(VD))
+//      continue;
+//    val.liveDecls = LV.DSetFact.add(val.liveDecls, VD);
+//  }
 }
 
 void TransferFunctions::VisitDeclRefExpr(DeclRefExpr *DR) {
@@ -447,7 +453,9 @@ myLiveVariables::computeLiveness(AnalysisDeclContext &AC,
 								 SourceManager& M) {
 
   // No CFG?  Bail out.
+cout<<"Before get CFG"<<endl;
   CFG *cfg = AC.getCFG();
+cout<<"Finish get CFG"<<endl;
   if (!cfg){
     return nullptr;
   }
