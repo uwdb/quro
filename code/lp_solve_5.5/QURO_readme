@@ -1,0 +1,8 @@
+The ILP solver code is in the directory of quro/
+Source file: ilp_test.cpp
+To compile the program, run ./make_ilp
+The compiled program takes queryinfo.txt as input, and print the result to console.
+
+The current queryinfo.txt is a normal ILP input file with only units including queries.
+The file large_queryinfo.txt is the ILP input file of trade-order transaction with all units,
+which makes the ILP solver run more than hours.
