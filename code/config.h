@@ -4,7 +4,7 @@
 /***********************************************/
 // Simulation + Hardware
 /***********************************************/
-#define THREAD_CNT					2
+#define THREAD_CNT					64
 #define PART_CNT					1 //CORE_CNT
 // each transaction only accesses only 1 virtual partition. But the lock/ts manager and index are not aware of such partitioning. VIRTUAL_PART_CNT describes the request distribution and is only used to generate queries. For HSTORE, VIRTUAL_PART_CNT should be the same as PART_CNT.
 #define VIRTUAL_PART_CNT			1
@@ -48,7 +48,7 @@
 // Concurrency Control
 /***********************************************/
 // WAIT_DIE, NO_WAIT, DL_DETECT, TIMESTAMP, MVCC, HSTORE, OCC, VLL
-#define CC_ALG 					 DL_DETECT
+#define CC_ALG 					 WAIT_DIE
 
 // all transactions acquire tuples according to the primary key order.
 #define KEY_ORDER					false
@@ -104,7 +104,7 @@
 // max number of rows touched per transaction
 #define MAX_ROW_PER_TXN				64
 #define QUERY_INTVL 				1UL
-#define MAX_TXN_PER_PART 			100
+#define MAX_TXN_PER_PART 			1000000
 #define FIRST_PART_LOCAL 			true
 #define MAX_TUPLE_SIZE				1024 // in bytes
 // ==== [YCSB] ====
@@ -139,7 +139,7 @@ enum TPCCTxnType {TPCC_ALL,
 extern TPCCTxnType 					g_tpcc_txn_type;
 
 //#define TXN_TYPE					TPCC_ALL
-#define PERC_PAYMENT 				0.0
+#define PERC_PAYMENT 				0.5
 #define FIRSTNAME_MINLEN 			8
 #define FIRSTNAME_LEN 				16
 #define LASTNAME_LEN 				16
