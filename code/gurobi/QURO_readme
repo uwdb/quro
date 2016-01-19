@@ -1,0 +1,4 @@
+This is the gurobi solver.
+It runs similar with the lpsolver.
+Source file: generate_ilp.cpp
+The compiled file generates the query.ilp, to serve as gurobi input file.
