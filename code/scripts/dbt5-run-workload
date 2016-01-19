@@ -1,0 +1,706 @@
+#!/bin/bash
+
+#
+# This file is released under the terms of the Artistic License.
+# Please see the file LICENSE, included in this package, for details.
+#
+# Copyright (C) 2006-2010 Mark Wong & Open Source Development Labs, Inc.
+#               2006 Rilson Nascimento
+#
+
+trap 'echo "Test was interrupted by Control-C."; \
+	killall BrokerageHouseMain; killall MarketExchangeMain; \
+	killall DriverMain;  killall sar; killall sadc; killall vmstat; \
+	killall iostat; ${DB_COMMAND} dbt5-${DBMS}-stop-db' INT
+trap 'echo "Test was interrupted. Got TERM signal."; \
+	killall BrokerageHouseMain; killall MarketExchangeMain; \
+	killall DriverMain; killall client; killall driver;  killall sar; \
+	killall sadc; killall vmstat; killall iostat; \
+	${DB_COMMAND} dbt5-${DBMS}-stop-db' TERM
+
+EGENDIR=~/dbt5/egen
+
+do_sleep()
+{
+    echo "Sleeping $1 seconds"
+    sleep $1
+}
+
+make_directories()
+{
+	COMMAND=""
+	HOST=${1}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	fi
+	${COMMAND} mkdir -p ${OUTPUT_DIR}
+	${COMMAND} mkdir -p ${BH_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${MEE_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${DRIVER_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${DB_OUTPUT_DIR}
+}
+
+oprofile_annotate()
+{
+	COMMAND=""
+	DIR=${1}
+	HOST=${2}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "oprofile is annotating source: ${HOST}"
+	if [ -n "${COMMAND}" ]; then
+		${COMMAND} "sudo opannotate --source --assembly > ${DIR}/oprofile/assembly.txt" > /dev/null 2>&1
+	else
+		sudo opannotate --source --assembly > ${DIR}/oprofile/assembly.txt > /dev/null 2>&1
+	fi
+	${COMMAND} sudo opannotate --source --output-dir=${DIR}/oprofile/annotate > /dev/null 2>&1
+}
+
+oprofile_collect()
+{
+	COMMAND=""
+	DIR=${1}
+	HOST=${2}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	${COMMAND} mkdir -p ${DIR}/oprofile/
+	${COMMAND} mkdir -p ${DIR}/oprofile/annotate
+	#
+	# I don't think we need any output dumped to the terminal.
+	#
+	echo "oprofile is dumping data: ${HOST}"
+	${COMMAND} sudo opcontrol --dump
+	if [ -n "${COMMAND}" ]; then
+		${COMMAND} "sudo opreport -l -p /lib/modules/`${COMMAND} uname -r` -o ${DIR}/oprofile/oprofile.txt > /dev/null 2>&1"
+		${COMMAND} "sudo opreport -l -c -p /lib/modules/`${COMMAND} uname -r` -o ${DIR}/oprofile/callgraph.txt > /dev/null 2>&1"
+	else
+		sudo opreport -l -p /lib/modules/`uname -r` \
+				-o ${DIR}/oprofile/oprofile.txt > /dev/null 2>&1
+		sudo opreport -l -c -p /lib/modules/`uname -r` \
+				-o ${DIR}/oprofile/callgraph.txt > /dev/null 2>&1
+	fi
+	${COMMAND} sudo opcontrol --stop
+}
+
+oprofile_reset()
+{
+	COMMAND=""
+	HOST=${1}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "reseting oprofile counters: ${HOST}"
+	${COMMAND} sudo opcontrol --reset
+}
+
+oprofile_stop()
+{
+	COMMAND=""
+	HOST=${1}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "stopping oprofile daemon: ${HOST}"
+	${COMMAND} sudo opcontrol --shutdown
+}
+
+readprofile_collect()
+{
+	COMMAND=""
+	DIR=${1}
+	HOST=${2}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "collecting readprofile data: ${HOST}"
+	PROFILE=${DIR}/readprofile.txt
+	if [ -n "${COMMAND}" ]; then
+		${COMMAND} "/usr/sbin/readprofile -n -m /boot/System.map-`${COMMAND} uname -r` > ${PROFILE}"
+		${COMMAND} "catecho
+ 		${PROFILE} | sort -n -r -k1 > ${DIR}/readprofile_ticks.txt"
+		${COMMAND} "cat ${PROFILE} | sort -n -r -k3 > ${DIR}/readprofile_load.txt"
+	else
+		/usr/sbin/readprofile -n \
+				-m /boot/System.map-`${COMMAND} uname -r` > ${PROFILE}
+		cat ${PROFILE} | sort -n -r -k1 > ${DIR}/readprofile_ticks.txt
+		cat ${PROFILE} | sort -n -r -k3 > ${DIR}/readprofile_load.txt
+	fi
+}
+
+oprofile_init()
+{
+	COMMAND=""
+	HOST=${1}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "starting oprofile: ${HOST}"
+	${COMMAND} sudo opcontrol \
+			--vmlinux=/usr/src/linux-`${COMMAND} uname -r`/vmlinux -c 100
+	sleep 1
+	START_ARGS=""
+	MACHINE=`${COMMAND} uname -m`
+	if [ "x${MACHINE}" = "xppc64" ]; then
+		#
+		# Oprofile fails to work on ppc64 because the defaults settings
+		# are invalid on this platform.  Why isn't it smart enough to
+		# have valid default setting depending on arch?
+		#
+		START_ARGS="-e CYCLES:150000:0:1:1"
+	elif [ "x${MACHINE}" = "x86_64" ]; then
+		# Some core 2 procs need a more requent sample otherwise the counters
+		# will overflow.
+		START_ARGS="-e CPU_CLK_UNHALTED:90000:0:1:1"
+	fi
+	${COMMAND} sudo opcontrol --start-daemon ${START_ARGS}
+	sleep 1
+	${COMMAND} sudo opcontrol --start
+}
+
+DCMPID=`ps -C DriverMain -o pid=`
+echo "Results will be written to: $OUTPUT_DIR"
+
+{
+	COMMAND=""
+	HOST=${1}
+	if [ -n "${HOST}" ]; then
+		COMMAND="ssh ${HOST}"
+	else
+		HOST=`hostname`
+	fi
+	echo "clearing readprofile data: ${HOST}"
+	if [ -n "${COMMAND}" ]; then
+		${COMMAND} "sudo /usr/sbin/readprofile -r"
+	else
+		sudo /usr/sbin/readprofile -r
+	fi
+}
+
+usage()
+{
+	if [ "$1" != "" ]; then
+		echo
+		echo "error: $1"
+	fi
+
+	echo ''
+	echo 'usage: run_workload.sh -c <number of customers> -d <duration of test> -u <number of users>'
+	echo 'other options:'
+	echo '       -a <pgsql>'
+	echo '       -b <database parameters>'
+	echo '       -f <scale factor. (default 500)>'
+	echo '       -h <database host name. (default localhost)>'
+	echo '       -i <egen_path>'
+	echo '       -l <pacing delay. (default 0)>'
+	echo '       -n <database name. (default dbt5)>'
+	echo '       -o <result output dir>'
+	echo '       -p <database port number. (default 5432)>'
+	echo '       -q <event1,[event2,...]> (Linux perf events)'
+	echo '       -r <random number seed, invalidates test>'
+	echo '       -s <delay between starting threads in milliseconds (default 1000)>'
+	echo '       -t <customers total>'
+	echo '       -w <initial trade days. (default 300)>'
+	echo '       -x (oprofile)'
+	echo '       -y (readprofile)'
+	echo '       -z <comment describing this test run>'
+	echo ''
+	echo 'Example: sh run_workload.sh -c 1000 -t 300 -u 3 -i 10'
+	echo 'Test will be run for 300 seconds with 3 users, on a 1000 customers database with 10 initial trade days, and seed 5'
+	echo ''
+}
+
+validate_parameter()
+{
+	if [ "$2" != "$3" ]; then
+		usage "wrong argument '$2' for parameter '-$1'"
+		exit 1
+	fi
+}
+
+if [ $# -eq 0 ]; then
+	usage
+	exit 1
+fi
+
+SCALE_FACTOR=500
+SLEEPY=1000 # milliseconds
+USE_OPROFILE=0
+USE_READPROFILE=0
+USE_LINUX_PERF_EVENTS=0
+PACING_DELAY=0
+
+while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
+	case $opt in
+#	a)
+#		DBMS=${OPTARG}
+#		export DATABASE=${DBMS}
+#		;;
+	b)
+		DB_PARAMS=$OPTARG
+		;;
+	c)
+		# Configured customer count
+		CUSTOMERS_INSTANCE=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $CUSTOMERS_INSTANCE
+		;;
+	d)
+		# duration of the test
+		DURATION=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $DURATION
+		;;
+	f)
+		SCALE_FACTOR=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SCALE_FACTOR
+		;;
+	h)
+		DB_HOSTNAME=$OPTARG
+		;;
+	i)
+		EGENDIR=${OPTARG}
+		;;
+	l)
+		PACING_DELAY=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $PACING_DELAY
+		;;
+	n)
+		DB_NAME=$OPTARG
+		;;
+	o)
+		OUTPUT_DIR=${OPTARG}
+		;;
+	p)
+		# postmaster port
+		DB_PORT=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $DB_PORT
+		;;
+	q)
+		SETTING=`cat /proc/sys/kernel/perf_event_paranoid`
+		if [ ! "x${SETTING}" = "x-1" ]; then
+			echo "/proc/sys/kernel/perf_event_paranoid should be -1 in order"
+			echo "to collect performance counters"
+			exit 1
+		fi
+		USE_LINUX_PERF_EVENTS=1
+		PERF_EVENTS=${OPTARG}
+		;;
+	r)
+		SEED=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SEED
+		;;
+	s)
+		SLEEPY=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SLEEPY
+		;;
+	t)
+		# Configured customer count
+		CUSTOMERS_TOTAL=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $CUSTOMERS_TOTAL
+		;;
+	u)
+		USERS=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $USERS
+		;;
+	w)
+		# intial trade days
+		ITD=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $ITD
+		;;
+	x)
+		USE_OPROFILE=1
+		;;
+	y)
+		USE_READPROFILE=1
+		;;
+	z)
+		COMMENT=$OPTARG
+		;;
+	esac
+done
+
+# Check parameters.
+
+if [ "x${EGENDIR}}" = "x" ]; then
+	usage "specify path to EGen using -i <path>"
+	exit 1
+fi
+
+#if [ "x${DBMS}" = "x" ]; then
+#	usage "specify which dbms system to test using -a <pgsql>"
+#	exit 1
+#fi
+
+if [ "x${DB_NAME}" = "x" ]; then
+	usage "specify the database name to test using -n <dbt5>"
+	exit 1
+fi
+
+if [ "x${CUSTOMERS_INSTANCE}" = "x" ]; then
+	usage "specify the number of customers in this instance -c #"
+	exit 1
+fi
+
+if [ "x${CUSTOMERS_TOTAL}" = "x" ]; then
+	usage "specify the number of total customers -t #"
+	exit 1
+fi
+
+if [ "x${DURATION}" = "x" ]; then
+	usage "specify the duration of the test in seconds using -d #"
+	exit 1
+fi
+
+if [ "x${USERS}" = "x" ]; then
+	usage "specify the number of users using -u #"
+	exit 1
+fi
+
+if [ "x${ITD}" = "x" ]; then
+	usage "specify the number of initial trade days using -w #"
+	exit 1
+fi
+
+if [ "x${OUTPUT_DIR}" = "x" ]; then
+	usage "specify the location for results, directory must not exist, using -o <path>"
+	exit 1
+fi
+
+if [ -d "${OUTPUT_DIR}" ]; then
+	echo "directory '${OUTPUT_DIR}' exists, removing output dir"
+#	echo "clobbering of data, please specify another -o location"
+#	exit 1
+	rm -rf ${OUTPUT_DIR}
+fi
+
+if [ ! "x${DB_HOSTNAME}" = "x" ]; then
+    DB_HOSTNAME_ARG="-h ${DB_HOSTNAME}"
+fi
+
+if [ ! "x${DB_PORT}" = "x" ]; then
+    DB_PORT_ARG="-p ${DB_PORT}"
+fi
+
+if [ ! "x${SEED}" = "x" ]; then
+    SEEDARG="-r ${SEED}"
+	echo "WARNING: INVALID RUN BECAUSE RANDOM NUMBER SEED SPECIFIED"
+fi
+
+# Determine the output directories for storing data.
+BH_OUTPUT_DIR=${OUTPUT_DIR}/bh
+MEE_OUTPUT_DIR=${OUTPUT_DIR}/mee
+DRIVER_OUTPUT_DIR=${OUTPUT_DIR}/driver
+DB_OUTPUT_DIR=${OUTPUT_DIR}/db
+
+# Create the directories we will need.
+make_directories
+if [ ! "x${DB_HOSTNAME}" = x ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	make_directories ${DB_HOSTNAME}
+	rsync -a -e "ssh" --delete ${DB_OUTPUT_DIR}/ \
+		${DB_HOSTNAME}:${DB_OUTPUT_DIR}/
+fi
+
+# Create a readme file in the output directory and date it.
+date >> ${OUTPUT_DIR}/readme.txt
+echo "${COMMENT}" >> ${OUTPUT_DIR}/readme.txt
+uname -a >> ${OUTPUT_DIR}/readme.txt
+echo "Command line: $0 $@" >> ${OUTPUT_DIR}/readme.txt
+
+# Output run information into the readme.txt.
+echo "Database Scale Factor: ${SCALE_FACTOR}" >> ${OUTPUT_DIR}/readme.txt
+echo "Database Customer Cardinality: ${CUSTOMERS_TOTAL}" >> ${OUTPUT_DIR}/readme.txt
+echo "Test Duration: ${DURATION} seconds" >> ${OUTPUT_DIR}/readme.txt
+
+if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	DB_COMMAND="ssh ${DB_HOSTNAME}"
+	# Get the OS information from the database system.
+	${DB_COMMAND} dbt5-get-os-info -o ${DB_OUTPUT_DIR}
+	${DB_COMMAND} "uname -a >> ${DB_OUTPUT_DIR}/readme.txt"
+else
+	uname -a >> ${DB_OUTPUT_DIR}/readme.txt
+	dbt5-get-os-info -o ${DB_OUTPUT_DIR}
+fi
+
+# Restart database.
+#${DB_COMMAND} dbt5-${DBMS}-stop-db
+#if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+#	${DB_COMMAND} "dbt5-${DBMS}-start-db -p \"${DB_PARAMS}\" -o ${DB_OUTPUT_DIR}" || exit 1
+#else
+#	dbt5-${DBMS}-start-db -p "${DB_PARAMS}" -o ${DB_OUTPUT_DIR} || exit 1
+#fi
+
+echo ""
+echo "************************************************************************"
+echo "*                  DBT-5 test started                                  *"
+echo "*                                                                      *"
+echo "************************************************************************"
+echo "*                                                                      *"
+echo "*  Test consists of 4 stages:                                          *"
+echo "*                                                                      *"
+echo "*  1. Start of the Brokerage House server                              *"
+echo "*  2. Start of the Market Exchange server                              *"
+echo "*  3. Test (Start of the Customer Emulator)                            *"
+echo "*  4. Processing of results                                            *"
+echo "*                                                                      *"
+echo "************************************************************************"
+echo "Results can be found in: ${OUTPUT_DIR}"
+
+#
+# Start the Brokerage House server.
+#
+echo
+echo "1. Starting Brokerage House server"
+BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+		-o ${BH_OUTPUT_DIR} > ${BH_OUTPUT_DIR}/bh.out 2>&1 &
+#gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
+
+do_sleep 1
+
+#
+# Start the Market server.
+#
+echo
+echo "2. Starting Market Exchange server"
+MarketExchangeMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+		-i ${EGENDIR}/flat_in \
+		-o ${MEE_OUTPUT_DIR} -u ${USERS}> ${MEE_OUTPUT_DIR}/mee.out 2>&1 &
+
+# Start collecting data before we start the test.
+SLEEP_RAMPUP=`expr ${USERS} + 1`
+SLEEP_RAMPUP=`expr ${SLEEP_RAMPUP} \* ${SLEEPY}`
+SLEEP_RAMPUP=`expr ${SLEEP_RAMPUP} / 1000`
+SLEEPYTIME=`expr ${SLEEP_RAMPUP} + ${DURATION}`
+SAMPLE_LENGTH=60
+ITERATIONS=`expr ${SLEEPYTIME} / ${SAMPLE_LENGTH}`
+ITERATIONS=`expr ${ITERATIONS} + 1`
+if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	dbt5-sysstats --iter ${ITERATIONS} \
+			--sample ${SAMPLE_LENGTH} \
+			--outdir ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/stats.out 2>&1 &
+
+	${DB_COMMAND} dbt5-sysstats --iter ${ITERATIONS} \
+			--sample ${SAMPLE_LENGTH} \
+			--outdir ${DB_OUTPUT_DIR} > ${DB_OUTPUT_DIR}/stats.out 2>&1 &
+else
+	dbt5-sysstats --iter ${ITERATIONS} \
+			--sample ${SAMPLE_LENGTH} \
+			--outdir ${DB_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/stats.out 2>&1 &
+fi
+#${DB_COMMAND} dbt5-${DBMS}-db-stat \
+#		-o ${DB_OUTPUT_DIR} \
+#		-i ${ITERATIONS} \
+#		${DB_PORT_ARG} \
+#		-s ${SAMPLE_LENGTH} > ${DB_OUTPUT_DIR}/dbstats.out 2>&1 &
+
+# Initialize oprofile before we start the driver.
+if [ ${USE_OPROFILE} -eq 1 ]; then
+	oprofile_init
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		oprofile_init ${DB_HOSTNAME}
+	fi
+fi
+
+#
+# Start the Customer Driver.
+#
+do_sleep ${SLEEP_RAMPUP}
+
+echo
+echo "3. Starting Customer driver: ${USERS} user(s)"
+echo "   1 user starting every ${SLEEPY} milliseconds..."
+DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
+		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
+		-i ${EGENDIR}/flat_in \
+		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
+DCMPID=`ps -C DriverMain -o pid=`
+echo "Results will be written to: $OUTPUT_DIR"
+
+#DEBUG in script!
+#gdb --args ${HOME}/dbt5/bin/BrokerageHouseMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+#				-o ${BH_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
+
+
+#gdb --args ${HOME}/dbt5/bin/MarketExchangeMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+#		-i ${EGENDIR}/flat_in \
+#		-o ${MEE_OUTPUT_DIR} -u ${USERS} << GDBINPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
+
+
+
+#do_sleep ${SLEEP_RAMPUP}
+
+# Clear the readprofile data after the driver ramps up.
+if [ ${USE_READPROFILE} -eq 1 ]; then
+    if [ -f /proc/profile ]; then
+	    readprofile_clear
+    fi
+    if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "${DB_HOSTNAME}" = "xlocalhost" ]; then
+	    readprofile_clear ${DB_HOSTNAME}
+    fi
+fi
+
+# Reset the oprofile counters after the driver ramps up.
+if [ ${USE_OPROFILE} -eq 1 ]; then
+	oprofile_reset
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		oprofile_reset ${DB_HOSTNAME}
+	fi
+fi
+
+if [ ${USE_LINUX_PERF_EVENTS} -eq 1 ]; then
+	PERF_ARGS="-a -g -s -o ${DB_OUTPUT_DIR}/perf.data sleep ${DURATION}"
+	PERF_RECORD="perf record -e ${PERF_EVENTS} ${PERF_ARGS}"
+	PERF_STAT="perf stat -e ${PERF_EVENTS} -a -o ${DB_OUTPUT_DIR}/perf-stat.txt sleep ${DURATION}"
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		${DB_COMMAND} "${PERF_RECORD}" &
+		${DB_COMMAND} "${PERF_STAT}" &
+	else
+		${PERF_RECORD} &
+		${PERF_STAT} &
+	fi
+fi
+
+# Sleep for the duration of the run.
+do_sleep $DURATION
+
+# Wait for DriverMain to exit
+#if [ -n ${DCMPID} ]; then
+# wait ${DCMPID}
+#fi
+
+# Collect profile data.
+if [ ${USE_READPROFILE} -eq 1 ]; then
+    if [ -f /proc/profile ]; then
+	    readprofile_collect ${OUTPUT_DIR}
+    fi
+    if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	    readprofile_collect ${DB_OUTPUT_DIR} ${DB_HOSTNAME}
+    fi
+fi
+
+# Collect oprofile data.
+if [ ${USE_OPROFILE} -eq 1 ]; then
+	oprofile_collect ${DRIVER_OUTPUT_DIR}
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		oprofile_collect ${DB_OUTPUT_DIR} ${DB_HOSTNAME}
+	fi
+fi
+
+if [ ${USE_LINUX_PERF_EVENTS} -eq 1 ]; then
+	PERF_CMD1="perf report --stdio -f -n -g flat,100 -i ${DB_OUTPUT_DIR}/perf.data"
+	PERF_CMD2="perf report --stdio -f -n -i ${DB_OUTPUT_DIR}/perf.data"
+	PERF_CMD3="perf annotate --stdio -f -l -P -i ${DB_OUTPUT_DIR}/perf.data"
+	PERF_CMD4="perf script -L -i ${DB_OUTPUT_DIR}/perf.data"
+	# This might be too close to the end of the run, pad some sleep time in
+	# here otherwise there is not enough processor utilization available to do
+	# the reporting.
+	sleep 180
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		${DB_COMMAND} "${PERF_CMD1}" > ${DB_OUTPUT_DIR}/perf-report.txt"
+		${DB_COMMAND} "${PERF_CMD2}" > ${DB_OUTPUT_DIR}/perf-report-callgraph.txt"
+		${DB_COMMAND} "${PERF_CMD3}" > ${DB_OUTPUT_DIR}/perf-annotate.txt"
+		#${DB_COMMAND} "${PERF_CMD4}" > ${DB_OUTPUT_DIR}/perf-script.txt"
+	else
+		eval "${PERF_CMD1}" > ${DB_OUTPUT_DIR}/perf-report.txt
+		eval "${PERF_CMD2}" > ${DB_OUTPUT_DIR}/perf-report-callgraph.txt
+		eval "${PERF_CMD3}" > ${DB_OUTPUT_DIR}/perf-annotate.txt
+		#eval "${PERF_CMD4}" > ${DB_OUTPUT_DIR}/perf-script.txt
+	fi
+fi
+
+MIXFILE="$DRIVER_OUTPUT_DIR/mix.log"
+# sort and merge emulators mix files into mix.log
+sort -t "," -k 1 ${DRIVER_OUTPUT_DIR}/ce_mix.log \
+		${MEE_OUTPUT_DIR}/mee_mix.log -o ${MIXFILE}
+
+# Run some post processing analyses.
+echo
+echo "4. Run Post processing analyses"
+
+RESULTSFILE="${OUTPUT_DIR}/results.txt"
+dbt5-post-process ${MIXFILE} > ${RESULTSFILE}
+
+# Servers don't go away by themselves like the driver does, so kill it.
+echo "Killing Servers..."
+killall BrokerageHouseMain MarketExchangeMain DriverMain 2> /dev/null
+
+#${DB_COMMAND} dbt5-${DBMS}-stop-db
+
+if [ ${USE_OPROFILE} -eq 1 ]; then
+	oprofile_annotate ${DRIVER_OUTPUT_DIR} &
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		oprofile_annotate ${DB_OUTPUT_DIR} ${DB_HOSTNAME} &
+	fi
+	wait
+fi
+
+if [ ${USE_OPROFILE} -eq 1 ]; then
+	oprofile_stop
+	if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+		oprofile_stop ${DB_HOSTNAME}
+	fi
+fi
+
+
+which sar > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	SAR=sar
+else
+	SAR=true
+fi
+if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	${DB_COMMAND} "${SAR2} which sar > /dev/null 2>&1"
+	if [ $? -eq 0 ]; then
+		SAR2=sar
+	else
+		SAR2=true
+	fi
+	${SAR} -f ${DRIVER_OUTPUT_DIR}/sar_raw.out -A > ${DRIVER_OUTPUT_DIR}/sar.out
+	${DB_COMMAND} "${SAR2} -f ${DB_OUTPUT_DIR}/sar_raw.out -A > ${DB_OUTPUT_DIR}/sar.out"
+else
+	${SAR} -f ${DB_OUTPUT_DIR}/sar_raw.out -A > ${DRIVER_OUTPUT_DIR}/sar.out
+fi
+
+if [ ! "x${DB_HOSTNAME}" = "x" ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	rsync -a -e "ssh" --delete ${DB_HOSTNAME}:${DB_OUTPUT_DIR}/ \
+			${DB_OUTPUT_DIR}/
+fi
+
+# Move the database log.  (No, not the transaction log.)
+chmod 644 ${DB_OUTPUT_DIR}/log
+
+# Post processing of Database Statistics
+
+echo ">> Test completed."
+echo "Results are in: ${OUTPUT_DIR}"
+echo
+
+cat ${RESULTSFILE}

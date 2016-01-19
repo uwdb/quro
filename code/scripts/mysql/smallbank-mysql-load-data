@@ -1,0 +1,19 @@
+#!/bin/bash
+MYSQL=mysql
+DB_NAME=smallbank
+
+SMALLBANK_DATA=~/results_link/SMALLBANK_DATA
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SMALLBANK_DATA}/Accounts.txt\" \
+		INTO TABLE ACCOUNTS FIELDS TERMINATED BY \"|\" ";
+echo "finish loading user"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SMALLBANK_DATA}/Savings.txt\" \
+		INTO TABLE SAVINGS FIELDS TERMINATED BY \"|\" ";
+echo "finish loading savings"
+
+${MYSQL} ${DB_NAME} -e " LOAD DATA LOCAL INFILE \"${SMALLBANK_DATA}/Checking.txt\" \
+		INTO TABLE CHECKING FIELDS TERMINATED BY \"|\" ";
+echo "finish loading checkings"
+
+

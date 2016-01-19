@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+
+#
+# This file is released under the terms of the Artistic License.
+# Please see the file LICENSE, included in this package, for details.
+#
+# Copyright (C) 2010 Mark Wong
+#
+
+import sys
+from os import makedirs, system
+from os.path import exists, realpath
+
+import rpy2.robjects as robjects
+from rpy2.robjects.vectors import DataFrame
+
+if len(sys.argv) != 3:
+    print ( 'Create a plot the rate of transactions.' )
+    print ( 'usage: %s <mix.log> <output directory>' % sys.argv[0] )
+    print ( '' )
+    print ( '    <mix.log> - full path to the mix.log file' )
+    print ( '    <output directory> - location to write output files' )
+    print ( '' )
+    print ( 'Will attempt to create <output directory> if it does not exist.' )
+    sys.exit(1)
+
+infilename = sys.argv[1]
+outputdir = sys.argv[2]
+
+# Make sure the input file exists.
+if not exists(infilename):
+    print ( 'cannot open file: %s' % infilename )
+    sys.exit(1)
+
+# Make sure we can open the files to write to.
+if not exists(outputdir):
+    try:
+        # FIXME: Don't know why makedirs sometimes fails.
+        #makedirs(outputdir)
+        system('mkdir -p %s' % outputdir)
+    except:
+        print ( 'cannot create directory "%s"' % outputdir )
+        sys.exit(2)
+
+outputdir = realpath(outputdir)
+
+r = robjects.r
+
+sample_length = 60
+
+df = DataFrame.from_csvfile(infilename, header=False)
+
+starttime = df[0][0]
+endtime = df[0][df.nrow - 1]
+iterations = r.ceiling((endtime - starttime) / sample_length)[0]
+
+# Needs to match the definitions in inc/CETxnMixGenerator.h.
+sd = '0'
+bv = '1'
+cp = '2'
+mw = '3'
+ts = '4'
+tl = '5'
+to = '6'
+tu = '7'
+mf = '8'
+tr = '9'
+dm = '10'
+tc = '11'
+
+transaction_name = dict()
+transaction_name[to] = 'Trade Order'
+transaction_name[tr] = 'Trade Result'
+transaction_name[tl] = 'Trade Lookup'
+transaction_name[tu] = 'Trade Update'
+transaction_name[ts] = 'Trade Status'
+transaction_name[cp] = 'Customer Position'
+transaction_name[bv] = 'Broker Volume'
+transaction_name[sd] = 'Security Detail'
+transaction_name[mf] = 'Market Feed'
+transaction_name[mw] = 'Market Watch'
+transaction_name[dm] = 'Data Maintenance'
+transaction_name[tc] = 'Trade Cleanup'
+
+j = 0
+for key in [sd, bv, cp, mw, ts, tl, to, tu, mf, tr, dm, tc]:
+    i = 0
+
+    # Create a list of data then pass it to R.
+    # TODO: Figure out how to append data to an R data frame instead of making
+    # Python lists and then generating the R data frame.  Then determine which
+    # way is better.
+    x = [0]
+    y = [0]
+
+    subset = r.subset(df, df.rx('V2').ro == key)
+    while i < iterations:
+        # Calculate 1 minute intervals starting from the first transaction
+        # response time.
+        istart = starttime + i * sample_length
+        iend = istart + sample_length
+
+        isubset = r.subset(subset, subset.rx('V1').ro >= istart)
+        if isubset.nrow == 0:
+            # Use 0 for the mean if there is no data.
+            y.append(0)
+        else:
+            isubset = r.subset(isubset, isubset.rx('V1').ro < iend)
+
+            # Calculate the number of transaction per interval by counting
+            # them.
+            y.append(float(isubset.nrow) / float(sample_length))
+
+        x.append(i + 1)
+
+        i += 1
+
+    # Set the data frame column names to default V1 and V2 values R would use
+    # for lack of better names.
+    data = {'V1': robjects.IntVector(x), 'V2': robjects.FloatVector(y)}
+    tmp_df = r['data.frame'](**data)
+
+    # Create the plots!
+    r.bitmap('%s/t%s-transaction-rate.png' % (outputdir, key),
+             type='png16m', units='px', width=1280, height=800, res=150, taa=4,
+             gaa=4)
+    xmax = r.max(tmp_df.rx(1))[0]
+    ymax = r.max(tmp_df.rx(2))[0]
+    color = r.rainbow(len(transaction_name))
+    r.plot(tmp_df[0], tmp_df[1], xlim=r.c(0, xmax), ylim=r.c(0, ymax),
+           type='b', col=color[j],
+           main='%s Transaction Rate' % transaction_name[key],
+           xlab='Elapsed Time (minutes)', ylab='Transactions per Second')
+    r.grid(col='gray')
+    r('dev.off()')
+
+    j += 1

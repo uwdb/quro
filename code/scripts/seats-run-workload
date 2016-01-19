@@ -1,0 +1,232 @@
+#!/bin/bash
+
+do_sleep()
+{
+    echo "Sleeping $1 seconds"
+    sleep $1
+}
+make_directories()
+{
+	COMMAND=""
+#	HOST=${1}
+#	if [ -n "${HOST}" ]; then
+#		COMMAND="ssh ${HOST}"
+#	fi
+	${COMMAND} mkdir -p ${OUTPUT_DIR}
+	${COMMAND} mkdir -p ${SEATS_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${DRIVER_OUTPUT_DIR}
+	${COMMAND} mkdir -p ${DB_OUTPUT_DIR}
+}
+
+usage()
+{
+	if [ "$1" != "" ]; then
+		echo
+		echo "error: $1"
+	fi
+
+	echo ''
+	echo 'usage: run_workload.sh -c <number of customers> -d <duration of test> -u <number of users>'
+	echo 'other options:'
+	echo '       -a <pgsql>'
+	echo '       -b <database parameters>'
+	echo '       -f <scale factor. (default 500)>'
+	echo '       -h <database host name. (default localhost)>'
+	echo '       -i <egen_path>'
+	echo '       -l <pacing delay. (default 0)>'
+	echo '       -n <database name. (default dbt5)>'
+	echo '       -o <result output dir>'
+	echo '       -p <database port number. (default 5432)>'
+	echo '       -q <event1,[event2,...]> (Linux perf events)'
+	echo '       -r <random number seed, invalidates test>'
+	echo '       -s <delay between starting threads in milliseconds (default 1000)>'
+	echo '       -t <customers total>'
+	echo '       -w <initial trade days. (default 300)>'
+	echo '       -x (oprofile)'
+	echo '       -y (readprofile)'
+	echo '       -z <comment describing this test run>'
+	echo ''
+	echo 'Example: sh run_workload.sh -c 1000 -t 300 -u 3 -i 10'
+	echo 'Test will be run for 300 seconds with 3 users, on a 1000 customers database with 10 initial trade days, and seed 5'
+	echo ''
+}
+
+SCALE_FACTOR=500
+SLEEPY=1000 # milliseconds
+USE_OPROFILE=0
+USE_READPROFILE=0
+USE_LINUX_PERF_EVENTS=0
+PACING_DELAY=0
+
+while getopts "a:b:c:d:f:h:i:l:n:o:q:rp:s:t:u:w:xyz:" opt; do
+	case $opt in
+#	a)
+#		DBMS=${OPTARG}
+#		export DATABASE=${DBMS}
+#		;;
+	b)
+		DB_PARAMS=$OPTARG
+		;;
+	c)
+		# Configured customer count
+		CUSTOMERS_INSTANCE=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $CUSTOMERS_INSTANCE
+		;;
+	d)
+		# duration of the test
+		DURATION=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $DURATION
+		;;
+	f)
+		SCALE_FACTOR=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SCALE_FACTOR
+		;;
+	h)
+		DB_HOSTNAME=$OPTARG
+		;;
+	i)
+		EGENDIR=${OPTARG}
+		;;
+	l)
+		PACING_DELAY=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $PACING_DELAY
+		;;
+	n)
+		DB_NAME=$OPTARG
+		;;
+	o)
+		OUTPUT_DIR=${OPTARG}
+		;;
+	p)
+		# postmaster port
+		DB_PORT=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $DB_PORT
+		;;
+	q)
+		SETTING=`cat /proc/sys/kernel/perf_event_paranoid`
+		if [ ! "x${SETTING}" = "x-1" ]; then
+			echo "/proc/sys/kernel/perf_event_paranoid should be -1 in order"
+			echo "to collect performance counters"
+			exit 1
+		fi
+		USE_LINUX_PERF_EVENTS=1
+		PERF_EVENTS=${OPTARG}
+		;;
+	r)
+		SEED=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SEED
+		;;
+	s)
+		SLEEPY=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $SLEEPY
+		;;
+	t)
+		# Configured customer count
+		CUSTOMERS_TOTAL=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $CUSTOMERS_TOTAL
+		;;
+	u)
+		USERS=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $USERS
+		;;
+	w)
+		# intial trade days
+		ITD=`echo $OPTARG | egrep "^[0-9]+$"`
+		validate_parameter $opt $OPTARG $ITD
+		;;
+	x)
+		USE_OPROFILE=1
+		;;
+	y)
+		USE_READPROFILE=1
+		;;
+	z)
+		COMMENT=$OPTARG
+		;;
+	esac
+done
+
+SEATS_OUTPUT_DIR=${OUTPUT_DIR}/seats
+DRIVER_OUTPUT_DIR=${OUTPUT_DIR}/driver
+DB_OUTPUT_DIR=${OUTPUT_DIR}/db
+
+if [ -d "${OUTPUT_DIR}" ]; then
+	echo "directory '${OUTPUT_DIR}' exists, removing output dir"
+#	echo "clobbering of data, please specify another -o location"
+#	exit 1
+	rm -rf ${OUTPUT_DIR}
+fi
+
+make_directories
+if [ ! "x${DB_HOSTNAME}" = x ] && [ ! "x${DB_HOSTNAME}" = "xlocalhost" ]; then
+	make_directories ${DB_HOSTNAME}
+	rsync -a -e "ssh" --delete ${DB_OUTPUT_DIR}/ \
+		${DB_HOSTNAME}:${DB_OUTPUT_DIR}/
+fi
+
+# Create a readme file in the output directory and date it.
+date >> ${OUTPUT_DIR}/readme.txt
+echo "${COMMENT}" >> ${OUTPUT_DIR}/readme.txt
+uname -a >> ${OUTPUT_DIR}/readme.txt
+echo "Command line: $0 $@" >> ${OUTPUT_DIR}/readme.txt
+
+# Output run information into the readme.txt.
+echo "Database Scale Factor: ${SCALE_FACTOR}" >> ${OUTPUT_DIR}/readme.txt
+echo "Database Customer Cardinality: ${CUSTOMERS_TOTAL}" >> ${OUTPUT_DIR}/readme.txt
+echo "Test Duration: ${DURATION} seconds" >> ${OUTPUT_DIR}/readme.txt
+
+echo ""
+echo "************************************************************************"
+echo "*                  DBT-5 test started                                  *"
+echo "*                                                                      *"
+echo "************************************************************************"
+echo "*                                                                      *"
+echo "*  Test consists of 4 stages:                                          *"
+echo "*                                                                      *"
+echo "*  1. Start of the Brokerage House server                              *"
+echo "*  2. Start of the Market Exchange server                              *"
+echo "*  3. Test (Start of the Customer Emulator)                            *"
+echo "*  4. Processing of results                                            *"
+echo "*                                                                      *"
+echo "************************************************************************"
+echo "Results can be found in: ${OUTPUT_DIR}"
+
+echo
+echo "1. Starting Seats server"
+SeatsMain ${DB_HOSTNAME_ARG} -d ${DB_NAME} ${DB_PORT_ARG} \
+		-o ${SEATS_OUTPUT_DIR} > ${SEATS_OUTPUT_DIR}/seats.out 2>&1 &
+
+do_sleep ${USERS} 
+
+echo
+echo "3. Starting Customer driver: ${USERS} user(s)"
+echo "   1 user starting every ${SLEEPY} milliseconds..."
+DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
+		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
+		-i ${EGENDIR}/flat_in \
+		-o ${DRIVER_OUTPUT_DIR} > ${DRIVER_OUTPUT_DIR}/driver.out 2>&1 &
+#DEBUG in script!
+#gdb --args DriverMain -c ${CUSTOMERS_INSTANCE} -t ${CUSTOMERS_TOTAL} \
+#		-f ${SCALE_FACTOR} -w ${ITD} -d ${DURATION} -y ${SLEEPY} \
+#		-u ${USERS} -n ${PACING_DELAY} ${SEEDARG} \
+#		-i ${EGENDIR}/flat_in \
+#		-o ${DRIVER_OUTPUT_DIR} <<GDB_INPUT
+#pwd
+#run
+#backtrace
+#quit
+#GDB_INPUT
+
+DCMPID=`ps -C DriverMain -o pid=`
+echo "Results will be written to: $OUTPUT_DIR"
+
+do_sleep ${DURATION}
+
+echo "Killing Servers..."
+killall SeatsMain 2> /dev/null
+
+echo ">> Test completed."
+echo "Results are in: ${OUTPUT_DIR}"
+echo
+

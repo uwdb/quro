@@ -1,0 +1,17 @@
+#!/bin/bash
+#MYSQL="${HOME}/mysql-bin/bin/mysql"
+MYSQL=mysql
+DB_HOST=localhost
+DB_SOCKET="/usr/local/var/mysqld/mysqld.sock"
+DB_NAME=smallbank
+DB_USER=root
+
+MYSQL_ARGS="-u $DB_USER"
+MYSQL="$MYSQL $MYSQL_ARGS"
+
+#echo "$MYSQL -e \"drop database if exists $DB_NAME\" "
+$MYSQL -e "drop database if exists $DB_NAME" 
+#echo "$MYSQL -e \"create database $DB_NAME\" "
+$MYSQL -e "create database $DB_NAME"
+
+

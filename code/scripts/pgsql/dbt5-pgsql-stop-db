@@ -1,0 +1,19 @@
+#!/bin/sh
+
+#
+# This file is released under the terms of the Artistic License.
+# Please see the file LICENSE, included in this package, for details.
+#
+# Copyright (C) 2002-2006 Rod Taylor & Open Source Development Lab, Inc.
+#               2010 Mark Wong
+#
+
+if [ -z ${DBT5PGDATA} ]; then
+	echo "DBT5PGDATA not defined."
+	exit 1
+fi
+
+# We only need to stop the database if it's running.
+if [ -f ${DBT5PGDATA}/postmaster.pid ]; then
+	pg_ctl -w -D ${DBT5PGDATA} stop ${1}
+fi

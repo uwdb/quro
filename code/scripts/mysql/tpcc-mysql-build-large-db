@@ -1,0 +1,27 @@
+#!/bin/bash
+
+usage()
+{
+		echo "Usage:"
+		echo "Options:"
+		echo "		-r <bool>"
+		echo "			Rebuild db, regenerate seats_data"
+		echo "		-d <dbname>"
+		echo "			Database name, default is seats"
+		echo " 		-s <scale factor>"
+		echo "			Currently corrupted option, default is 1"
+}
+
+REBUILD_DB=0
+DB_NAME=tpcc
+
+./tpcc-mysql-create-db || exit 1
+echo "finish creating db"
+
+./tpcc-mysql-create-tables || exit 1
+echo "finish creating tables"
+
+./tpcc-mysql-load-large-data || exit 1
+echo "finish loading data"
+
+./tpcc_load_sp.sh -u root -d tpcc -s /home/quro/mysqld/mysqld.sock

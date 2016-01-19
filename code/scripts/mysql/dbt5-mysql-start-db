@@ -1,0 +1,4 @@
+#!/bin/bash
+
+~/mysql-bin/support-files/mysql.server start
+#sudo /etc/init.d/mysql start
