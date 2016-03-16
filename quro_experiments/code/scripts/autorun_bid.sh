@@ -1,22 +1,48 @@
 #!/bin/bash
 TXN="bid"
-TYPEN="reorder"
+TYPEN="orig"
 
 DURATION=300
 #DURATION=1200
 ITEM=4
 
+CONNS="1 2 4 8 16 32 64"
+
+if [ $# -lt 2 ]
+  then
+  echo "At least 2 arguments [transaction_name] [implementation_type] are required"
+  echo "  For example: ./autorun_bid.sh bid orig"
+  echo "  or           ./autorun_bid.sh bid reorder"
+  exit
+fi
+
+TXNNAME=$1
+shift
+TYPEN=$1
+shift
+
+if [ $# -gt 0 ]
+  then
+  CONNS=""
+  for var in "$@"
+    do
+    echo "$var"
+    CONNS="${CONNS} $var"
+  done
+fi
+
+echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation) on ${CONNS} number of threads"
+
 run_benchmark()
 {
-	USERS="1 2 4 8 16 32 64"
 
-		for USER in $USERS ; do
-
+		for CONN in $CONNS ; do
+				echo "start running bid on ${ITEM} items, with $CONN threads"
 				./bid-mysql-build-db
-				./bid-run-workload -d ${DURATION} -u ${USER} -n bid -f ${ITEM} -o ~/results/${TXN}_${TYPEN}_${ITEM}item_${USER}conn_${DURATION}sec
+				./bid-run-workload -d ${DURATION} -u ${CONN} -n bid -f ${ITEM} -o ~/results/${TXN}_${TYPEN}_${TXNNAME}_${ITEM}item_${CONN}conn_${DURATION}sec
 				sleep 120
 
-				echo "======finish threads $USER ====="
+				echo "======finish running with $CONN threads====="
 
 		done
 }

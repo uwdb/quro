@@ -5,21 +5,46 @@ TXNNAME="payment"
 TYPEN="orig"
 
 DURATION=300
-#DURATION=1200
 WHN=4
+
+CONNS="1 2 4 8 16 32 64"
+
+if [ $# -lt 2 ]
+  then
+  echo "At least 2 arguments [transaction_name] [implementation_type] are required"
+  echo "  For example: ./autorun_tpcc.sh payment orig"
+  echo "  or           ./autorun_tpcc.sh mix reorder"
+  exit
+fi
+
+TXNNAME=$1
+shift
+TYPEN=$1
+shift
+
+if [ $# -gt 0 ]
+  then
+  CONNS=""
+  for var in "$@"
+    do
+    echo "$var"
+    CONNS="${CONNS} $var"
+  done
+fi
+
+echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation) on ${CONNS} number of threads"
 
 run_benchmark()
 {
-	USERS="1 2 4 8 16 32 64 128"
 
-		for USER in $USERS ; do
-				echo "start warehouse ${WHN}"
+		for CONN in $CONNS ; do
+				echo "start tpcc on ${WHN} warehouses, with $CONN threads"
 
 
-				./tpcc-run-workload -d ${DURATION} -u ${USER} -n tpcc -f ${WHN} -o ~/results/${TXN}_${TYPEN}_${TXNNAME}_${WHN}wh_${USER}conn_${DURATION}sec		
+				./tpcc-run-workload -d ${DURATION} -u ${CONN} -n tpcc -f ${WHN} -o ~/results/${TXN}_${TYPEN}_${TXNNAME}_${WHN}wh_${CONN}conn_${DURATION}sec		
 				sleep 120
 
-				echo "======finish user $USER ====="
+				echo "======finish running $CONN threads====="
 
 		done
 }
