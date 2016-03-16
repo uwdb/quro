@@ -26,7 +26,6 @@ if [ $# -gt 0 ]
   CONNS=""
   for var in "$@"
     do
-    echo "$var"
     CONNS="${CONNS} $var"
   done
 fi

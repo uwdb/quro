@@ -17,6 +17,14 @@ make_directories()
 	${COMMAND} mkdir -p ${DRIVER_OUTPUT_DIR}
 	${COMMAND} mkdir -p ${DB_OUTPUT_DIR}
 }
+validate_parameter()
+{
+	if [ $# -eq 0 ]; then
+		usage
+		exit 1
+	fi
+	#TODO
+}
 
 usage()
 {
