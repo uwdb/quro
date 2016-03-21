@@ -1,5 +1,5 @@
 if [ $1 = "TPCC" ]; then
-
+  make clean
   echo "$(tail -n +2 CMakeLists.txt)" > CMakeLists.txt
   sed -i '1s/^/SET(WORKLOAD_TPCC 1)\n/' CMakeLists.txt
   cmake ./
@@ -10,7 +10,7 @@ if [ $1 = "TPCC" ]; then
   make install
 
 elif [ $1 = "TPCE" ]; then
-
+  make clean
   echo "$(tail -n +2 CMakeLists.txt)" > CMakeLists.txt
   sed -i '1s/^/SET(WORKLOAD_TPCE 1)\n/' CMakeLists.txt
   cmake ./
@@ -26,7 +26,7 @@ elif [ $1 = "TPCE" ]; then
   make install
 
 elif [ $1 = "BID" ]; then
-
+  make clean
   echo "$(tail -n +2 CMakeLists.txt)" > CMakeLists.txt
   sed -i '1s/^/SET(WORKLOAD_BID 1)\n/' CMakeLists.txt
   cmake ./
