@@ -11,12 +11,14 @@ CONNS="1 2 4 8 16 32 64"
 
 if [ $# -lt 2 ]
   then
-  echo "At least 2 arguments [transaction_name] [implementation_type] are required"
-  echo "  For example: ./autorun_tpcc.sh payment original"
-  echo "  or           ./autorun_tpcc.sh mix reorder"
+  echo "At least 4 arguments [number of warehouses] [transaction_name] [implementation_type] [running duration] are required"
+  echo "  For example: ./autorun_tpcc.sh 1 payment original 300"
+  echo "  or           ./autorun_tpcc.sh 4 mix reorder 100"
   exit
 fi
 
+WHN=$1
+shift
 TXNNAME=$1
 shift
 TYPEN=$1

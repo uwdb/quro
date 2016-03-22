@@ -9,6 +9,9 @@ transaction = "payment"
 duration = 300
 impl = "original"
 connections = "4 8"
+warehouses = 1
+trades = 1024
+items = 1
 
 for line in fp:
   line = line.replace("\n","")
@@ -25,6 +28,12 @@ for line in fp:
         impl = chs[1]
       elif chs[0].startswith("CONNECTIONS"):
         connections = line.replace("CONNECTIONS: ","")
+      elif chs[0].startswith("WAREHOUSES"):
+        warehouses = int(chs[1], 10)
+      elif chs[0].startswith("TRADES"):
+        trades = int(chs[1], 10)
+      elif chs[0].startswith("ITEMS"):
+        items = int(chs[1], 10)
       else:
         print "Unrecognized configuration %s"%line
         exit(0)
@@ -46,7 +55,7 @@ if benchmark == "TPCE":
   if impl == "reorder":
     header_file_string += "\n#define QURO\n"
 
-  header_file_string += "\n#define TRADEUPDATE_TRADE_NUM 1024\n"
+  header_file_string += "\n#define TRADEUPDATE_TRADE_NUM %d\n"%(trades)
   
   header_file = open("../src/include/TPCE_const.h","w")
   header_file.write(header_file_string)
@@ -58,7 +67,7 @@ if benchmark == "TPCE":
 elif benchmark == "BID":
   header_file_string = ""
   header_file_string += "#define TOTAL_USER_NUM 4000\n"
-  header_file_string += "#define TOTAL_ITEM_NUM 1\n"
+  header_file_string += "#define TOTAL_ITEM_NUM %d\n"%(items)
   header_file_string += "#define PRICE_FACTOR 1000.0\n"
   header_file_string += "#define HIGHER_BID_THRESHOLD 0.8\n"
   
@@ -116,5 +125,5 @@ else: #benchmark == "TPCC"
   header_file.close()
 
   os.system("./call_make_command.sh TPCC")
-  os.system("./autorun_tpcc.sh %s %s %d %s"%(transaction, impl, duration, connections))
+  os.system("./autorun_tpcc.sh %d %s %s %d %s"%(warehouses, transaction, impl, duration, connections))
 
