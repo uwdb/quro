@@ -19,6 +19,8 @@ TXNNAME=$1
 shift
 TYPEN=$1
 shift
+DURATION=$1
+shift
 
 if [ $# -gt 0 ]
   then
@@ -29,7 +31,7 @@ if [ $# -gt 0 ]
   done
 fi
 
-echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation) on ${CONNS} number of threads"
+echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation) with ${CONNS} number of threads"
 
 
 run_benchmark()

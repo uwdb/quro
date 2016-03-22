@@ -1,0 +1,23 @@
+#Which benchmark to run:
+#Options: TPCC, TPCE, BID
+BENCHMARK: TPCC
+
+#Transaction name:
+#Options for TPCC: payment, neworder, mix_of_payment_neworder, mix_of_all
+#Options for TPCE: tradeupdate
+#Options for BID: bidding
+TRANSACTION: payment
+
+#Implementation:
+#Options: original, reorder
+IMPL: original
+
+#Running durations: 
+#Value: #seconds to run the benchmark
+DURATION: 300
+
+#Number of database connections:
+#Value: a sequence of number
+#In the following configuration, the benchmark will be running on 4 DB connection, then 8 connections
+CONNECTIONS: 4 8
+

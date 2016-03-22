@@ -4,7 +4,7 @@ TYPEN="orig"
 
 DURATION=300
 #DURATION=1200
-ITEM=4
+ITEM=1
 
 CONNS="1 2 4 8 16 32 64"
 
@@ -20,6 +20,8 @@ TXNNAME=$1
 shift
 TYPEN=$1
 shift
+DURATION=$1
+shift
 
 if [ $# -gt 0 ]
   then
@@ -30,7 +32,7 @@ if [ $# -gt 0 ]
   done
 fi
 
-echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation) on ${CONNS} number of threads"
+echo "Running ${TXN} ${TXNNAME} (${TYPEN} implementation on ${ITEM} items) with ${CONNS} number of threads"
 
 run_benchmark()
 {
@@ -38,7 +40,7 @@ run_benchmark()
 		for CONN in $CONNS ; do
 				echo "start running bid on ${ITEM} items, with $CONN threads"
 				./bid-mysql-build-db
-				./bid-run-workload -d ${DURATION} -u ${CONN} -n bid -f ${ITEM} -o ~/results/${TXN}_${TYPEN}_${TXNNAME}_${ITEM}item_${CONN}conn_${DURATION}sec
+				./bid-run-workload -d ${DURATION} -u ${CONN} -n bid -f ${SCALEFACTOR} -o ~/results/${TXN}_${TYPEN}_${TXNNAME}_${ITEM}item_${CONN}conn_${DURATION}sec
 				sleep 120
 
 				echo "======finish running with $CONN threads====="

@@ -392,24 +392,24 @@ IF (WORKLOAD_TPCE)
                  scripts/dbt5-plot-transaction-rate
                  scripts/dbt5-generate-report
                  ${DB_SCRIPTS}
-        DESTINATION "/home/quro/bin")
+        DESTINATION "/home/quro/dbt5/bin")
 ELSEIF (WORKLOAD_SEATS)		
 		INSTALL(PROGRAMS ${DBT5_SEATS}
                  ${DBT5_DRIVER}
                  scripts/seats-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/quro/bin")
+        DESTINATION "/home/quro/dbt5/bin")
 ELSEIF (WORKLOAD_BID)		
 		INSTALL(PROGRAMS ${DBT5_BID}
                  ${DBT5_DRIVER}
                  scripts/bid-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/quro/bin")
+        DESTINATION "/home/quro/dbt5/bin")
 ELSEIF (WORKLOAD_TPCC)		
 		INSTALL(PROGRAMS ${DBT5_TPCC}
                  ${DBT5_DRIVER}
                  scripts/tpcc-run-workload
                  ${DB_SCRIPTS}
-        DESTINATION "/home/quro/bin")
+        DESTINATION "/home/quro/dbt5/bin")
 
 ENDIF (WORKLOAD_TPCE)
